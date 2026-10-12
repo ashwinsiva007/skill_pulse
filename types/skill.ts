@@ -20,6 +20,8 @@ export interface Skill {
   endorsementsCount?: number;
   lastPracticed?: string;
   notes?: string;
+  interestToLearn?: boolean; // Interest in learning/deepening this skill
+  evidence?: string; // Project link, repo or certificate evidence
 }
 
 export interface SkillGapAnalysis {

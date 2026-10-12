@@ -136,7 +136,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                   </button>
 
                   <div className="pt-1.5 mt-1 border-t border-slate-800/80 px-2 py-1 text-[11px] text-slate-400">
-                    Stage 1 Foundation: Auth intentionally deferred to after Stage 5.
+                    Stage 2 Profile Builder: Auth intentionally deferred to after Stage 5.
                   </div>
                 </div>
               </>

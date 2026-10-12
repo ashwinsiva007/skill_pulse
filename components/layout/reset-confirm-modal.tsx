@@ -59,7 +59,7 @@ export const ResetConfirmModal: React.FC<ResetConfirmModalProps> = ({
         <div className="text-xs text-slate-400 space-y-1.5 p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
           <p className="font-medium text-slate-300">Browser Local Storage Notice:</p>
           <p>
-            Your PathPilot data is isolated to this specific browser instance via HTML5 LocalStorage. No server databases or cloud credentials are in use during Stage 1.
+            Your Skill_pulse ai data is isolated to this specific browser instance via HTML5 LocalStorage. No server databases or cloud credentials are in use during Stage 2.
           </p>
         </div>
 

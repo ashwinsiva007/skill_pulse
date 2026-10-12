@@ -36,7 +36,7 @@ export default function SettingsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `pathpilot-demo-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `skillpulse-ai-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -63,7 +63,7 @@ export default function SettingsPage() {
   };
 
   const handlePurge = () => {
-    if (confirm("Are you sure you want to completely purge all PathPilot keys from this browser?")) {
+    if (confirm("Are you sure you want to completely purge all Skill_pulse ai keys from this browser?")) {
       DemoManager.purgeAllData();
       refreshSummary();
       if (typeof window !== "undefined") window.location.reload();
@@ -82,7 +82,7 @@ export default function SettingsPage() {
             </Badge>
           </div>
           <p className="text-xs text-slate-400">
-            Inspect, backup, or reset your local demo dataset and review PathPilot architecture.
+            Inspect, backup, or reset your local demo dataset and review Skill_pulse ai architecture.
           </p>
         </div>
 
@@ -93,7 +93,7 @@ export default function SettingsPage() {
             Browser Local Storage Architecture Warning
           </div>
           <p className="text-amber-200/80 leading-relaxed">
-            PathPilot Stage 1 intentionally uses HTML5 browser storage (localStorage) for zero-friction local development. No user accounts, passwords, or cloud database credentials are required. <strong>Browser storage is intended strictly for development and testing, not secure production storage.</strong>
+            Skill_pulse ai Stage 2 uses HTML5 browser storage (localStorage) for zero-friction local development. No user accounts, passwords, or cloud database credentials are required. <strong>Browser storage is intended strictly for development and testing, not secure production storage.</strong>
           </p>
         </div>
 
@@ -104,7 +104,7 @@ export default function SettingsPage() {
               <div>
                 <CardTitle>Storage Health & Metrics</CardTitle>
                 <CardDescription>
-                  Summary of keys saved under the <code>pathpilot_mvp_v1</code> namespace
+                  Summary of keys saved under the <code>skillpulse_mvp_v1</code> namespace
                 </CardDescription>
               </div>
               <div className="p-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-400">
@@ -184,16 +184,16 @@ export default function SettingsPage() {
         {/* Five Stage Roadmap Overview */}
         <Card>
           <CardHeader>
-            <CardTitle>PathPilot Platform Roadmap (Stages 1 – 5)</CardTitle>
+            <CardTitle>Skill_pulse ai Platform Roadmap (Stages 1 – 5)</CardTitle>
             <CardDescription>
               Architectural phases for full autonomous career guidance platform
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-lg bg-indigo-950/30 border border-indigo-800/50 flex items-start gap-3">
-                <Badge variant="indigo" size="sm" className="shrink-0 mt-0.5">
-                  Stage 1 (Current)
+              <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800 flex items-start gap-3">
+                <Badge variant="neutral" size="sm" className="shrink-0 mt-0.5">
+                  Stage 1 (Completed)
                 </Badge>
                 <div>
                   <h4 className="font-semibold text-slate-200">
@@ -205,16 +205,16 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800 flex items-start gap-3">
-                <Badge variant="neutral" size="sm" className="shrink-0 mt-0.5">
-                  Stage 2
+              <div className="p-3 rounded-lg bg-indigo-950/30 border border-indigo-800/50 flex items-start gap-3">
+                <Badge variant="indigo" size="sm" className="shrink-0 mt-0.5">
+                  Stage 2 (Active)
                 </Badge>
                 <div>
                   <h4 className="font-semibold text-slate-200">
-                    AI Resume Tailoring Engine & ATS Scanner
+                    Profile Builder, Onboarding Wizard & Candidate Profile System
                   </h4>
                   <p className="text-slate-400 mt-0.5 leading-relaxed">
-                    Automated role keyword extraction, ATS compatibility score evaluator, and formatted PDF export.
+                    7-step onboarding wizard, full profile manager, multiple education/skills/projects/experience entries, transparent score calculation, and robust local persistence.
                   </p>
                 </div>
               </div>

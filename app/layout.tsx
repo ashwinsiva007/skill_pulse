@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PathPilot — AI Career & Skill Navigator",
+  title: "Skill_pulse ai — AI Career & Skill Navigator",
   description:
-    "Modular career development platform and skill navigator with demo workspace, local persistence, and career roadmap guidance.",
+    "Modular career development platform and skill navigator with demo workspace, local persistence, profile builder, and career roadmap guidance.",
 };
 
 export default function RootLayout({

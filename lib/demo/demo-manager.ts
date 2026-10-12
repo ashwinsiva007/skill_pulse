@@ -58,7 +58,7 @@ export class DemoManager {
    * Purges all application data from browser storage.
    */
   public static purgeAllData(): boolean {
-    return storageAdapter.clearAllPathPilotData();
+    return storageAdapter.clearAllSkillPulseData();
   }
 
   /**
@@ -89,7 +89,7 @@ export class DemoManager {
     if (typeof window !== "undefined" && window.localStorage) {
       for (let i = 0; i < window.localStorage.length; i++) {
         const key = window.localStorage.key(i);
-        if (key && key.startsWith("pathpilot")) {
+        if (key && (key.startsWith("skillpulse") || key.startsWith("pathpilot"))) {
           const val = window.localStorage.getItem(key) || "";
           estimatedBytes += (key.length + val.length) * 2; // UTF-16 approx
         }

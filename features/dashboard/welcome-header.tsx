@@ -30,7 +30,7 @@ export const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ profile }) => {
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="indigo" size="sm">
                 <Sparkles className="w-3 h-3 mr-1 text-indigo-400" />
-                Stage 1 — Foundation MVP
+                Stage 2 — Profile Builder & Onboarding
               </Badge>
               <Badge variant="neutral" size="sm">
                 Fictional Demo Candidate
@@ -42,7 +42,7 @@ export const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ profile }) => {
             </h1>
 
             <p className="text-sm text-slate-300 leading-relaxed">
-              PathPilot is navigating your progression from{" "}
+              Skill_pulse ai is navigating your progression from{" "}
               <strong className="text-slate-200 font-semibold">{profile.currentRole}</strong> to{" "}
               <span className="text-indigo-400 font-semibold underline decoration-indigo-500/50 underline-offset-4">
                 {profile.targetRole}
@@ -52,24 +52,32 @@ export const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ profile }) => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0">
-            <Link href="/roadmap">
+            <Link href="/onboarding">
               <Button variant="primary" size="md">
+                <Sparkles className="w-4 h-4 mr-1.5" />
+                Profile Wizard
+              </Button>
+            </Link>
+
+            <Link href="/profile">
+              <Button variant="outline" size="md">
+                Manage Profile
+              </Button>
+            </Link>
+
+            <Link href="/roadmap">
+              <Button variant="secondary" size="md">
                 Career Roadmap
                 <ArrowRight className="w-4 h-4 ml-1.5" />
               </Button>
             </Link>
 
-            <Link href="/skills">
-              <Button variant="outline" size="md">
-                Analyze Skills
-              </Button>
-            </Link>
-
             <Button
-              variant="secondary"
+              variant="ghost"
               size="md"
               onClick={() => setIsResetModalOpen(true)}
               title="Reset demo data to initial defaults"
+              className="text-slate-400 hover:text-slate-200"
             >
               <RotateCcw className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
               Reset Demo

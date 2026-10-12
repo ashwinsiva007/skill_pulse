@@ -14,11 +14,15 @@ import {
 } from "@/lib/demo/seed-data";
 import { CandidateProfile } from "@/types/profile";
 import { Skill } from "@/types/skill";
+import { EducationEntry } from "@/types/education";
+import { ProjectEntry } from "@/types/project";
+import { ExperienceEntry, CertificationEntry } from "@/types/experience";
 import { ResumeDraft } from "@/types/resume";
 import { RoadmapMilestone } from "@/types/roadmap";
 import { Opportunity } from "@/types/opportunity";
 import { JobApplication, ApplicationStage } from "@/types/application";
 import { ActivityItem } from "@/types/activity";
+import { calculateProfileCompletion } from "@/lib/profile-completion";
 import {
   IProfileRepository,
   ISkillRepository,
@@ -38,19 +42,164 @@ function ensureInitialized() {
 export class LocalProfileRepository implements IProfileRepository {
   async getProfile(): Promise<CandidateProfile> {
     ensureInitialized();
-    return storageAdapter.getItem<CandidateProfile>(STORAGE_KEYS.PROFILE, DEMO_PROFILE);
+    const stored = storageAdapter.getItem<Partial<CandidateProfile>>(STORAGE_KEYS.PROFILE, DEMO_PROFILE);
+    
+    // Defensive merge to guarantee all Stage 2 fields exist even if user had older Stage 1 stored session
+    const fullProfile: CandidateProfile = {
+      ...DEMO_PROFILE,
+      ...stored,
+      education: Array.isArray(stored.education) ? stored.education : DEMO_PROFILE.education,
+      projects: Array.isArray(stored.projects) ? stored.projects : DEMO_PROFILE.projects,
+      experience: Array.isArray(stored.experience) ? stored.experience : DEMO_PROFILE.experience,
+      certifications: Array.isArray(stored.certifications) ? stored.certifications : DEMO_PROFILE.certifications,
+      courses: Array.isArray(stored.courses) ? stored.courses : DEMO_PROFILE.courses,
+      hackathons: Array.isArray(stored.hackathons) ? stored.hackathons : DEMO_PROFILE.hackathons,
+      awards: Array.isArray(stored.awards) ? stored.awards : DEMO_PROFILE.awards,
+      leadership: Array.isArray(stored.leadership) ? stored.leadership : DEMO_PROFILE.leadership,
+      preferences: stored.preferences || DEMO_PROFILE.preferences,
+      links: Array.isArray(stored.links) ? stored.links : DEMO_PROFILE.links,
+    };
+
+    // Calculate actual score with skills
+    const skills = storageAdapter.getItem<Skill[]>(STORAGE_KEYS.SKILLS, DEMO_SKILLS);
+    fullProfile.profileCompletionPercentage = calculateProfileCompletion(fullProfile, skills).percentage;
+
+    return fullProfile;
   }
 
   async updateProfile(updates: Partial<CandidateProfile>): Promise<CandidateProfile> {
     ensureInitialized();
     const current = await this.getProfile();
-    const updated: CandidateProfile = {
+    const skills = storageAdapter.getItem<Skill[]>(STORAGE_KEYS.SKILLS, DEMO_SKILLS);
+
+    const merged: CandidateProfile = {
       ...current,
       ...updates,
       updatedAt: new Date().toISOString(),
     };
-    storageAdapter.setItem(STORAGE_KEYS.PROFILE, updated);
-    return updated;
+
+    // Recalculate completion criteria accurately
+    merged.profileCompletionPercentage = calculateProfileCompletion(merged, skills).percentage;
+
+    storageAdapter.setItem(STORAGE_KEYS.PROFILE, merged);
+    return merged;
+  }
+
+  async addEducation(entryInput: Omit<EducationEntry, "id">): Promise<EducationEntry> {
+    const current = await this.getProfile();
+    const newEntry: EducationEntry = {
+      ...entryInput,
+      id: `edu-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+    };
+    const updatedList = [newEntry, ...(current.education || [])];
+    await this.updateProfile({ education: updatedList });
+    return newEntry;
+  }
+
+  async updateEducation(id: string, updates: Partial<EducationEntry>): Promise<EducationEntry> {
+    const current = await this.getProfile();
+    let updatedEntry: EducationEntry | null = null;
+    const list = (current.education || []).map((e) => {
+      if (e.id === id) {
+        updatedEntry = { ...e, ...updates };
+        return updatedEntry;
+      }
+      return e;
+    });
+    if (!updatedEntry) throw new Error(`Education entry ${id} not found.`);
+    await this.updateProfile({ education: list });
+    return updatedEntry;
+  }
+
+  async deleteEducation(id: string): Promise<boolean> {
+    const current = await this.getProfile();
+    const list = (current.education || []).filter((e) => e.id !== id);
+    await this.updateProfile({ education: list });
+    return true;
+  }
+
+  async addProject(entryInput: Omit<ProjectEntry, "id">): Promise<ProjectEntry> {
+    const current = await this.getProfile();
+    const newEntry: ProjectEntry = {
+      ...entryInput,
+      id: `proj-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+    };
+    const updatedList = [newEntry, ...(current.projects || [])];
+    await this.updateProfile({ projects: updatedList });
+    return newEntry;
+  }
+
+  async updateProject(id: string, updates: Partial<ProjectEntry>): Promise<ProjectEntry> {
+    const current = await this.getProfile();
+    let updatedEntry: ProjectEntry | null = null;
+    const list = (current.projects || []).map((p) => {
+      if (p.id === id) {
+        updatedEntry = { ...p, ...updates };
+        return updatedEntry;
+      }
+      return p;
+    });
+    if (!updatedEntry) throw new Error(`Project entry ${id} not found.`);
+    await this.updateProfile({ projects: list });
+    return updatedEntry;
+  }
+
+  async deleteProject(id: string): Promise<boolean> {
+    const current = await this.getProfile();
+    const list = (current.projects || []).filter((p) => p.id !== id);
+    await this.updateProfile({ projects: list });
+    return true;
+  }
+
+  async addExperience(entryInput: Omit<ExperienceEntry, "id">): Promise<ExperienceEntry> {
+    const current = await this.getProfile();
+    const newEntry: ExperienceEntry = {
+      ...entryInput,
+      id: `exp-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+    };
+    const updatedList = [newEntry, ...(current.experience || [])];
+    await this.updateProfile({ experience: updatedList });
+    return newEntry;
+  }
+
+  async updateExperience(id: string, updates: Partial<ExperienceEntry>): Promise<ExperienceEntry> {
+    const current = await this.getProfile();
+    let updatedEntry: ExperienceEntry | null = null;
+    const list = (current.experience || []).map((e) => {
+      if (e.id === id) {
+        updatedEntry = { ...e, ...updates };
+        return updatedEntry;
+      }
+      return e;
+    });
+    if (!updatedEntry) throw new Error(`Experience entry ${id} not found.`);
+    await this.updateProfile({ experience: list });
+    return updatedEntry;
+  }
+
+  async deleteExperience(id: string): Promise<boolean> {
+    const current = await this.getProfile();
+    const list = (current.experience || []).filter((e) => e.id !== id);
+    await this.updateProfile({ experience: list });
+    return true;
+  }
+
+  async addCertification(entryInput: Omit<CertificationEntry, "id">): Promise<CertificationEntry> {
+    const current = await this.getProfile();
+    const newEntry: CertificationEntry = {
+      ...entryInput,
+      id: `cert-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+    };
+    const updatedList = [newEntry, ...(current.certifications || [])];
+    await this.updateProfile({ certifications: updatedList });
+    return newEntry;
+  }
+
+  async deleteCertification(id: string): Promise<boolean> {
+    const current = await this.getProfile();
+    const list = (current.certifications || []).filter((c) => c.id !== id);
+    await this.updateProfile({ certifications: list });
+    return true;
   }
 }
 
@@ -69,10 +218,18 @@ export class LocalSkillRepository implements ISkillRepository {
     const list = await this.getSkills();
     const newSkill: Skill = {
       ...skillInput,
-      id: `skill-${Date.now()}`,
+      id: `skill-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
     };
     const updated = [newSkill, ...list];
     storageAdapter.setItem(STORAGE_KEYS.SKILLS, updated);
+
+    // Sync profile completion
+    const currentProfile = storageAdapter.getItem<CandidateProfile>(STORAGE_KEYS.PROFILE, DEMO_PROFILE);
+    if (currentProfile) {
+      currentProfile.profileCompletionPercentage = calculateProfileCompletion(currentProfile, updated).percentage;
+      storageAdapter.setItem(STORAGE_KEYS.PROFILE, currentProfile);
+    }
+
     return newSkill;
   }
 
@@ -88,6 +245,14 @@ export class LocalSkillRepository implements ISkillRepository {
     });
     if (!updatedSkill) throw new Error(`Skill with ID ${id} not found.`);
     storageAdapter.setItem(STORAGE_KEYS.SKILLS, updatedList);
+
+    // Sync profile completion
+    const currentProfile = storageAdapter.getItem<CandidateProfile>(STORAGE_KEYS.PROFILE, DEMO_PROFILE);
+    if (currentProfile) {
+      currentProfile.profileCompletionPercentage = calculateProfileCompletion(currentProfile, updatedList).percentage;
+      storageAdapter.setItem(STORAGE_KEYS.PROFILE, currentProfile);
+    }
+
     return updatedSkill;
   }
 
@@ -95,6 +260,14 @@ export class LocalSkillRepository implements ISkillRepository {
     const list = await this.getSkills();
     const filtered = list.filter((s) => s.id !== id);
     storageAdapter.setItem(STORAGE_KEYS.SKILLS, filtered);
+
+    // Sync profile completion
+    const currentProfile = storageAdapter.getItem<CandidateProfile>(STORAGE_KEYS.PROFILE, DEMO_PROFILE);
+    if (currentProfile) {
+      currentProfile.profileCompletionPercentage = calculateProfileCompletion(currentProfile, filtered).percentage;
+      storageAdapter.setItem(STORAGE_KEYS.PROFILE, currentProfile);
+    }
+
     return true;
   }
 }

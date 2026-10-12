@@ -7,7 +7,7 @@ import { JobApplication } from "./application";
 import { ActivityItem } from "./activity";
 
 export const STORAGE_VERSION = 1;
-export const STORAGE_PREFIX = "pathpilot_mvp_v1";
+export const STORAGE_PREFIX = "skillpulse_mvp_v1";
 
 export interface DemoDataset {
   version: number;

@@ -20,7 +20,7 @@ export const DemoBanner: React.FC = () => {
             Data is stored in this browser.
           </span>
           <span className="text-slate-400 text-[11px] hidden md:inline">
-            (No account or cloud keys required — Stage 1 Foundation)
+            (No account or cloud keys required — Stage 2 Profile Builder)
           </span>
         </div>
 

@@ -64,7 +64,7 @@ class BrowserStorageAdapter {
       if (raw === null || raw === undefined) return fallback;
       return JSON.parse(raw) as T;
     } catch (err) {
-      console.warn(`[PathPilot Storage] Failed to parse key "${key}":`, err);
+      console.warn(`[SkillPulse Storage] Failed to parse key "${key}":`, err);
       return fallback;
     }
   }
@@ -77,7 +77,7 @@ class BrowserStorageAdapter {
       this.notifyListeners(key, value);
       return true;
     } catch (err) {
-      console.error(`[PathPilot Storage] Failed to write key "${key}":`, err);
+      console.error(`[SkillPulse Storage] Failed to write key "${key}":`, err);
       return false;
     }
   }
@@ -89,18 +89,18 @@ class BrowserStorageAdapter {
       this.notifyListeners(key, null);
       return true;
     } catch (err) {
-      console.error(`[PathPilot Storage] Failed to remove key "${key}":`, err);
+      console.error(`[SkillPulse Storage] Failed to remove key "${key}":`, err);
       return false;
     }
   }
 
-  public clearAllPathPilotData(): boolean {
+  public clearAllSkillPulseData(): boolean {
     if (!this.isBrowser) return false;
     try {
       const keysToRemove: string[] = [];
       for (let i = 0; i < window.localStorage.length; i++) {
         const key = window.localStorage.key(i);
-        if (key && key.startsWith(STORAGE_PREFIX)) {
+        if (key && (key.startsWith(STORAGE_PREFIX) || key.startsWith("pathpilot"))) {
           keysToRemove.push(key);
         }
       }
@@ -108,9 +108,13 @@ class BrowserStorageAdapter {
       this.notifyListeners(STORAGE_PREFIX, null);
       return true;
     } catch (err) {
-      console.error("[PathPilot Storage] Failed to clear app data:", err);
+      console.error("[SkillPulse Storage] Failed to clear app data:", err);
       return false;
     }
+  }
+
+  public clearAllPathPilotData(): boolean {
+    return this.clearAllSkillPulseData();
   }
 
   public getSchemaVersion(): number | null {

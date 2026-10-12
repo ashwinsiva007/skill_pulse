@@ -1,5 +1,8 @@
 import { CandidateProfile } from "@/types/profile";
 import { Skill } from "@/types/skill";
+import { EducationEntry } from "@/types/education";
+import { ProjectEntry } from "@/types/project";
+import { ExperienceEntry, CertificationEntry } from "@/types/experience";
 import { ResumeDraft } from "@/types/resume";
 import { RoadmapMilestone } from "@/types/roadmap";
 import { Opportunity } from "@/types/opportunity";
@@ -9,6 +12,17 @@ import { ActivityItem } from "@/types/activity";
 export interface IProfileRepository {
   getProfile(): Promise<CandidateProfile>;
   updateProfile(profile: Partial<CandidateProfile>): Promise<CandidateProfile>;
+  addEducation(entry: Omit<EducationEntry, "id">): Promise<EducationEntry>;
+  updateEducation(id: string, updates: Partial<EducationEntry>): Promise<EducationEntry>;
+  deleteEducation(id: string): Promise<boolean>;
+  addProject(entry: Omit<ProjectEntry, "id">): Promise<ProjectEntry>;
+  updateProject(id: string, updates: Partial<ProjectEntry>): Promise<ProjectEntry>;
+  deleteProject(id: string): Promise<boolean>;
+  addExperience(entry: Omit<ExperienceEntry, "id">): Promise<ExperienceEntry>;
+  updateExperience(id: string, updates: Partial<ExperienceEntry>): Promise<ExperienceEntry>;
+  deleteExperience(id: string): Promise<boolean>;
+  addCertification(entry: Omit<CertificationEntry, "id">): Promise<CertificationEntry>;
+  deleteCertification(id: string): Promise<boolean>;
 }
 
 export interface ISkillRepository {

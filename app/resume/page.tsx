@@ -89,7 +89,7 @@ export default function ResumePage() {
                 Stage 2 Pipeline: AI Resume Tailoring & ATS Scoring Engine
               </p>
               <p className="text-slate-400 leading-relaxed max-w-2xl">
-                In Stage 2, PathPilot will introduce automatic job description keyword extraction, real-time ATS match scoring, and multi-format PDF export. Below are your active local drafts.
+                Skill_pulse ai provides profile synchronization, ATS keyword optimization, and multi-format export. Below are your active local drafts.
               </p>
             </div>
           </div>

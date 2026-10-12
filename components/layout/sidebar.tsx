@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  Compass,
+  Sparkles,
   LayoutDashboard,
   User,
   FileText,
@@ -17,6 +17,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Compass,
 } from "lucide-react";
 
 interface NavItem {
@@ -35,10 +36,17 @@ const NAV_ITEMS: NavItem[] = [
     stageTag: "Stage 1",
   },
   {
+    label: "Profile Wizard",
+    href: "/onboarding",
+    icon: Sparkles,
+    badge: "7 Steps",
+    stageTag: "Stage 2",
+  },
+  {
     label: "My Profile",
     href: "/profile",
     icon: User,
-    stageTag: "Stage 1",
+    stageTag: "Stage 2",
   },
   {
     label: "Resume Builder",
@@ -135,7 +143,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {!isCollapsed && (
               <div className="flex flex-col truncate">
                 <span className="font-bold text-sm tracking-tight text-white flex items-center gap-1.5">
-                  PathPilot
+                  Skill_pulse ai
                   <span className="text-[10px] uppercase font-semibold tracking-wider px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                     MVP
                   </span>
@@ -224,8 +232,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
             </div>
             <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
-              <span>Target: Staff AI Architect</span>
-              <span className="text-emerald-400 font-medium">78% Match</span>
+              <span className="truncate">Junior AI Solutions Eng</span>
+              <span className="text-emerald-400 font-medium">94% Match</span>
             </div>
           </div>
         ) : (
