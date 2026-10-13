@@ -8,6 +8,7 @@ import { ActivityItem } from "@/types/activity";
 import { DemoDataset, STORAGE_VERSION } from "@/types/storage";
 import { calculateProfileCompletion } from "@/lib/profile-completion";
 import { ENRICHED_DEMO_RESUMES } from "@/lib/resume/default-content";
+import { STARTER_DEMO_OPPORTUNITIES } from "@/lib/opportunities/demo-opportunities";
 
 export const DEMO_SKILLS: Skill[] = [
   // AI & Machine Learning
@@ -451,72 +452,7 @@ export const DEMO_ROADMAP: RoadmapMilestone[] = [
   },
 ];
 
-export const DEMO_OPPORTUNITIES: Opportunity[] = [
-  {
-    id: "opp-001",
-    title: "Junior AI Solutions Engineer",
-    company: "Synthetix AI Systems (Demo)",
-    location: "San Francisco, CA / Remote",
-    workplaceType: "Remote",
-    salaryRange: "$115,000 - $140,000 + Equity",
-    matchScore: 94,
-    matchedSkills: ["LLM Orchestration", "RAG & Vector Databases", "Next.js", "Python & FastAPI", "TypeScript"],
-    missingSkills: ["Kubernetes Cluster Tuning"],
-    description: "Help clients integrate intelligent LLM agent workflows into enterprise systems. Collaborate with senior architects to deploy RAG pipelines and custom copilots.",
-    status: "saved",
-    postedDate: "2 days ago",
-    department: "Enterprise Solutions",
-    experienceLevel: "Entry Level / Junior (0-2 years)",
-  },
-  {
-    id: "opp-002",
-    title: "Full-Stack AI Applications Engineer",
-    company: "NexusCloud Infrastructure (Demo)",
-    location: "Austin, TX / Hybrid",
-    workplaceType: "Hybrid",
-    salaryRange: "$110,000 - $135,000",
-    matchScore: 89,
-    matchedSkills: ["TypeScript", "Next.js", "Docker", "AWS", "FastAPI"],
-    missingSkills: ["PyTorch & Fine-Tuning"],
-    description: "Build developer-facing platforms and AI observability tooling for cloud services engineers.",
-    status: "available",
-    postedDate: "4 days ago",
-    department: "Core Platform",
-    experienceLevel: "Junior / Mid (1-3 years)",
-  },
-  {
-    id: "opp-003",
-    title: "Associate AI Engineer — Research & Applied",
-    company: "Aether Dynamics (Demo)",
-    location: "New York, NY / Remote",
-    workplaceType: "Remote",
-    salaryRange: "$120,000 - $150,000",
-    matchScore: 85,
-    matchedSkills: ["LLM Orchestration", "Python", "Technical Documentation", "RAG"],
-    missingSkills: ["Kubernetes", "Fine-Tuning"],
-    description: "Join our applied GenAI team. Prototype new interactive copilot features and evaluate open-source language models.",
-    status: "applied",
-    postedDate: "1 week ago",
-    department: "Applied Research",
-    experienceLevel: "Early Career (0-2 years)",
-  },
-  {
-    id: "opp-004",
-    title: "Graduate Full-Stack Engineer",
-    company: "Vanguard Tech Labs (Demo)",
-    location: "Seattle, WA / Remote",
-    workplaceType: "Remote",
-    salaryRange: "$105,000 - $130,000",
-    matchScore: 92,
-    matchedSkills: ["Next.js", "React 19", "TypeScript", "FastAPI", "PostgreSQL"],
-    missingSkills: [],
-    description: "Deliver responsive frontend interfaces and AI copilot integrations across student and professional developer platforms.",
-    status: "saved",
-    postedDate: "3 days ago",
-    department: "Product Engineering",
-    experienceLevel: "New Grad / Junior",
-  },
-];
+export const DEMO_OPPORTUNITIES: Opportunity[] = STARTER_DEMO_OPPORTUNITIES;
 
 export const DEMO_APPLICATIONS: JobApplication[] = [
   {
@@ -615,7 +551,7 @@ export const INITIAL_DEMO_DATASET: DemoDataset = {
   skills: DEMO_SKILLS,
   resumes: DEMO_RESUMES,
   roadmap: DEMO_ROADMAP,
-  opportunities: DEMO_OPPORTUNITIES,
+  opportunities: STARTER_DEMO_OPPORTUNITIES,
   applications: DEMO_APPLICATIONS,
   activities: DEMO_ACTIVITIES,
 };

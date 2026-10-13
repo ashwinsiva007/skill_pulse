@@ -1,10 +1,12 @@
-export type ApplicationStage = 
+export type ApplicationStage =
   | "saved"
+  | "interested"
   | "applied"
   | "screening"
   | "technical"
-  | "final"
+  | "interview"
   | "offer"
+  | "rejected"
   | "archived";
 
 export interface JobApplication {
@@ -20,4 +22,6 @@ export interface JobApplication {
   nextStep?: string;
   nextStepDate?: string;
   contactPerson?: string;
+  opportunityType?: string;
+  sourceUrl?: string;
 }

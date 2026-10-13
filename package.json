@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "npx tsx scripts/test-matching-engine.ts"
+    "test": "npx tsx scripts/test-matching-engine.ts && npx tsx scripts/test-opportunity-matcher.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

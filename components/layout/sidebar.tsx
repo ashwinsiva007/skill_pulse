@@ -73,20 +73,20 @@ const NAV_ITEMS: NavItem[] = [
     label: "Opportunities",
     href: "/opportunities",
     icon: Briefcase,
+    badge: "10 roles",
     stageTag: "Stage 5",
   },
   {
     label: "Saved Opportunities",
     href: "/saved-opportunities",
     icon: Bookmark,
-    badge: "2",
     stageTag: "Stage 5",
   },
   {
     label: "Application Tracker",
     href: "/tracker",
     icon: Kanban,
-    badge: "3 active",
+    badge: "Kanban",
     stageTag: "Stage 5",
   },
   {

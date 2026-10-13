@@ -1,13 +1,13 @@
-# Skill_pulse ai — AI Career & Skill Navigator
+# PathPilot (`skill_pulse`) — AI Career & Skill Navigator
 
-> **Stage 4 — Explainable Skill Analyzer, Career Catalogue & Adaptive Roadmap**  
-> A modular, dark-first career progression platform built with Next.js (App Router), TypeScript in strict mode, and Tailwind CSS. Tailored specifically for students, fresh graduates, and early-career candidates.
+> **Stage 5 — Complete Demo-Ready MVP with Opportunity Discovery & Application Tracker**  
+> A modular, dark-first career platform built with Next.js (App Router), TypeScript in strict mode, and Tailwind CSS. Tailored specifically for students, fresh graduates, and early-career jobseekers.
 
 ---
 
 ## ⚡ Quick Start (Zero Setup Required)
 
-**Skill_pulse ai** is engineered for **instant, frictionless local execution**. Anyone on the development team can clone the repository, run the application immediately, and test with the pre-populated demo workspace or build custom role-tailored resumes and roadmaps from scratch.
+**PathPilot** is engineered for **instant, frictionless local execution**. Anyone on the development team or reviewing recruiters can clone the repository, run the application immediately, and test with the pre-populated demo workspace or explore from scratch.
 
 ### Prerequisites
 - Node.js `v18+` or `v20+` (Tested on Node `v24`)
@@ -19,191 +19,203 @@
 # 1. Install dependencies
 npm install
 
-# 2. Run unit test suite (10 test suites)
+# 2. Run unit test suites (19 unit test cases across Skill Analyzer & Opportunity Matcher)
 npm test
 
-# 3. Launch the development server
+# 3. Check code formatting and TypeScript linting
+npm run lint
+
+# 4. Build optimized production bundle
+npm run build
+
+# 5. Launch development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to immediately access **Skill_pulse ai**.
+Open [http://localhost:3000](http://localhost:3000) in your browser to immediately access **PathPilot**.
 
 ---
 
-## 🔒 Architecture Philosophy: Explainable Rules-Based Engine & Zero Cloud Lock-In
+## 🔒 Architecture Philosophy: Zero Cloud Lock-In & Educational Transparency
 
-**Skill_pulse ai intentionally avoids black-box AI models, mandatory cloud accounts, and authentication hurdles.**
+**PathPilot intentionally avoids mandatory cloud accounts, paid third-party APIs, and black-box AI claims.**
 
 This build deliberately **does NOT implement**:
 - ❌ Signup or login screens, passwords, or authentication middleware
-- ❌ Supabase Auth or third-party OAuth
+- ❌ Supabase Auth or third-party OAuth lock-in
 - ❌ Mandatory cloud database credentials, environment keys, or paid AI API secrets
 - ❌ Black-box "AI hiring probability" or "job readiness guarantee" claims
+- ❌ Indiscriminate web scraping or nonfunctional external links disguised as real
 
 ### Why This Decision Was Made
-1. **Explainability & Transparency:** Students and fresh graduates deserve to know *exactly* why their alignment score is 65% versus 85%. Every score is derived from an audited, unit-testable formula based on recorded skills and demonstrable portfolio evidence.
-2. **Pedagogical Honesty:** A score does not represent a hiring probability or guarantee employment. If a skill is marked "Not Yet Recorded", it simply means it is not yet documented or evidenced in the profile—not that the candidate lacks the skill.
-3. **Decoupled Repository Pattern:** All mutations and queries pass through TypeScript interfaces (`IProfileRepository`, `ISkillRepository`, `IResumeRepository`, `IRoadmapRepository`). Data persists cleanly in browser `localStorage`.
-4. **Frictionless Local Evaluation:** Reviewers and recruiters can clone and test all features instantly without configuring cloud infrastructure.
+1. **Explainability & Transparency:** Candidates deserve to know *exactly* why their alignment score is 82% versus 45%. Every score is derived from an audited, unit-testable mathematical rubric comparing profile skills and portfolio evidence against transparent listing requirements.
+2. **Pedagogical Honesty:** A match score measures alignment with stated listing attributes; it does **not** represent a probability of selection, interview invitation, or employment offer.
+3. **Pluggable Opportunity Provider Architecture:** The discovery module is built behind the `IOpportunityProvider` interface (`lib/opportunities/opportunity-provider.ts`), decoupling listing ingestion from the UI. Future production feeds (e.g., Greenhouse API, Ashby API, Handshake, University Career Centers) can be plugged in without refactoring the UI.
+4. **Decoupled Repository Pattern:** All mutations and queries pass through typed interfaces (`IProfileRepository`, `ISkillRepository`, `IResumeRepository`, `IRoadmapRepository`, `IOpportunityRepository`, `IApplicationRepository`). Data persists cleanly in browser `localStorage`.
+5. **Instant Local Evaluation:** Reviewers and recruiters can evaluate all features without setting up backend infrastructure.
 
 ---
 
-## 🎯 Stage 4: Skill Analyzer & Career PathPilot (`/skills` & `/roadmap`)
+## 📂 Project Structure
 
-Stage 4 introduces an explainable skill-matching engine, a configurable career catalogue of 8 starter tracks, an interactive diagnostic dashboard, and an adaptive 5-phase career roadmap.
-
-### 1. Configurable Career & Skill Catalogue
-The starter catalogue (`lib/career-catalogue/career-catalogue.ts`) is completely modularized in its own decoupled module, organized across engineering and data domains:
-- **Data Analyst** (Data & Analytics) — Core: SQL, Python, Tableau; Supporting: Excel & Data Cleaning, Statistical Foundations.
-- **Data Scientist** (Data Science & Analytics) — Core: Python, Machine Learning, Statistical Modeling, SQL; Supporting: Data Visualization, Big Data & Cloud.
-- **Machine Learning Engineer** (AI & Machine Learning) — Core: Python, PyTorch / Deep Learning, MLOps & Model Deployment, Software Engineering; Supporting: Docker, Data Engineering.
-- **Business Intelligence Analyst** (Data & Analytics) — Core: SQL, Power BI / Tableau, Data Modeling, KPI Development; Supporting: Excel, Stakeholder Communication.
-- **Software Developer** (Software Engineering) — Core: Core Programming, Data Structures & Algorithms, Git & Team Collaboration, SQL & Relational Databases; Supporting: REST APIs, Automated Testing.
-- **Frontend Developer** (Web & Frontend) — Core: JavaScript / TypeScript, React & Modern UI, CSS / Tailwind, Web Performance; Supporting: State Management, Testing.
-- **Backend Developer** (Systems & Backend) — Core: Backend Language, REST & GraphQL APIs, Relational & NoSQL Databases, System Design; Supporting: Docker, CI/CD.
-- **AI Engineer** (AI & Systems) — Core: LLM Orchestration & Prompting, Python, RAG & Vector Databases, API Engineering; Supporting: Docker, AI Evals & Observability.
-
-Each role profile defines:
-- Required core competencies (weight 3x) and supporting competencies (weight 1x)
-- Expected target proficiency level (Beginner, Intermediate, Advanced, Expert)
-- Real-world capstone example projects with suggested tech stacks and deliverables
-- Curated learning activities and portfolio evidence tips (what recruiters look for)
-- Verified learning resource URLs (documentation, free tutorials, official guides)
-
----
-
-### 2. Transparent Skill-Matching Mathematical Formula
-
-The scoring engine (`lib/skill-analyzer/matching-engine.ts`) calculates an explainable alignment percentage:
-
-$$\text{Score} = \text{round}\left( \frac{\sum_{i=1}^N W_i \times \text{EffectiveRatio}_i}{\sum_{i=1}^N W_i \times 1.0} \times 100 \right)$$
-
-Where:
-- **Numerical Scale:** `None = 0`, `Beginner = 1`, `Intermediate = 2`, `Advanced = 3`, `Expert = 4`.
-- **Competency Importance Weight ($W_i$):** Core skills = `3x`; Supporting skills = `1x`.
-- **Proficiency Ratio:** $\min\left(\frac{\text{UserLevel}_i}{\text{ExpectedLevel}_i}, 1.0\right)$.
-- **Portfolio Evidence Bonus:** Skills demonstrated in profile projects receive a $+0.1$ verification boost (capped at 1.0).
-- **Practical Baseline:** If a skill was not explicitly recorded in the skills list but was demonstrated in a portfolio project, it receives baseline practical credit (`Level 1 / Beginner`).
-- **Edge Case Protection:**
-  - Zero denominator protection (roles with zero requirements safely return `0`).
-  - Empty candidate skill lists safely return `0%`.
-  - Duplicate user skills safely take the maximum proficiency level recorded.
-  - Case-insensitive tokenization and synonym resolution (e.g., `"PostgreSQL"` matches `"SQL"`, `"Next.js"` matches `"React"`).
-
----
-
-### 3. Interactive Skill Analyzer Dashboard (`/skills`)
-
-- **Target Role Selector:** Switch between any of the 8 configured tracks or use quick-switch pills. Selection is persisted in `localStorage`.
-- **Match Metrics Grid:**
-  - *Overall Match Index* with progress indicator and an accessible badge (*Strong Match*, *Moderate Match*, *Development Target*).
-  - *Core Skill Coverage %* and *Supporting Skill Coverage %*.
-  - *Project Proof Evidence* count linking demonstrable profile projects.
-  - *Scoring Audit Modal:* Full breakdown of points earned vs points possible and mathematical formula audit.
-- **High-Impact Next Actions Card:** Top 3 prioritized recommendations (e.g., missing core competencies, skills needing advancement, or capstone project suggestions).
-- **Skill Gap Diagnostic:**
-  - Filterable tabs: *Not Yet Recorded*, *Partially Developed*, and *Matched*.
-  - Expandable detail drawers providing:
-    - *Role Competency Scope*
-    - *Suggested Learning Activity*
-    - *Portfolio Evidence Tip* (what recruiters verify in code repositories)
-  - Quick `+ Record in Profile` button opening pre-filled skill modal.
-- **Benchmark Comparison Chart:** Accessible table with dual-layer visual level meters comparing user proficiency against expected benchmark.
-- **Project Evidence Card:** Maps portfolio projects to required competencies with links to profile management.
-- **Multi-Role Alignment Comparison Modal:** Side-by-side comparison across all 8 roles sorted by highest match index, allowing immediate target role switching.
+```
+skill_pulse/
+├── app/                              # Next.js App Router Pages
+│   ├── (dashboard)/page.tsx          # Root redirect / landing
+│   ├── dashboard/page.tsx            # Unified Metrics & Pipeline Dashboard
+│   ├── onboarding/page.tsx           # 7-Step Guided Profile Wizard
+│   ├── profile/page.tsx              # Candidate Profile Management
+│   ├── resume/page.tsx               # ATS Resume Builder & PDF Exporter
+│   ├── skills/page.tsx               # 8-Track Explainable Skill Analyzer
+│   ├── roadmap/page.tsx              # Adaptive 5-Phase Career Progression Roadmap
+│   ├── opportunities/page.tsx        # Opportunity Discovery & Match Explorer
+│   ├── saved-opportunities/page.tsx  # Pinned Opportunities Management
+│   ├── tracker/page.tsx              # 5-Column Kanban Application Tracker
+│   └── settings/page.tsx             # Local Storage Diagnostics & Global Reset
+├── components/                       # Shared Reusable UI Components
+│   ├── layout/                       # AppLayout, Sidebar, Navbar
+│   └── ui/                           # Button, Card, Badge, Modal, Progress, EmptyState
+├── features/                         # Modular Domain Feature Packages
+│   ├── dashboard/                    # MetricsOverview, CareerReadinessCard, RoadmapCard
+│   ├── profile/                      # Profile forms, skills/education/projects editors
+│   ├── resume/                       # Guided questions, split-pane editor, PDF export
+│   ├── skills/                       # Skill gap diagnostics, role comparison table
+│   ├── roadmap/                      # 5-phase interactive milestones & checklists
+│   ├── opportunities/                # OpportunityCard, OpportunityDetailModal, TrackModal
+│   └── tracker/                      # Kanban columns, EditApplicationModal
+├── lib/                              # Core Business Logic & Infrastructure
+│   ├── career-catalogue/             # 8 Configured Career Role Profiles
+│   ├── opportunities/                # IOpportunityProvider, DemoCatalogue, Matcher
+│   ├── skill-analyzer/               # Transparent skill scoring formula & token matcher
+│   ├── roadmap/                      # Personalized roadmap generator from skill gaps
+│   ├── resume/                       # Resume templates, STAR bullet assistant
+│   ├── repositories/                 # Local repositories (localStorage implementation)
+│   ├── storage/                      # StorageAdapter interface & LocalStorage implementation
+│   └── demo/                         # Seed dataset & DemoManager reset service
+├── scripts/                          # Automated Unit Test Suites
+│   ├── test-matching-engine.ts       # 10 Test suites for Skill Analyzer
+│   └── test-opportunity-matcher.ts   # 9 Test suites for Opportunity Matcher
+└── types/                            # Strict TypeScript Domain Interfaces
+```
 
 ---
 
-### 4. Personalized 5-Phase Career Roadmap (`/roadmap`)
+## 🚀 Complete Feature Overview (Stages 1–5 Integrated)
 
-Generates an adaptive, step-by-step career development plan based on the selected target role and detected skill gaps:
+### 1. Unified Dashboard (`/dashboard` & `/`)
+- **6-Metric Real-Time KPI Grid:** Displays profile completion percentage, total recorded skills, ATS resume drafts saved, target role alignment score, career roadmap progress percentage, pinned opportunities, and active applications.
+- **Career Readiness Radar:** Compares candidate capabilities against target role expectations with live core skill coverage, supporting skill coverage, and portfolio evidence bonuses.
+- **Adaptive Roadmap Snapshot:** Direct milestone progress tracking with quick links to active phase action items.
+- **Application Pipeline Status Summary:** Summary breakdown of active applications across *Submitted*, *Interview Loop*, *Offers Received*, and *Bookmarks*.
+- **Curated Spotlight & Recent Activity Stream:** Highlights top-matching opportunities and persistent user activity timestamps.
 
-1. **Phase 1: Foundational Mastery** — Focuses on syntax, core principles, and mental models of missing core competencies.
-2. **Phase 2: Deliberate Practice** — Focuses on applied algorithmic exercises and practical problem sets to advance partially developed skills to expected proficiency.
-3. **Phase 3: Capstone Engineering** — Focuses on designing, building, and deploying the recommended role capstone project with clean repository structure.
-4. **Phase 4: Presentation & Artifacts** — Focuses on translating project outcomes into STAR bullet points and generating a tailored resume in the PathPilot Resume Builder (`/resume`).
-5. **Phase 5: Career Transition** — Focuses on technical interview problem domains, bookmarking opportunities (`/opportunities`), and tracking applications (`/tracker`).
+### 2. Opportunity Discovery (`/opportunities`)
+- **Starter Demo Catalogue:** 10 curated listings across Jobs, Internships, Hackathons, Research Fellowships, and Career Programs.
+- **Pluggable Architecture:** Implements `IOpportunityProvider` (`lib/opportunities/opportunity-provider.ts`).
+- **Comprehensive Filtering & Sorting:**
+  - Real-time text search by title or organization.
+  - Filter pills by Opportunity Type (*Job*, *Internship*, *Hackathon*, *Research*, *Career Program*).
+  - Filter dropdowns by Domain (*Data & Analytics*, *AI & Machine Learning*, *Software Engineering*, *Web & Frontend*, *Systems & Backend*).
+  - Filter by Work Mode (*Remote*, *Hybrid*, *On-site*).
+  - Sort by *Best Match* or *Title A–Z*.
+- **Explainable Match Scoring Engine:**
+  - Evaluates candidate profile, recorded skills, portfolio project tags, career level, and workplace preferences.
+  - Transparent 100-point rubric: Role Alignment (30 pts), Required Skills (35 pts), Preferred Skills (15 pts), Work Mode (10 pts), Experience Level (10 pts).
+  - "Why this matches you" expandable drawer highlighting exact alignment reasons.
+  - Separate tagging for matched required skills vs. missing required skills vs. preferred bonus skills.
+- **Opportunity Detail Modal:** Inspects full job description, eligibility rules, compensation ranges, source metadata, and transparent point audits.
+- **Direct 1-Click Pipeline Action:** Track any opportunity into the Kanban application pipeline with custom notes and target milestone dates.
+- **Explicit Demo Data Labeling:** All sample listings are prominently badged with `DEMO DATA` markers to ensure transparent expectations. External application links are simulated with clear demo toasts.
 
-**Roadmap Features:**
-- **Interactive Checklists:** Check/uncheck action items to dynamically update milestone progress percentage and overall roadmap progress.
-- **External Resource Links:** Direct clickable links to verified documentation and tutorials.
-- **Custom Tasks:** Users can add personal study tasks to any phase.
-- **Personal Notes & Reflection Log:** Persistent notes textarea per milestone to record study notes, repository links, or blockers.
-- **Time Estimates:** Clearly marked as estimates (e.g., `~3w (Est)`).
-- **Controls & Persistence:**
-  - "Re-generate from Skill Gaps" button to synchronize roadmap with recent profile skill edits.
-  - "Restore Demo Roadmap" button to restore initial starter state.
-  - Persists in `localStorage` across page refreshes.
+### 3. Saved Opportunities & Application Tracker (`/saved-opportunities` & `/tracker`)
+- **Saved Opportunities View (`/saved-opportunities`):** Manage bookmarked roles with immediate action to launch application tracking.
+- **5-Column Visual Kanban Tracker (`/tracker`):**
+  - **Pipeline Stages:** *Bookmarked & Interested*, *Applied (Submitted)*, *Interview Loop* (Screening & Technical), *Offers Received*, and *Closed / Archived*.
+  - **Manual Stage Transitions:** Drag or select dropdown to transition applications through recruiting stages.
+  - **Application Notes & Next Steps:** Record interview notes, recruiter contacts, coding challenge deadlines, and salary negotiation terms.
+  - **Add Custom Applications:** Log external job applications not originating from the internal catalogue.
+  - **Edit & Archive:** Update details or safely archive completed pipelines.
+
+### 4. Explainable Skill Analyzer (`/skills`)
+- **8-Track Catalogue:** Data Analyst, Data Scientist, Machine Learning Engineer, BI Analyst, Software Developer, Frontend Developer, Backend Developer, and AI Engineer.
+- **Explainable Mathematical Scoring:** Weighted formula accounting for core competencies (3x), supporting competencies (1x), proficiency depth, and portfolio project evidence.
+- **Skill Gap Diagnostics:** Filterable by *Not Yet Recorded*, *Partially Developed*, and *Matched* with recommended learning activities and recruiter portfolio tips.
+- **Multi-Role Alignment Matrix:** Compare candidate fit across all 8 career tracks simultaneously.
+
+### 5. Adaptive 5-Phase Career Roadmap (`/roadmap`)
+- **Personalized Generation:** Dynamically structured based on target role and detected missing competencies:
+  - *Phase 1: Foundational Mastery*
+  - *Phase 2: Deliberate Practice*
+  - *Phase 3: Capstone Engineering*
+  - *Phase 4: Presentation & Artifacts*
+  - *Phase 5: Career Transition & Interviewing*
+- **Interactive Checklists & Personal Study Notes:** Toggle checklist items to update progress and save persistent study reflections.
+
+### 6. ATS Resume Builder (`/resume`)
+- **Guided Career Target Setup:** Tailors resume drafts specifically for Data Analyst, Data Scientist, AI/ML, or Software Developer roles.
+- **STAR Bullet Assistant:** Formulates high-impact resume bullet points using the Situation-Task-Action-Result framework.
+- **A4 PDF Export:** Generates clean, ATS-friendly single-page resumes.
+
+### 7. Global Demo Reset (`/settings`)
+- **Predictable Initial State:** One-click reset restores the canonical starter profile, skills, resumes, roadmap, opportunities, and applications.
+- **Storage Diagnostics:** Inspect localStorage byte consumption and export/import full JSON state backups.
 
 ---
 
-## 🧪 Unit Test Suite Coverage & Results
+## 🧪 Automated Testing & Validation
 
-A dedicated unit test suite (`scripts/test-matching-engine.ts`) validates the rules-based matching engine and edge cases using Node.js assertions:
+PathPilot includes comprehensive automated test suites covering matching algorithms, boundary cases, and catalogue integrity.
 
 ```bash
 npm test
 ```
 
-### Test Suite Execution Output:
-```
-=================================================
-   PATHPILOT SKILL ANALYZER UNIT TEST SUITE
-=================================================
+### Test Suite Results Summary:
+- **Skill Analyzer Test Suite (`scripts/test-matching-engine.ts`):** 10 test suites passed.
+  - ✓ Token matching & synonym resolution (e.g., PostgreSQL matches SQL, Next.js matches React)
+  - ✓ Numerical proficiency conversions (0 to 4 scale)
+  - ✓ Zero recorded skills empty state safety
+  - ✓ Partial skill scoring & partially developed flags
+  - ✓ Weighted formula calculation across mixed proficiencies
+  - ✓ Project evidence bonus verification (relevant vs. irrelevant projects)
+  - ✓ Catalogue integrity across all 8 configured roles
+  - ✓ Adaptive 5-phase roadmap generation
+  - ✓ Zero-denominator edge-case protection
+  - ✓ Duplicate skill highest-proficiency selection
+- **Opportunity Matcher Test Suite (`scripts/test-opportunity-matcher.ts`):** 9 test suites passed.
+  - ✓ Role & domain alignment scoring (30 pts exact, 25 pts domain)
+  - ✓ Required vs. preferred skills separation and missing detection
+  - ✓ Portfolio project technologies contributing to skill overlap
+  - ✓ Work mode preference scoring (Remote, Hybrid, On-site, Flexible)
+  - ✓ Null / empty candidate profile safety
+  - ✓ Match score clamping strictly within [0, 100] with educational disclaimer
+  - ✓ Starter demo catalogue integrity across all 10 listings
+  - ✓ Representation of diverse opportunity types (Job, Internship, Hackathon, Research, Career Program)
+  - ✓ Application tracking pipeline stages validation (9 stages)
 
-TEST 1: Token matching & synonym resolution...
-  ✓ Token matching & synonyms pass
-
-TEST 2: Proficiency level numerical scale (0 to 4)...
-  ✓ Proficiency conversions pass
-
-TEST 3: Candidate with zero recorded skills...
-  ✓ Zero skills empty state handled safely
-
-TEST 4: Candidate with 1 or 2 skills...
-  ✓ 1 skill score: 7% (partially developed) passes
-
-TEST 5: Several skills across different proficiency levels...
-  ✓ Mixed proficiencies score: 63% passes
-
-TEST 6: Project evidence verification...
-  ✓ Project evidence accurately filters relevant vs irrelevant proof
-
-TEST 7: Catalogue integrity across all 8 configured roles...
-  ✓ All 8 roles evaluated successfully without exceptions
-
-TEST 8: Adaptive Roadmap generation from detected skill gaps...
-  ✓ Roadmap generated 5 valid phases with action items
-
-TEST 9: Edge case - Zero denominator / Empty role requirements...
-  ✓ Zero denominator safely returns 0 without division by zero error
-
-TEST 10: Duplicate skills in profile (takes highest proficiency)...
-  ✓ Duplicate skills handled by selecting highest proficiency
-
-=================================================
-   ALL 10 TEST SUITES PASSED SUCCESSFULLY! ✓
-=================================================
-```
+### Production Build & Linting:
+- **ESLint (`npm run lint`):** 0 errors, 0 warnings.
+- **Next.js Production Build (`npm run build`):** Compiled and prerendered 14 static routes cleanly.
 
 ---
 
-## 🧭 Application Navigation & Routes
+## ⚠️ Demo Data Limitations & Transparency Disclaimers
 
-| Route | View | Description | Stage Status |
-|---|---|---|---|
-| `/` or `/dashboard` | **Dashboard** | Candidate welcome, completion meters, target role readiness, roadmap preview, and activity log. | **Stage 1 & 2** |
-| `/onboarding` | **Profile Wizard** | 7-step guided onboarding wizard for students and early-career candidates. | **Stage 2** |
-| `/profile` | **My Profile** | Comprehensive profile management: education, skills, projects, experience, certs, and score breakdown. | **Stage 2** |
-| `/resume` | **Resume Builder** | Multi-draft ATS resume generator, split-pane editor, STAR bullet helper, and A4 PDF export. | **Stage 3 (Active)** |
-| `/skills` | **Skill Analyzer** | Explainable 8-role matching engine, gap diagnostics, proficiency comparisons, and multi-role comparison. | **Stage 4 (Active)** |
-| `/roadmap` | **Career Roadmap** | Adaptive 5-phase career progression roadmap with interactive tasks, resources, and personal notes. | **Stage 4 (Active)** |
-| `/opportunities` | **Opportunities** | Curated role listings with match scores and skill chips. | **Stage 5 Preview** |
-| `/saved-opportunities`| **Saved Roles** | Pinned opportunities with empty-state handling. | **Stage 5 Preview** |
-| `/tracker` | **Application Tracker** | Visual Kanban pipeline (Applied, Screening, Technical, Offer). | **Stage 5 Preview** |
-| `/settings` | **Settings & Storage** | Storage diagnostics, JSON backup export/import, and demo reset modal. | **Stage 1 & 2** |
+1. **Simulated Opportunity Data:** All listings in the catalogue are explicitly flagged with `isDemo: true`, `verificationStatus: "demo_simulated"`, and `listingStatus: "demo_only"`. They represent illustrative scenarios to demonstrate discovery and tracking workflows.
+2. **External Application Actions:** PathPilot does not claim external links are active or currently accepting applications. Clicking "Apply (External Demo)" launches an illustrative notification modal without redirecting to broken or unvetted third-party pages.
+3. **Alignment Scores vs. Hiring Probability:** A match score is an educational heuristic measuring profile alignment with listing tags. It does **not** indicate candidate selection probability or guarantee employment.
+4. **Local Browser Persistence:** All data is stored in the browser's `localStorage` via the decoupled `StorageAdapter`. Clearing browser cache or switching private browsing profiles will restore the default initial state unless backed up via `/settings`.
+
+---
+
+## 🔮 Recommended Future Stages
+
+1. **Authentication & Multi-Tenant Cloud Storage:** Implement Supabase Auth or NextAuth with PostgreSQL backing, seamlessly swapping the `LocalStorageAdapter` with a `RemoteStorageAdapter`.
+2. **Live Feed Integrations:** Connect genuine job board APIs (Greenhouse, Ashby, Lever, LinkedIn ATS feeds) through the established `IOpportunityProvider` interface.
+3. **Resume PDF Parsing:** Add client-side PDF/DOCX import using Web Workers to extract existing resume content into the profile editor without external OCR APIs.
+4. **Automated Status Webhooks:** Track interview invitations and email updates via authenticated webhook bridges.
 
 ---
 
 ## 📄 License
-MIT License. Built for **Skill_pulse ai — AI Career & Skill Navigator**.
+MIT License. Built for **PathPilot (`skill_pulse`) — AI Career & Skill Navigator**.

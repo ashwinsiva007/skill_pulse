@@ -8,10 +8,10 @@ import {
   DEMO_SKILLS, 
   DEMO_RESUMES, 
   DEMO_ROADMAP, 
-  DEMO_OPPORTUNITIES, 
   DEMO_APPLICATIONS, 
   DEMO_ACTIVITIES 
 } from "@/lib/demo/seed-data";
+import { STARTER_DEMO_OPPORTUNITIES } from "@/lib/opportunities/demo-opportunities";
 import { CandidateProfile } from "@/types/profile";
 import { Skill } from "@/types/skill";
 import { EducationEntry } from "@/types/education";
@@ -460,12 +460,17 @@ export class LocalRoadmapRepository implements IRoadmapRepository {
 export class LocalOpportunityRepository implements IOpportunityRepository {
   async getOpportunities(): Promise<Opportunity[]> {
     ensureInitialized();
-    return storageAdapter.getItem<Opportunity[]>(STORAGE_KEYS.OPPORTUNITIES, DEMO_OPPORTUNITIES);
+    return storageAdapter.getItem<Opportunity[]>(STORAGE_KEYS.OPPORTUNITIES, STARTER_DEMO_OPPORTUNITIES);
   }
 
   async getSavedOpportunities(): Promise<Opportunity[]> {
     const list = await this.getOpportunities();
     return list.filter((o) => o.status === "saved");
+  }
+
+  async getOpportunityById(id: string): Promise<Opportunity | null> {
+    const list = await this.getOpportunities();
+    return list.find((o) => o.id === id) || null;
   }
 
   async toggleSaveOpportunity(id: string): Promise<Opportunity> {
@@ -498,12 +503,22 @@ export class LocalOpportunityRepository implements IOpportunityRepository {
     storageAdapter.setItem(STORAGE_KEYS.OPPORTUNITIES, updated);
     return updatedOpp;
   }
+
+  async resetToDemoOpportunities(): Promise<Opportunity[]> {
+    storageAdapter.setItem(STORAGE_KEYS.OPPORTUNITIES, STARTER_DEMO_OPPORTUNITIES);
+    return STARTER_DEMO_OPPORTUNITIES;
+  }
 }
 
 export class LocalApplicationRepository implements IApplicationRepository {
   async getApplications(): Promise<JobApplication[]> {
     ensureInitialized();
     return storageAdapter.getItem<JobApplication[]>(STORAGE_KEYS.APPLICATIONS, DEMO_APPLICATIONS);
+  }
+
+  async getApplicationById(id: string): Promise<JobApplication | null> {
+    const list = await this.getApplications();
+    return list.find((a) => a.id === id) || null;
   }
 
   async addApplication(
@@ -522,19 +537,23 @@ export class LocalApplicationRepository implements IApplicationRepository {
     return newApp;
   }
 
-  async updateApplicationStage(id: string, stage: ApplicationStage): Promise<JobApplication> {
+  async updateApplication(id: string, updates: Partial<JobApplication>): Promise<JobApplication> {
     const list = await this.getApplications();
     let updatedApp: JobApplication | null = null;
-    const updated = list.map((a) => {
+    const updatedList = list.map((a) => {
       if (a.id === id) {
-        updatedApp = { ...a, stage, lastUpdated: new Date().toISOString() };
+        updatedApp = { ...a, ...updates, lastUpdated: new Date().toISOString() };
         return updatedApp;
       }
       return a;
     });
     if (!updatedApp) throw new Error(`Application ${id} not found`);
-    storageAdapter.setItem(STORAGE_KEYS.APPLICATIONS, updated);
+    storageAdapter.setItem(STORAGE_KEYS.APPLICATIONS, updatedList);
     return updatedApp;
+  }
+
+  async updateApplicationStage(id: string, stage: ApplicationStage): Promise<JobApplication> {
+    return this.updateApplication(id, { stage });
   }
 
   async deleteApplication(id: string): Promise<boolean> {
@@ -542,6 +561,11 @@ export class LocalApplicationRepository implements IApplicationRepository {
     const filtered = list.filter((a) => a.id !== id);
     storageAdapter.setItem(STORAGE_KEYS.APPLICATIONS, filtered);
     return true;
+  }
+
+  async resetToDemoApplications(): Promise<JobApplication[]> {
+    storageAdapter.setItem(STORAGE_KEYS.APPLICATIONS, DEMO_APPLICATIONS);
+    return DEMO_APPLICATIONS;
   }
 }
 

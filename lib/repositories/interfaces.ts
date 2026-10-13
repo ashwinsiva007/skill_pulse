@@ -55,15 +55,20 @@ export interface IRoadmapRepository {
 export interface IOpportunityRepository {
   getOpportunities(): Promise<Opportunity[]>;
   getSavedOpportunities(): Promise<Opportunity[]>;
+  getOpportunityById(id: string): Promise<Opportunity | null>;
   toggleSaveOpportunity(id: string): Promise<Opportunity>;
   updateOpportunityStatus(id: string, status: Opportunity["status"]): Promise<Opportunity>;
+  resetToDemoOpportunities(): Promise<Opportunity[]>;
 }
 
 export interface IApplicationRepository {
   getApplications(): Promise<JobApplication[]>;
+  getApplicationById(id: string): Promise<JobApplication | null>;
   addApplication(application: Omit<JobApplication, "id" | "appliedDate" | "lastUpdated">): Promise<JobApplication>;
+  updateApplication(id: string, updates: Partial<JobApplication>): Promise<JobApplication>;
   updateApplicationStage(id: string, stage: ApplicationStage): Promise<JobApplication>;
   deleteApplication(id: string): Promise<boolean>;
+  resetToDemoApplications(): Promise<JobApplication[]>;
 }
 
 export interface IActivityRepository {
