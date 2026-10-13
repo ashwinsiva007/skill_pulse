@@ -1,13 +1,13 @@
 # Skill_pulse ai — AI Career & Skill Navigator
 
-> **Stage 2 — Comprehensive Profile Builder, Onboarding Wizard & Candidate Profile System**  
+> **Stage 3 — Personalized Resume Builder, ATS-Conscious Generator & Templates**  
 > A modular, dark-first career progression platform built with Next.js (App Router), TypeScript in strict mode, and Tailwind CSS. Tailored specifically for students, fresh graduates, and early-career candidates.
 
 ---
 
 ## ⚡ Quick Start (Zero Setup Required)
 
-**Skill_pulse ai** is engineered for **instant, frictionless local execution**. Anyone on the development team can clone the repository, run the application immediately, and test with the pre-populated demo workspace or run the onboarding wizard from scratch.
+**Skill_pulse ai** is engineered for **instant, frictionless local execution**. Anyone on the development team can clone the repository, run the application immediately, and test with the pre-populated demo workspace or build custom role-tailored resumes from scratch.
 
 ### Prerequisites
 - Node.js `v18+` or `v20+` (Tested on Node `v24`)
@@ -27,79 +27,62 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to immediate
 
 ---
 
-## 🔒 Mandatory Architecture Decision: Zero-Auth MVP
+## 🔒 Mandatory Architecture Decision: Zero-Auth & Zero-OCR MVP
 
-**Authentication is intentionally postponed until AFTER Stage 5.**
+**Authentication and OCR scanning are intentionally avoided.**
 
 This build deliberately **does NOT implement**:
-- ❌ Signup or login screens
-- ❌ Passwords or password-reset flows
+- ❌ Signup or login screens, passwords, or authentication middleware
 - ❌ Supabase Auth or third-party OAuth
-- ❌ Authentication middleware blocking routes
-- ❌ Mandatory cloud database credentials, environment keys, or API secrets
+- ❌ Mandatory cloud database credentials, environment keys, or paid API secrets
+- ❌ Automatic image scanning or OCR (resumes are built through manual guided entry and verified profile reuse)
 
 ### Why This Decision Was Made
 1. **Frictionless Developer & Stakeholder Experience:** Anyone can clone, test, and evaluate every screen without configuring database schemas, OAuth providers, or payment gateways.
-2. **Clean Domain Modeling First:** The platform architecture focuses on student profile models, skill graphs, projects, experiences, and onboarding pipelines.
-3. **Decoupled Repository Pattern:** All mutations and queries pass through TypeScript interfaces (`IProfileRepository`, `ISkillRepository`, etc.). Swapping from browser local storage to PostgreSQL/Supabase after Stage 5 requires zero alterations to UI components.
+2. **Clean Domain Modeling First:** The platform architecture focuses on structured student profile models, resume field graphs, STAR bullet builders, and print-accurate templates.
+3. **Decoupled Repository Pattern:** All mutations and queries pass through TypeScript interfaces (`IProfileRepository`, `IResumeRepository`, etc.). Data persists cleanly in browser `localStorage`.
+4. **Deterministic & Modular Generation:** The resume workflow works out-of-the-box without requiring an AI API key.
 
 ---
 
-## 🚀 Stage 2 Feature Implementation
+## 📄 Stage 3: Personalized Resume Builder (`/resume`)
 
-### 1. Multi-Step Onboarding Wizard (`/onboarding`)
-A 7-step guided wizard with step progress tracking, draft autosaving, back/continue navigation, and comprehensive review:
+Stage 3 replaces the previous preview with a full-featured, ATS-conscious resume creation and editing suite.
 
-- **Step A — Personal & Professional Details:** Full name, professional headline, optional email & phone, city/state/country, LinkedIn URL, GitHub/Portfolio URL, and short biography.
-- **Step B — Education Background:** Multiple academic entries supporting institution name, degree level (B.S., B.Tech, M.S., etc.), specialization/major, current year or semester, start year, expected graduation year, and optional GPA/percentage.
-- **Step C — Skills Inventory:** Searchable skill input with popular suggestions, proficiency selection (Beginner, Intermediate, Advanced), experience duration, learning interest toggle, project/certification evidence, duplicate prevention, and category grouping.
-- **Step D — Career Preferences:** Target job roles, preferred domains/industries (AI/ML, Fintech, Edtech, etc.), preferred locations, workplace mode (Remote, Hybrid, Onsite), opportunity types (Internships, Full-Time Jobs, Research, Hackathons), technologies of interest, and availability/joining period.
-- **Step E — Portfolio Projects:** Multiple project records with project title, problem addressed, description, personal contribution, technologies used (tagging), project status (In Progress, Completed, Maintained), date ranges, GitHub repository / live demo URLs, and measurable outcomes/impact.
-- **Step F — Experience & Achievements:** Optional entries for internships and work experience, responsibilities, industry certifications, courses, hackathons/competitions, awards, and leadership/extracurricular activities. Optional sections can be skipped without blocking progress.
-- **Step G — Review & Verification:** Comprehensive summary of all entered information, live completion score meter, actionable missing information highlights, and direct "Edit Section" links to jump back to any step before final saving.
+### 1. Guided Resume Creation Workflow
+1. **Target Purpose Selection:** Choose from popular career tracks (*Data Analyst Internship*, *Data Science Internship*, *AI/ML Internship*, *Entry-Level Software Developer*, *Junior AI Solutions Engineer*, *Full-Stack Developer*) or define a custom target role and company.
+2. **Profile Data Synchronization:** Automatically imports candidate details, education, recorded skills, projects, and work experience from the profile repository.
+3. **Missing Information Identification:** Identifies only missing fields (e.g., missing phone number, city, or projects lacking outcome metrics). Avoids repeatedly asking for information already recorded in the profile.
+4. **STAR / Action-Problem-Tech-Impact Bullet Helper:** Guides users to describe projects and internships using:
+   - *Action performed*
+   - *Problem addressed*
+   - *Tools or technologies used*
+   - *Actual result or impact*
+5. **Truthful Representation Safeguard:** Never invents qualifications, certifications, achievements, experience, or quantitative results. If a needed outcome or metric is missing, the generator leaves a clearly marked editable placeholder: `[Measurable impact: e.g. reduced latency by X% / served Y users]`.
+6. **Full Content Review & Template Selection:** Review all sections and select an initial layout before draft generation.
 
-### 2. Comprehensive Profile Management (`/profile`)
-Replaces the placeholder profile with a complete student/candidate profile hub:
-- **View Profile:** Header with candidate avatar, role badges, bio, contact links, and active summary metrics.
-- **Transparent Profile Completion Meter:** Visual progress bar accompanied by a **"How is this calculated?"** modal displaying exact point allocations and personalized missing items.
-- **Edit Personal Details:** Inline modal to edit name, headline, contact, location, and links.
-- **Education Management:** Add new academic records, edit existing entries, and delete outdated entries with confirmation safeguards.
-- **Skills Management:** Add new skills with proficiency, interest to learn, and evidence tags; remove existing skills.
-- **Project Portfolio:** Add/edit projects with problems, contributions, tech tags, and links; remove projects.
-- **Experience & Honors:** Add/edit internships, responsibilities, and certifications.
-- **Career Preferences:** Update target roles, workplace mode, opportunity types, and domains.
+### 2. Three Polished ATS-Conscious Templates
+All templates render on a white background with dark typography, standard margins, and print-accurate A4 page dimensions:
+- **Classic Professional:** Traditional serif headers, centered contact bar, clean divider rules. Designed for high ATS compliance in enterprise, corporate, and finance applications.
+- **Modern Minimal:** Sleek contemporary sans typography, left-aligned header, subtle accent badges, balanced whitespace, and crisp line dividers.
+- **Technical / Project-Focused:** Emphasizes technical skills and engineering projects. Prominently displays stack badges, repository links, monospace indicators, and outcome metrics.
 
-### 3. Deterministic Profile Completion Calculation
-Defined in [`lib/profile-completion.ts`](lib/profile-completion.ts), the completion score is calculated transparently using an objective 100-point scale across 6 pillars:
-- **Personal Details (20 pts):** Name (5), Headline (5), Bio (5), Location (3), Links (2)
-- **Education (15 pts):** At least one academic record (15)
-- **Skills (20 pts):** 1–2 skills (10), 3–4 skills (15), 5+ skills (20)
-- **Career Preferences (15 pts):** Target roles (5), Opportunity types (5), Domains/locations (5)
-- **Projects (15 pts):** 1 project (10), 2+ projects (15)
-- **Experience & Honors (15 pts):** 1 entry (10), 2+ entries (15)
+### 3. Interactive Split-Pane Editor & Live Preview
+- **Section Management:** Accordion tabs for Contact, Professional Summary, Categorized Skills (Technical, Tools, Soft), Experience, Projects, Education, Certifications, Achievements, and Coursework.
+- **Section Reordering & Visibility:** Users can reorder any section using Up/Down controls and toggle visibility of optional sections on or off.
+- **Inline STAR Bullet Builder:** Modal assistant with strong action verbs categorized by engineering domain (Development, Optimization, Analysis, Leadership) to help formulate impactful bullet points.
+- **Real-Time Print Preview:** Scaled A4 preview with zoom controls (60% to 120%), template switcher, and fullscreen preview mode.
 
-Users can open the **Completion Breakdown Modal** at any time to inspect their score and see exact recommendations for reaching 100%.
+### 4. Optional Job Description Keyword Matcher
+- Paste any job posting description into the ATS analyzer.
+- Inspect vocabulary alignment (match percentage heuristic), matched keywords, and gap keywords.
+- Actionable recommendations for highlighting relevant tools if the user has experience with them.
+- **Prominent Disclaimer:** Clearly informs candidates that ATS alignment scores are informational heuristics and do not guarantee interviews or employment offers.
 
----
-
-## 💾 Data Structure & Local Persistence
-
-### Strongly Typed Models
-All domain models are located in `types/`:
-- [`CandidateProfile`](types/profile.ts)
-- [`EducationEntry`](types/education.ts)
-- [`Skill`](types/skill.ts)
-- [`CareerPreferences`](types/preferences.ts)
-- [`ProjectEntry`](types/project.ts)
-- [`ExperienceEntry`, `CertificationEntry`, etc.](types/experience.ts)
-
-### Consistency & Persistence Guarantees
-- Every editable record (education, project, experience, skill) has a unique UUID (`id`), preventing edits to one entry from overwriting another.
-- Data is saved under the `skillpulse_mvp_v1:*` namespace in HTML5 `localStorage`.
-- Storage access is guarded with Zod schemas ([`lib/validations/profile.ts`](lib/validations/profile.ts)) and safe JSON parsing fallback handlers.
-- Edits persist across page refreshes and browser re-launches.
-- **Seed Data Safety:** The initial demo candidate (Alex Morgan) is seeded only once on first run and is **never** re-seeded over user edits on render.
-- **Reset Safeguard:** A confirmation modal allows restoring default demo data at any time via the TopBar, Demo Banner, or Settings page.
+### 5. Draft Persistence & PDF Export
+- Stores independent drafts in HTML5 `localStorage` with draft ID, title, target role, template, structured content, and timestamps.
+- **Draft Operations:** Create, Save, Edit, Duplicate, Rename, Set as Primary, and Delete with confirmation modal.
+- **A4 PDF Export:** Print-specific stylesheet (`@media print`) isolates the resume document, applies standard 12mm page margins, suppresses application navigation, and enables the browser's native Print / Save-as-PDF flow without paid third-party dependencies.
 
 ---
 
@@ -107,58 +90,52 @@ All domain models are located in `types/`:
 
 | Route | View | Description | Stage Status |
 |---|---|---|---|
-| `/` or `/dashboard` | **Dashboard** | Candidate welcome, live completion meter, target role readiness, roadmap preview, and activity log. | **Stage 2 (Active)** |
-| `/onboarding` | **Profile Wizard** | 7-step guided onboarding wizard for students and early-career candidates with review and draft autosave. | **Stage 2 (Active)** |
-| `/profile` | **My Profile** | Comprehensive profile view & management: education, skills, projects, experience, certs, and score breakdown. | **Stage 2 (Active)** |
-| `/resume` | **Resume Builder** | Saved resume drafts manager, ATS optimization scores, and section completion meters. | **Stage 2 Pipeline** |
-| `/skills` | **Skill Analyzer** | Categorized skills, proficiency bars, target role flags, and Add Skill modal with live persistence. | **Stage 3 Preview** |
-| `/roadmap` | **Career Roadmap** | Multi-phase milestone progression timeline with interactive action checklists. | **Stage 4 Preview** |
-| `/opportunities` | **Opportunities** | Curated fictional role listings with match scores, matched/missing skill chips, save role, and quick apply. | **Stage 5 Preview** |
-| `/saved-opportunities`| **Saved Roles** | Pinned opportunities with empty-state handling and quick apply links. | **Stage 5 Preview** |
-| `/tracker` | **Application Tracker** | Visual Kanban pipeline (Applied, Screening, Technical, Offer) with notes and stage updates. | **Stage 5 Preview** |
-| `/settings` | **Settings & Storage** | Storage diagnostics, JSON backup export/import, seed data reset modal, and roadmap inspection. | **Stage 2 (Active)** |
+| `/` or `/dashboard` | **Dashboard** | Candidate welcome, completion meters, target role readiness, roadmap preview, and activity log. | **Stage 1 & 2** |
+| `/onboarding` | **Profile Wizard** | 7-step guided onboarding wizard for students and early-career candidates. | **Stage 2** |
+| `/profile` | **My Profile** | Comprehensive profile management: education, skills, projects, experience, certs, and score breakdown. | **Stage 2** |
+| `/resume` | **Resume Builder** | Multi-draft ATS resume generator, split-pane editor, STAR bullet helper, and A4 PDF export. | **Stage 3 (Active)** |
+| `/skills` | **Skill Analyzer** | Categorized skills, proficiency bars, target role flags, and Add Skill modal. | **Stage 3 Preview** |
+| `/roadmap` | **Career Roadmap** | Multi-phase milestone progression timeline with interactive checklists. | **Stage 4 Preview** |
+| `/opportunities` | **Opportunities** | Curated role listings with match scores and skill chips. | **Stage 5 Preview** |
+| `/saved-opportunities`| **Saved Roles** | Pinned opportunities with empty-state handling. | **Stage 5 Preview** |
+| `/tracker` | **Application Tracker** | Visual Kanban pipeline (Applied, Screening, Technical, Offer). | **Stage 5 Preview** |
+| `/settings` | **Settings & Storage** | Storage diagnostics, JSON backup export/import, and demo reset modal. | **Stage 1 & 2** |
 
 ---
 
 ## 🧪 Verification & Testing Guide
 
-You can test the complete Stage 2 workflow locally:
-
-1. **Open the Wizard:**
-   - Navigate to `/onboarding` (or click "Profile Wizard" from the sidebar or dashboard).
-2. **Complete the Steps:**
-   - Step A: Enter or modify personal details.
-   - Step B: Add an education entry (e.g., Stanford University, B.S. Computer Science).
-   - Step C: Add skills with proficiency levels and evidence tags.
-   - Step D: Set career preferences (target roles, remote preference, internships/jobs).
-   - Step E: Add portfolio projects with description, technologies, and GitHub links.
-   - Step F: Add internships or certifications (or skip if none).
-   - Step G: Inspect the summary in Review mode and check the live score calculation.
-   - Click **Save & Complete Profile**.
-3. **Verify Persistence Across Refresh:**
-   - Refresh the page (`F5`).
-   - Navigate to `/profile` — confirm all saved details, projects, education, and skills remain intact.
-4. **Test Individual Record Editing:**
-   - On `/profile`, click **Edit** on a specific project or education record.
-   - Modify the title or year and save.
-   - Confirm that only that record updated and other records remained untouched.
-5. **Verify Score Calculation Breakdown:**
-   - Click **"How is this calculated?"** next to the completion meter on `/profile`.
-   - Verify the 6-pillar breakdown matches the entered criteria.
-6. **Reset Demo Data:**
-   - Click **Reset Demo** in the top bar or demo banner.
-   - Confirm the initial fictional demo candidate (Alex Morgan) is restored cleanly.
+### Testing Stage 3 Resume Builder Locally:
+1. **Access the Dashboard:**
+   - Navigate to `/resume`. Confirm existing demo drafts (*AI Solutions Engineer*, *Full-Stack Developer*, *Machine Learning Research*) render in the draft grid with template tags, ATS alignment heuristics, and completion percentages.
+2. **Create a New Draft via the Wizard:**
+   - Click **Create New Resume**.
+   - Step 1: Select **Data Analyst Internship** (or choose any preset / custom role).
+   - Step 2: Observe verified data imported from your profile. Paste an optional job description to check keyword alignment.
+   - Step 3: Enter any missing details (e.g., location or target skills).
+   - Step 4: Choose between *Classic Professional*, *Modern Minimal*, or *Technical / Project-Focused* templates. Click **Generate & Open in Editor**.
+3. **Test the Split-Pane Editor:**
+   - Edit the summary or contact details. Observe instant live updates on the right-hand A4 preview.
+   - Open a project or experience entry and click **STAR Bullet Helper**. Build a structured bullet using action verbs, tools, and impact metrics.
+   - Expand **Reorder or Hide Resume Sections** at the bottom of the editor. Toggle visibility of Coursework or reorder sections.
+   - Click **Save Draft** and confirm the storage confirmation badge appears.
+4. **Test Draft Duplication & Deletion:**
+   - Return to the Drafts dashboard.
+   - Click the **Duplicate** button on a draft. Confirm an independent copy is created with `(Copy)` appended.
+   - Click **Delete** on the copy and confirm deletion in the confirmation modal. Ensure the original draft remains intact.
+5. **Test PDF Export:**
+   - Open any draft in Preview mode and click **Export / Print PDF**.
+   - Confirm the browser print preview opens showing a clean, white A4 document with black text, zero UI clutter, and proper page breaks.
+6. **Verify Refresh Persistence:**
+   - Refresh the page (`F5`) and confirm all newly created and edited drafts persist in local storage.
 
 ### Quality Assurance Commands
 
 ```bash
-# 1. TypeScript strict type-check
-npx tsc --noEmit
-
-# 2. ESLint verification
+# 1. ESLint verification (Zero errors, zero warnings)
 npm run lint
 
-# 3. Production build
+# 2. Production build & TypeScript check
 npm run build
 ```
 

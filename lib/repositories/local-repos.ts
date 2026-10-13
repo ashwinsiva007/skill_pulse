@@ -275,7 +275,21 @@ export class LocalSkillRepository implements ISkillRepository {
 export class LocalResumeRepository implements IResumeRepository {
   async getResumes(): Promise<ResumeDraft[]> {
     ensureInitialized();
-    return storageAdapter.getItem<ResumeDraft[]>(STORAGE_KEYS.RESUMES, DEMO_RESUMES);
+    const list = storageAdapter.getItem<ResumeDraft[]>(STORAGE_KEYS.RESUMES, DEMO_RESUMES);
+    
+    // Defensive check: ensure every draft has content and valid template
+    return list.map((item, idx) => {
+      if (!item.content) {
+        const fallbackSeed = DEMO_RESUMES[idx] || DEMO_RESUMES[0];
+        return {
+          ...item,
+          template: item.template || fallbackSeed.template || "classic",
+          createdAt: item.createdAt || item.lastModified || new Date().toISOString(),
+          content: fallbackSeed.content,
+        };
+      }
+      return item;
+    });
   }
 
   async getResumeById(id: string): Promise<ResumeDraft | null> {
@@ -287,14 +301,21 @@ export class LocalResumeRepository implements IResumeRepository {
     const list = await this.getResumes();
     const index = list.findIndex((r) => r.id === resume.id);
     let updated: ResumeDraft[];
+    const now = new Date().toISOString();
+    const savedDraft: ResumeDraft = {
+      ...resume,
+      lastModified: now,
+      createdAt: resume.createdAt || now,
+    };
+
     if (index >= 0) {
       updated = [...list];
-      updated[index] = { ...resume, lastModified: new Date().toISOString() };
+      updated[index] = savedDraft;
     } else {
-      updated = [{ ...resume, lastModified: new Date().toISOString() }, ...list];
+      updated = [savedDraft, ...list];
     }
     storageAdapter.setItem(STORAGE_KEYS.RESUMES, updated);
-    return resume;
+    return savedDraft;
   }
 
   async deleteResume(id: string): Promise<boolean> {
@@ -302,6 +323,60 @@ export class LocalResumeRepository implements IResumeRepository {
     const filtered = list.filter((r) => r.id !== id);
     storageAdapter.setItem(STORAGE_KEYS.RESUMES, filtered);
     return true;
+  }
+
+  async duplicateResume(id: string): Promise<ResumeDraft> {
+    const list = await this.getResumes();
+    const existing = list.find((r) => r.id === id);
+    if (!existing) throw new Error(`Resume draft with ID ${id} not found.`);
+
+    const now = new Date().toISOString();
+    const cloned: ResumeDraft = {
+      ...existing,
+      id: `resume-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      title: `${existing.title} (Copy)`,
+      createdAt: now,
+      lastModified: now,
+      isPrimary: false,
+      content: JSON.parse(JSON.stringify(existing.content)),
+    };
+
+    const updated = [cloned, ...list];
+    storageAdapter.setItem(STORAGE_KEYS.RESUMES, updated);
+    return cloned;
+  }
+
+  async renameResume(id: string, newTitle: string): Promise<ResumeDraft> {
+    const list = await this.getResumes();
+    const existing = list.find((r) => r.id === id);
+    if (!existing) throw new Error(`Resume draft with ID ${id} not found.`);
+
+    const updatedDraft: ResumeDraft = {
+      ...existing,
+      title: newTitle.trim(),
+      lastModified: new Date().toISOString(),
+    };
+
+    const updatedList = list.map((r) => (r.id === id ? updatedDraft : r));
+    storageAdapter.setItem(STORAGE_KEYS.RESUMES, updatedList);
+    return updatedDraft;
+  }
+
+  async setPrimaryResume(id: string): Promise<ResumeDraft> {
+    const list = await this.getResumes();
+    let targetDraft: ResumeDraft | null = null;
+
+    const updatedList = list.map((r) => {
+      if (r.id === id) {
+        targetDraft = { ...r, isPrimary: true, lastModified: new Date().toISOString() };
+        return targetDraft;
+      }
+      return { ...r, isPrimary: false };
+    });
+
+    if (!targetDraft) throw new Error(`Resume draft with ID ${id} not found.`);
+    storageAdapter.setItem(STORAGE_KEYS.RESUMES, updatedList);
+    return targetDraft;
   }
 }
 

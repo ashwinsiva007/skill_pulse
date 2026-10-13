@@ -49,3 +49,71 @@ body {
   outline: 2px solid #6366f1;
   outline-offset: 2px;
 }
+
+/* ==========================================================================
+   Print Styles for ATS Resume A4 PDF Export
+   ========================================================================== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm;
+  }
+
+  html, body {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Hide app shell and interactive chrome */
+  aside,
+  header,
+  nav,
+  button,
+  .no-print,
+  [data-no-print="true"],
+  .sidebar,
+  .top-bar,
+  .app-sidebar,
+  .app-header {
+    display: none !important;
+  }
+
+  /* Printable container styling */
+  .resume-print-area {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .print-page-break {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  .break-inside-avoid,
+  .page-break-inside-avoid {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Anchor links print cleanly */
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+}
+

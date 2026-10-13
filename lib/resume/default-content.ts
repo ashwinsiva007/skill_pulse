@@ -1,0 +1,278 @@
+import { ResumeDraft, ResumeContent } from "@/types/resume";
+
+export const DEMO_RESUME_1_CONTENT: ResumeContent = {
+  contact: {
+    fullName: "Alex Morgan",
+    email: "alex.morgan@demo-candidate.internal",
+    phone: "+1 (555) 349-8201",
+    location: "San Francisco, CA, USA",
+    linkedInUrl: "https://linkedin.com/in/alexmorgan-demo",
+    githubUrl: "https://github.com/alexmorgan-demo",
+    portfolioUrl: "https://alexmorgan-demo.dev",
+  },
+  summary:
+    "Final-year Computer Science & Artificial Intelligence senior seeking Junior AI Solutions Engineer roles. Hands-on experience developing hybrid RAG search pipelines, optimizing embedding vector storage, and implementing microservices with FastAPI and Next.js.",
+  skills: {
+    technical: [
+      "LLM Orchestration (LangChain / LlamaIndex)",
+      "RAG & Vector Databases",
+      "Python",
+      "TypeScript",
+      "FastAPI",
+      "PyTorch",
+      "PostgreSQL",
+    ],
+    soft: [
+      "Technical Documentation",
+      "System Architecture & Evaluation",
+      "Cross-functional Collaboration",
+      "Agile Problem Solving",
+    ],
+    tools: [
+      "Pinecone / Qdrant",
+      "Docker",
+      "AWS (S3, Lambda, EC2)",
+      "Git / GitHub Actions",
+      "Linux",
+    ],
+  },
+  experience: [
+    {
+      id: "exp-1",
+      company: "Synthetix AI Systems (Demo)",
+      role: "Software Engineering Intern — Core Platforms",
+      type: "Internship",
+      location: "San Francisco, CA (Hybrid)",
+      startDate: "June 2025",
+      endDate: "August 2025",
+      isCurrent: false,
+      bullets: [
+        "Collaborated with senior infrastructure engineers to optimize embedding indexing pipelines, reducing vector search query latency by 28%.",
+        "Constructed automated end-to-end integration tests using PyTest and GitHub Actions to ensure 99.5% test pass consistency across PR branches.",
+        "Authored internal technical documentation on semantic caching strategies adopted across 3 engineering squad repositories.",
+      ],
+    },
+    {
+      id: "exp-2",
+      company: "University AI Innovations Lab",
+      role: "Undergraduate Research Assistant",
+      type: "Research",
+      location: "Pasadena, CA",
+      startDate: "September 2024",
+      endDate: "Present",
+      isCurrent: true,
+      bullets: [
+        "Investigated parameter-efficient fine-tuning (LoRA) for specialized technical language models across multi-turn reasoning datasets.",
+        "Co-authored workshop research paper on efficient inference architectures presented at the annual collegiate symposium.",
+      ],
+    },
+  ],
+  projects: [
+    {
+      id: "proj-1",
+      title: "Agentic Docs — Hybrid RAG Knowledge Base",
+      technologies: ["Next.js", "TypeScript", "LangChain", "Pinecone", "Tailwind CSS"],
+      problem: "Engineers lose hours searching across fragmented Markdown docs and API schemas with conventional keyword search.",
+      outcomes: "Achieved 94% retrieval accuracy on technical benchmark and gained 350+ GitHub stars.",
+      bullets: [
+        "Architected hybrid Pinecone retrieval pipeline combining dense vector embeddings and BM25 sparse keyword ranking.",
+        "Implemented real-time streaming response UI in Next.js 15 with interactive citation callbacks for source validation.",
+        "Achieved 94% retrieval accuracy on technical docs benchmark and starred by 350+ developers on GitHub.",
+      ],
+      link: "https://github.com/alexmorgan-demo/agentic-docs",
+      date: "2025",
+    },
+    {
+      id: "proj-2",
+      title: "AutoEval — LLM Hallucination Benchmark Harness",
+      technologies: ["Python", "HuggingFace", "Ragas", "FastAPI"],
+      problem: "Evaluating LLM outputs against factual ground truth is prone to manual reviewer bias and slow test feedback.",
+      outcomes: "Benchmarked 4 quantized open-source models with consistent automated reporting.",
+      bullets: [
+        "Engineered CLI automated test runner that computes faithfulness, context recall, and semantic similarity scores via Ragas.",
+        "Generated synthetic test question-answer pairs to validate guardrail filter robustness under high prompt variance.",
+        "Standardized comparative evaluation reporting across 4 quantized open-source models.",
+      ],
+      link: "https://github.com/alexmorgan-demo/autoeval",
+      date: "2025",
+    },
+  ],
+  education: [
+    {
+      id: "edu-1",
+      institution: "California Institute of Technology & Science",
+      degree: "Bachelor of Science",
+      fieldOfStudy: "Computer Science & Artificial Intelligence",
+      startDate: "2022",
+      endDate: "Expected May 2026",
+      gpa: "3.85 / 4.0",
+      location: "Pasadena, CA",
+      highlights: [
+        "President of AI & Robotics Student Club",
+        "Peer Tutor for Data Structures & Algorithms",
+        "Dean's Academic Honors List (4 consecutive semesters)",
+      ],
+    },
+  ],
+  certifications: [
+    {
+      id: "cert-1",
+      name: "AWS Certified Cloud Practitioner",
+      issuer: "Amazon Web Services",
+      date: "October 2024",
+      credentialUrl: "https://aws.amazon.com/verification",
+    },
+    {
+      id: "cert-2",
+      name: "Deep Learning Specialization",
+      issuer: "DeepLearning.AI / Coursera",
+      date: "April 2024",
+      credentialUrl: "https://coursera.org/verify/deeplearning",
+    },
+  ],
+  achievements: [
+    {
+      id: "ach-1",
+      title: "1st Place Winner (Agent Track) — Global GenAI Collegiate Hackathon",
+      organization: "Global GenAI collegiate",
+      date: "2025",
+      description: "Built multi-agent audio transcription and action item synthesizer in 36 hours.",
+    },
+    {
+      id: "ach-2",
+      title: "Dean's Academic Honors List",
+      organization: "School of Engineering",
+      date: "2023 - 2025",
+      description: "Maintained GPA in top 5% of class for four consecutive semesters.",
+    },
+  ],
+  coursework: [
+    {
+      id: "crs-1",
+      title: "CS 229: Machine Learning & Statistical Learning",
+      platform: "University Core Curriculum",
+      date: "December 2024",
+    },
+    {
+      id: "crs-2",
+      title: "Full-Stack React & Next.js Masterclass",
+      platform: "Frontend Masters",
+      date: "July 2024",
+    },
+  ],
+  sectionConfig: {
+    order: [
+      "contact",
+      "summary",
+      "skills",
+      "experience",
+      "projects",
+      "education",
+      "certifications",
+      "achievements",
+      "coursework",
+    ],
+    visible: {
+      contact: true,
+      summary: true,
+      skills: true,
+      experience: true,
+      projects: true,
+      education: true,
+      certifications: true,
+      achievements: true,
+      coursework: true,
+    },
+  },
+};
+
+export const DEMO_RESUME_2_CONTENT: ResumeContent = {
+  ...DEMO_RESUME_1_CONTENT,
+  summary:
+    "Full-stack software developer with expertise in TypeScript, React 19, Next.js, and FastAPI backend engineering. Demonstrated project history building scalable community web applications, responsive user interfaces, and automated CI/CD deployments.",
+  projects: [
+    {
+      id: "proj-2-1",
+      title: "PulseTrack — Campus Event & Skill Hub",
+      technologies: ["React", "FastAPI", "PostgreSQL", "Docker", "Tailwind CSS"],
+      problem: "Students struggle to discover hackathons, collaborative coding cohorts, and verify project contributions.",
+      outcomes: "Adopted by 8 student engineering societies with 1,200+ registered active student profiles.",
+      bullets: [
+        "Designed relational PostgreSQL schema with indexing and clean foreign key constraints for fast multi-table queries.",
+        "Built dynamic skill tag search engine and event registration pipeline with real-time browser notifications.",
+        "Achieved adoption by 8 student engineering societies with 1,200+ registered active student profiles.",
+      ],
+      link: "https://github.com/alexmorgan-demo/pulsetrack",
+      date: "2024",
+    },
+    {
+      id: "proj-2-2",
+      title: "Agentic Docs — RAG Knowledge Base",
+      technologies: ["Next.js", "TypeScript", "LangChain", "Pinecone", "Tailwind CSS"],
+      bullets: [
+        "Engineered full-stack responsive web client using Next.js 15 App Router and Tailwind CSS.",
+        "Integrated streaming SSE endpoint connecting to Pinecone vector search with sub-second latency.",
+      ],
+      link: "https://github.com/alexmorgan-demo/agentic-docs",
+      date: "2025",
+    },
+  ],
+};
+
+export const DEMO_RESUME_3_CONTENT: ResumeContent = {
+  ...DEMO_RESUME_1_CONTENT,
+  summary:
+    "Undergraduate AI & Machine Learning researcher targeting Associate ML Engineer and research internship positions. Proficient in PyTorch, parameter-efficient fine-tuning (LoRA), and automated evaluation harnesses.",
+};
+
+export const ENRICHED_DEMO_RESUMES: ResumeDraft[] = [
+  {
+    id: "resume-001",
+    title: "AI Solutions Engineer — Tailored Early Career",
+    targetRole: "Junior AI Solutions Engineer",
+    targetCompany: "Enterprise AI Tech",
+    template: "technical",
+    completionPercentage: 94,
+    atsScore: 92,
+    status: "optimized",
+    summary: DEMO_RESUME_1_CONTENT.summary,
+    sectionsCount: 9,
+    skillsIncluded: ["LLM Orchestration", "Next.js", "Python", "RAG Pipelines", "AWS", "System Design"],
+    createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
+    lastModified: new Date(Date.now() - 3600000 * 26).toISOString(),
+    isPrimary: true,
+    content: DEMO_RESUME_1_CONTENT,
+  },
+  {
+    id: "resume-002",
+    title: "Full-Stack Product & Web Engineering",
+    targetRole: "Full-Stack AI Developer",
+    template: "modern",
+    completionPercentage: 96,
+    atsScore: 94,
+    status: "ready",
+    summary: DEMO_RESUME_2_CONTENT.summary,
+    sectionsCount: 8,
+    skillsIncluded: ["TypeScript", "Next.js", "FastAPI", "PostgreSQL", "Docker"],
+    createdAt: new Date(Date.now() - 3600000 * 120).toISOString(),
+    lastModified: new Date(Date.now() - 3600000 * 96).toISOString(),
+    isPrimary: false,
+    content: DEMO_RESUME_2_CONTENT,
+  },
+  {
+    id: "resume-003",
+    title: "Machine Learning Research & Intern Version",
+    targetRole: "Associate Machine Learning Engineer",
+    template: "classic",
+    completionPercentage: 88,
+    atsScore: 84,
+    status: "draft",
+    summary: DEMO_RESUME_3_CONTENT.summary,
+    sectionsCount: 8,
+    skillsIncluded: ["LangChain", "Vector DBs", "PyTorch", "FastAPI", "Python"],
+    createdAt: new Date(Date.now() - 3600000 * 200).toISOString(),
+    lastModified: new Date(Date.now() - 3600000 * 180).toISOString(),
+    isPrimary: false,
+    content: DEMO_RESUME_3_CONTENT,
+  },
+];

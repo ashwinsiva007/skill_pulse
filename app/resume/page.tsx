@@ -1,260 +1,418 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { AppLayout } from "@/components/layout/app-layout";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { ResumeDashboard } from "@/features/resume/resume-dashboard";
+import { ResumeWizard } from "@/features/resume/resume-wizard";
+import { ResumeEditor } from "@/features/resume/resume-editor";
+import { ResumePreview } from "@/features/resume/resume-preview";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { resumeRepo, activityRepo } from "@/lib/repositories/local-repos";
-import { ResumeDraft } from "@/types/resume";
-import { formatDate } from "@/lib/utils";
 import {
-  Sparkles,
-  Plus,
-  Layers,
-  Download,
+  profileRepo,
+  skillRepo,
+  resumeRepo,
+  activityRepo,
+} from "@/lib/repositories/local-repos";
+import { CandidateProfile } from "@/types/profile";
+import { Skill } from "@/types/skill";
+import { ResumeDraft, ResumeTemplate } from "@/types/resume";
+import { DEMO_PROFILE } from "@/lib/demo/seed-data";
+import {
+  ArrowLeft,
+  Eye,
+  Edit3,
+  Check,
+  Save,
+  Printer,
 } from "lucide-react";
 
-export default function ResumePage() {
+type PageViewMode = "dashboard" | "wizard" | "editor" | "preview";
+
+function ResumePageContent() {
+  const searchParams = useSearchParams();
+
   const [resumes, setResumes] = useState<ResumeDraft[]>([]);
-  const [selectedResume, setSelectedResume] = useState<ResumeDraft | null>(null);
+  const [profile, setProfile] = useState<CandidateProfile>(DEMO_PROFILE);
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [activeDraft, setActiveDraft] = useState<ResumeDraft | null>(null);
+  const [viewMode, setViewMode] = useState<PageViewMode>("dashboard");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load initial data
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      const [allResumes, currentProfile, allSkills] = await Promise.all([
+        resumeRepo.getResumes(),
+        profileRepo.getProfile(),
+        skillRepo.getSkills(),
+      ]);
+
+      setResumes(allResumes);
+      setProfile(currentProfile);
+      setSkills(allSkills);
+
+      // Check if draftId was provided in search parameters
+      const draftIdParam = searchParams.get("draftId");
+      const modeParam = searchParams.get("mode") as PageViewMode | null;
+
+      if (draftIdParam) {
+        const found = allResumes.find((r) => r.id === draftIdParam);
+        if (found) {
+          setActiveDraft(found);
+          setViewMode(modeParam === "preview" ? "preview" : "editor");
+          return;
+        }
+      }
+
+      if (modeParam === "wizard") {
+        setViewMode("wizard");
+      }
+    } catch (err) {
+      console.error("Failed to load resume builder data:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    resumeRepo.getResumes().then((list) => {
-      setResumes(list);
-      if (list.length > 0) setSelectedResume(list[0]);
-    });
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleCreateDraft = async () => {
-    const newDraft: ResumeDraft = {
-      id: `resume-${Date.now()}`,
-      title: "New AI Solutions Architect Version",
-      targetRole: "Staff AI Solutions Architect",
-      completionPercentage: 70,
-      atsScore: 78,
-      status: "draft",
-      summary: "Tailored executive summary drafted for high-scale enterprise AI deployments.",
-      sectionsCount: 5,
-      skillsIncluded: ["LLM Orchestration", "Python", "Cloud Architecture"],
-      lastModified: new Date().toISOString(),
-      isPrimary: false,
-    };
+  // Save changes to active draft
+  const handleSaveActiveDraft = async (updatedDraft?: ResumeDraft) => {
+    const draftToSave = updatedDraft || activeDraft;
+    if (!draftToSave) return;
+
+    try {
+      setIsSaving(true);
+      const saved = await resumeRepo.saveResume(draftToSave);
+      setActiveDraft(saved);
+      setResumes((prev) => prev.map((r) => (r.id === saved.id ? saved : r)));
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2500);
+
+      await activityRepo.logActivity({
+        type: "resume",
+        title: `Updated resume draft: ${saved.title}`,
+        description: `Targeting ${saved.targetRole} (${saved.template} template).`,
+        routeLink: `/resume?draftId=${saved.id}`,
+        tag: "Resume Builder",
+      });
+    } catch (err) {
+      console.error("Failed to save draft:", err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Create new draft from wizard
+  const handleWizardComplete = async (newDraft: ResumeDraft) => {
     const saved = await resumeRepo.saveResume(newDraft);
     setResumes((prev) => [saved, ...prev]);
-    setSelectedResume(saved);
+    setActiveDraft(saved);
+    setViewMode("editor");
+
     await activityRepo.logActivity({
       type: "resume",
-      title: "Created new resume draft",
-      description: saved.title,
+      title: `Created new tailored resume: ${saved.title}`,
+      description: `Targeting ${saved.targetRole}.`,
+      routeLink: `/resume?draftId=${saved.id}`,
+      tag: "Resume Builder",
+    });
+  };
+
+  // Duplicate draft
+  const handleDuplicateResume = async (id: string) => {
+    const cloned = await resumeRepo.duplicateResume(id);
+    setResumes((prev) => [cloned, ...prev]);
+    await activityRepo.logActivity({
+      type: "resume",
+      title: `Duplicated resume draft: ${cloned.title}`,
+      description: `Copy created for ${cloned.targetRole}.`,
+      routeLink: `/resume?draftId=${cloned.id}`,
+      tag: "Resume Builder",
+    });
+  };
+
+  // Rename draft
+  const handleRenameResume = async (id: string, newTitle: string) => {
+    const updated = await resumeRepo.renameResume(id, newTitle);
+    setResumes((prev) => prev.map((r) => (r.id === id ? updated : r)));
+    if (activeDraft?.id === id) {
+      setActiveDraft(updated);
+    }
+  };
+
+  // Delete draft
+  const handleDeleteResume = async (id: string) => {
+    await resumeRepo.deleteResume(id);
+    setResumes((prev) => prev.filter((r) => r.id !== id));
+    if (activeDraft?.id === id) {
+      setActiveDraft(null);
+      setViewMode("dashboard");
+    }
+    await activityRepo.logActivity({
+      type: "resume",
+      title: "Deleted resume draft",
+      description: "Draft removed from local storage.",
       routeLink: "/resume",
       tag: "Resume Builder",
     });
   };
 
+  // Set primary draft
+  const handleSetPrimary = async (id: string) => {
+    const updated = await resumeRepo.setPrimaryResume(id);
+    setResumes((prev) =>
+      prev.map((r) => ({
+        ...r,
+        isPrimary: r.id === id,
+      }))
+    );
+    if (activeDraft?.id === id) {
+      setActiveDraft(updated);
+    }
+  };
+
+  // Navigation helpers
+  const openEditor = (draft: ResumeDraft) => {
+    setActiveDraft(draft);
+    setViewMode("editor");
+  };
+
+  const openPreview = (draft: ResumeDraft) => {
+    setActiveDraft(draft);
+    setViewMode("preview");
+  };
+
+  const returnToDashboard = () => {
+    setViewMode("dashboard");
+    setActiveDraft(null);
+  };
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="h-64 flex items-center justify-center text-xs text-slate-400">
+          Loading resume drafts and profile models...
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <h1 className="text-2xl font-bold text-white tracking-tight">Resume Builder</h1>
-              <Badge variant="cyan" size="sm">
-                Stage 2 Preview
-              </Badge>
-            </div>
-            <p className="text-xs text-slate-400">
-              Manage role-tailored resume variants and preview upcoming Stage 2 AI ATS optimization.
-            </p>
-          </div>
+      {/* 1. DASHBOARD VIEW */}
+      {viewMode === "dashboard" && (
+        <ResumeDashboard
+          resumes={resumes}
+          onCreateNew={() => setViewMode("wizard")}
+          onEditResume={openEditor}
+          onPreviewResume={openPreview}
+          onDuplicateResume={handleDuplicateResume}
+          onRenameResume={handleRenameResume}
+          onDeleteResume={handleDeleteResume}
+          onSetPrimaryResume={handleSetPrimary}
+        />
+      )}
 
-          <div className="flex items-center gap-2.5">
-            <Button variant="primary" size="sm" onClick={handleCreateDraft}>
-              <Plus className="w-3.5 h-3.5 mr-1" />
-              Create New Draft
-            </Button>
-          </div>
+      {/* 2. WIZARD VIEW */}
+      {viewMode === "wizard" && (
+        <div className="space-y-4">
+          <ResumeWizard
+            profile={profile}
+            skills={skills}
+            onComplete={handleWizardComplete}
+            onCancel={returnToDashboard}
+          />
         </div>
+      )}
 
-        {/* Stage 2 Announcement Banner */}
-        <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-950/40 via-slate-900 to-indigo-950/40 border border-cyan-800/40 text-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0 mt-0.5">
-              <Sparkles className="w-4 h-4" />
-            </div>
-            <div className="space-y-1">
-              <p className="font-semibold text-slate-200">
-                Stage 2 Pipeline: AI Resume Tailoring & ATS Scoring Engine
-              </p>
-              <p className="text-slate-400 leading-relaxed max-w-2xl">
-                Skill_pulse ai provides profile synchronization, ATS keyword optimization, and multi-format export. Below are your active local drafts.
-              </p>
-            </div>
-          </div>
-          <Badge variant="cyan" size="md" className="shrink-0">
-            Coming in Stage 2
-          </Badge>
-        </div>
-
-        {/* Resumes Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* List of Drafts */}
-          <div className="lg:col-span-1 space-y-3">
-            <span className="text-xs font-semibold text-slate-300">
-              Saved Drafts ({resumes.length})
-            </span>
-
-            {resumes.map((item) => {
-              const isSelected = selectedResume?.id === item.id;
-              return (
-                <div
-                  key={item.id}
-                  onClick={() => setSelectedResume(item)}
-                  className={`p-4 rounded-xl border cursor-pointer transition-all ${
-                    isSelected
-                      ? "bg-slate-800/90 border-indigo-500/60 shadow-md"
-                      : "bg-slate-900/50 border-slate-800 hover:border-slate-700 hover:bg-slate-900"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <span className="text-xs font-semibold text-white leading-tight">
-                      {item.title}
-                    </span>
-                    <Badge
-                      variant={
-                        item.status === "ready"
-                          ? "emerald"
-                          : item.status === "optimized"
-                          ? "indigo"
-                          : "neutral"
-                      }
-                      size="sm"
-                    >
-                      {item.status}
+      {/* 3. EDITOR VIEW (Split Pane: Left Editor, Right Live Preview) */}
+      {viewMode === "editor" && activeDraft && (
+        <div className="space-y-4">
+          {/* Top Navigation Sub-Header */}
+          <div className="no-print flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={returnToDashboard}
+                className="text-xs text-slate-400 hover:text-white"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+                Drafts
+              </Button>
+              <div className="h-4 w-px bg-slate-800" />
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-white tracking-tight">
+                    {activeDraft.title}
+                  </span>
+                  {activeDraft.isPrimary && (
+                    <Badge variant="indigo" size="sm">
+                      Primary
                     </Badge>
-                  </div>
-
-                  <p className="text-[11px] text-slate-400 mb-3 truncate">
-                    Target: {item.targetRole}
-                  </p>
-
-                  <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-800">
-                    <span className="text-slate-400 text-[11px]">
-                      ATS Score: <strong className="text-indigo-400">{item.atsScore}%</strong>
-                    </span>
-                    <span className="text-slate-500 text-[10px]">
-                      {formatDate(item.lastModified)}
-                    </span>
-                  </div>
+                  )}
                 </div>
-              );
-            })}
+                <span className="text-[11px] text-slate-400">
+                  Target: <strong className="text-slate-300">{activeDraft.targetRole}</strong>
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {saveSuccess && (
+                <span className="text-xs text-emerald-400 flex items-center gap-1 font-medium animate-in fade-in">
+                  <Check className="w-3.5 h-3.5" /> Saved to storage
+                </span>
+              )}
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setViewMode("preview")}
+                className="text-xs"
+              >
+                <Eye className="w-3.5 h-3.5 mr-1" />
+                Full Preview
+              </Button>
+
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => handleSaveActiveDraft()}
+                isLoading={isSaving}
+                className="text-xs"
+              >
+                <Save className="w-3.5 h-3.5 mr-1" />
+                Save Draft
+              </Button>
+            </div>
           </div>
 
-          {/* Selected Resume Detail Card */}
-          <div className="lg:col-span-2">
-            {selectedResume ? (
-              <Card>
-                <CardHeader>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <CardTitle>{selectedResume.title}</CardTitle>
-                        {selectedResume.isPrimary && (
-                          <Badge variant="indigo" size="sm">
-                            Primary
-                          </Badge>
-                        )}
-                      </div>
-                      <CardDescription>
-                        Target Role: <strong className="text-slate-200">{selectedResume.targetRole}</strong>
-                      </CardDescription>
-                    </div>
+          {/* Editor & Preview Split Layout */}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 min-h-[calc(100vh-14rem)]">
+            {/* Left 6-7 cols: Interactive Editor */}
+            <div className="xl:col-span-6 2xl:col-span-6 flex flex-col">
+              <ResumeEditor
+                draft={activeDraft}
+                onChange={(updated) => {
+                  setActiveDraft(updated);
+                  // Update resumes array in memory
+                  setResumes((prev) =>
+                    prev.map((r) => (r.id === updated.id ? updated : r))
+                  );
+                }}
+                onSave={() => handleSaveActiveDraft()}
+                isSaving={isSaving}
+              />
+            </div>
 
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" className="text-xs">
-                        <Download className="w-3.5 h-3.5 mr-1" />
-                        Export Preview
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-5">
-                  {/* Score meters */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-slate-400">ATS Keyword Optimization</span>
-                        <span className="font-bold text-indigo-400">{selectedResume.atsScore}%</span>
-                      </div>
-                      <Progress value={selectedResume.atsScore} size="sm" />
-                    </div>
-
-                    <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1.5">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-slate-400">Section Completeness</span>
-                        <span className="font-bold text-emerald-400">
-                          {selectedResume.completionPercentage}%
-                        </span>
-                      </div>
-                      <Progress
-                        value={selectedResume.completionPercentage}
-                        size="sm"
-                        indicatorClassName="bg-emerald-500"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Summary */}
-                  <div className="space-y-1.5">
-                    <span className="text-xs font-semibold text-slate-300">Executive Summary</span>
-                    <p className="text-xs text-slate-300 p-3 rounded-lg bg-slate-950/40 border border-slate-800/80 leading-relaxed">
-                      {selectedResume.summary}
-                    </p>
-                  </div>
-
-                  {/* Skills Included */}
-                  <div className="space-y-2">
-                    <span className="text-xs font-semibold text-slate-300">
-                      Highlighted Competencies in this version
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {selectedResume.skillsIncluded.map((s) => (
-                        <span
-                          key={s}
-                          className="px-2.5 py-1 text-xs rounded-md bg-indigo-950/50 text-indigo-300 border border-indigo-800/60 font-medium"
-                        >
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Planned Stage 2 feature preview */}
-                  <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-200">
-                      <Layers className="w-4 h-4 text-cyan-400" />
-                      Planned Stage 2 Enhancements
-                    </div>
-                    <ul className="text-xs text-slate-400 space-y-1.5 pl-5 list-disc">
-                      <li>One-click job description import with instant gap detection</li>
-                      <li>AI bullet point polishing with quantifiable impact metrics</li>
-                      <li>Export to tailored PDF, DOCX, and JSON Resume schemas</li>
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="h-64 flex items-center justify-center text-slate-500 text-xs">
-                Select a resume draft to preview details.
-              </div>
-            )}
+            {/* Right 5-6 cols: Live Print-Accurate Preview */}
+            <div className="xl:col-span-6 2xl:col-span-6 flex flex-col">
+              <ResumePreview
+                draft={activeDraft}
+                onTemplateChange={(tmpl: ResumeTemplate) => {
+                  const updated = {
+                    ...activeDraft,
+                    template: tmpl,
+                    lastModified: new Date().toISOString(),
+                  };
+                  setActiveDraft(updated);
+                  setResumes((prev) =>
+                    prev.map((r) => (r.id === updated.id ? updated : r))
+                  );
+                }}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* 4. DEDICATED PREVIEW VIEW */}
+      {viewMode === "preview" && activeDraft && (
+        <div className="space-y-4">
+          {/* Top Sub-Header */}
+          <div className="no-print flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setViewMode("editor")}
+                className="text-xs text-slate-400 hover:text-white"
+              >
+                <Edit3 className="w-3.5 h-3.5 mr-1" />
+                Back to Editor
+              </Button>
+              <div className="h-4 w-px bg-slate-800" />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={returnToDashboard}
+                className="text-xs text-slate-400 hover:text-white"
+              >
+                All Drafts
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    window.print();
+                  }
+                }}
+                className="text-xs shadow-sm font-medium"
+              >
+                <Printer className="w-3.5 h-3.5 mr-1" />
+                Print / Save PDF
+              </Button>
+            </div>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <ResumePreview
+              draft={activeDraft}
+              onTemplateChange={(tmpl: ResumeTemplate) => {
+                const updated = {
+                  ...activeDraft,
+                  template: tmpl,
+                  lastModified: new Date().toISOString(),
+                };
+                setActiveDraft(updated);
+                setResumes((prev) =>
+                  prev.map((r) => (r.id === updated.id ? updated : r))
+                );
+              }}
+            />
+          </div>
+        </div>
+      )}
     </AppLayout>
+  );
+}
+
+export default function ResumePage() {
+  return (
+    <Suspense
+      fallback={
+        <AppLayout>
+          <div className="h-64 flex items-center justify-center text-xs text-slate-400">
+            Loading Resume Builder...
+          </div>
+        </AppLayout>
+      }
+    >
+      <ResumePageContent />
+    </Suspense>
   );
 }

@@ -7,6 +7,7 @@ import { JobApplication } from "@/types/application";
 import { ActivityItem } from "@/types/activity";
 import { DemoDataset, STORAGE_VERSION } from "@/types/storage";
 import { calculateProfileCompletion } from "@/lib/profile-completion";
+import { ENRICHED_DEMO_RESUMES } from "@/lib/resume/default-content";
 
 export const DEMO_SKILLS: Skill[] = [
   // AI & Machine Learning
@@ -394,48 +395,7 @@ export const DEMO_PROFILE: CandidateProfile = {
   profileCompletionPercentage: calculateProfileCompletion(RAW_DEMO_PROFILE, DEMO_SKILLS).percentage,
 };
 
-export const DEMO_RESUMES: ResumeDraft[] = [
-  {
-    id: "resume-001",
-    title: "AI Solutions Engineer — Tailored Early Career",
-    targetRole: "Junior AI Solutions Engineer",
-    targetCompany: "Enterprise AI Tech",
-    completionPercentage: 92,
-    atsScore: 91,
-    status: "optimized",
-    summary: "Aspiring AI Solutions Engineer and senior CS student with proven project experience deploying RAG pipelines, FastAPI services, and reactive Next.js applications.",
-    sectionsCount: 6,
-    skillsIncluded: ["LLM Orchestration", "Next.js", "Python", "RAG Pipelines", "AWS", "System Design"],
-    lastModified: new Date(Date.now() - 3600000 * 26).toISOString(),
-    isPrimary: true,
-  },
-  {
-    id: "resume-002",
-    title: "Full-Stack Product & Web Engineering",
-    targetRole: "Full-Stack AI Developer",
-    completionPercentage: 100,
-    atsScore: 94,
-    status: "ready",
-    summary: "Full-stack developer resume emphasizing TypeScript, React 19, database design, and end-to-end web product development.",
-    sectionsCount: 7,
-    skillsIncluded: ["TypeScript", "Next.js", "FastAPI", "PostgreSQL", "Docker"],
-    lastModified: new Date(Date.now() - 3600000 * 96).toISOString(),
-    isPrimary: false,
-  },
-  {
-    id: "resume-003",
-    title: "Machine Learning Research & Intern Version",
-    targetRole: "Associate Machine Learning Engineer",
-    completionPercentage: 75,
-    atsScore: 82,
-    status: "draft",
-    summary: "Research-oriented resume highlighting PyTorch fine-tuning, benchmark evaluation harnesses, and university laboratory contributions.",
-    sectionsCount: 5,
-    skillsIncluded: ["LangChain", "Vector DBs", "PyTorch", "FastAPI", "Python"],
-    lastModified: new Date(Date.now() - 3600000 * 180).toISOString(),
-    isPrimary: false,
-  },
-];
+export const DEMO_RESUMES: ResumeDraft[] = ENRICHED_DEMO_RESUMES;
 
 export const DEMO_ROADMAP: RoadmapMilestone[] = [
   {

@@ -53,7 +53,7 @@ const NAV_ITEMS: NavItem[] = [
     href: "/resume",
     icon: FileText,
     badge: "3 drafts",
-    stageTag: "Stage 2",
+    stageTag: "Stage 3",
   },
   {
     label: "Skill Analyzer",

@@ -38,6 +38,9 @@ export interface IResumeRepository {
   getResumeById(id: string): Promise<ResumeDraft | null>;
   saveResume(resume: ResumeDraft): Promise<ResumeDraft>;
   deleteResume(id: string): Promise<boolean>;
+  duplicateResume(id: string): Promise<ResumeDraft>;
+  renameResume(id: string, newTitle: string): Promise<ResumeDraft>;
+  setPrimaryResume(id: string): Promise<ResumeDraft>;
 }
 
 export interface IRoadmapRepository {
