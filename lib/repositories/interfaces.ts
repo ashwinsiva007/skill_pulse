@@ -44,9 +44,12 @@ export interface IResumeRepository {
 }
 
 export interface IRoadmapRepository {
-  getMilestones(): Promise<RoadmapMilestone[]>;
+  getMilestones(targetRole?: string): Promise<RoadmapMilestone[]>;
+  saveMilestones(milestones: RoadmapMilestone[]): Promise<RoadmapMilestone[]>;
   updateMilestone(id: string, updates: Partial<RoadmapMilestone>): Promise<RoadmapMilestone>;
   toggleActionItem(milestoneId: string, actionItemId: string): Promise<RoadmapMilestone>;
+  updateMilestoneNotes(milestoneId: string, notes: string): Promise<RoadmapMilestone>;
+  resetToDemoRoadmap(): Promise<RoadmapMilestone[]>;
 }
 
 export interface IOpportunityRepository {

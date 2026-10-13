@@ -381,9 +381,21 @@ export class LocalResumeRepository implements IResumeRepository {
 }
 
 export class LocalRoadmapRepository implements IRoadmapRepository {
-  async getMilestones(): Promise<RoadmapMilestone[]> {
+  async getMilestones(targetRole?: string): Promise<RoadmapMilestone[]> {
     ensureInitialized();
-    return storageAdapter.getItem<RoadmapMilestone[]>(STORAGE_KEYS.ROADMAP, DEMO_ROADMAP);
+    const stored = storageAdapter.getItem<RoadmapMilestone[]>(STORAGE_KEYS.ROADMAP, DEMO_ROADMAP);
+    if (targetRole && targetRole.trim()) {
+      const filtered = stored.filter(
+        (m) => m.targetRole.toLowerCase() === targetRole.toLowerCase()
+      );
+      if (filtered.length > 0) return filtered;
+    }
+    return stored;
+  }
+
+  async saveMilestones(milestones: RoadmapMilestone[]): Promise<RoadmapMilestone[]> {
+    storageAdapter.setItem(STORAGE_KEYS.ROADMAP, milestones);
+    return milestones;
   }
 
   async updateMilestone(id: string, updates: Partial<RoadmapMilestone>): Promise<RoadmapMilestone> {
@@ -413,7 +425,7 @@ export class LocalRoadmapRepository implements IRoadmapRepository {
       );
 
       const completedCount = updatedActions.filter((a) => a.completed).length;
-      const progressPercentage = Math.round((completedCount / updatedActions.length) * 100);
+      const progressPercentage = Math.round((completedCount / (updatedActions.length || 1)) * 100);
       const status: RoadmapMilestone["status"] =
         progressPercentage === 100
           ? "completed"
@@ -433,6 +445,15 @@ export class LocalRoadmapRepository implements IRoadmapRepository {
     if (!resultMilestone) throw new Error(`Milestone ${milestoneId} not found`);
     storageAdapter.setItem(STORAGE_KEYS.ROADMAP, updatedList);
     return resultMilestone;
+  }
+
+  async updateMilestoneNotes(milestoneId: string, notes: string): Promise<RoadmapMilestone> {
+    return this.updateMilestone(milestoneId, { userNotes: notes });
+  }
+
+  async resetToDemoRoadmap(): Promise<RoadmapMilestone[]> {
+    storageAdapter.setItem(STORAGE_KEYS.ROADMAP, DEMO_ROADMAP);
+    return DEMO_ROADMAP;
   }
 }
 

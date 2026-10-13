@@ -11,6 +11,7 @@ export const STORAGE_KEYS = {
   APPLICATIONS: `${STORAGE_PREFIX}:applications`,
   ACTIVITIES: `${STORAGE_PREFIX}:recent_activities`,
   SETTINGS: `${STORAGE_PREFIX}:app_settings`,
+  ANALYSIS_ROLE: `${STORAGE_PREFIX}:selected_career_role`,
 } as const;
 
 export type StorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS];

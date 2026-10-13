@@ -1,13 +1,13 @@
 # Skill_pulse ai — AI Career & Skill Navigator
 
-> **Stage 3 — Personalized Resume Builder, ATS-Conscious Generator & Templates**  
+> **Stage 4 — Explainable Skill Analyzer, Career Catalogue & Adaptive Roadmap**  
 > A modular, dark-first career progression platform built with Next.js (App Router), TypeScript in strict mode, and Tailwind CSS. Tailored specifically for students, fresh graduates, and early-career candidates.
 
 ---
 
 ## ⚡ Quick Start (Zero Setup Required)
 
-**Skill_pulse ai** is engineered for **instant, frictionless local execution**. Anyone on the development team can clone the repository, run the application immediately, and test with the pre-populated demo workspace or build custom role-tailored resumes from scratch.
+**Skill_pulse ai** is engineered for **instant, frictionless local execution**. Anyone on the development team can clone the repository, run the application immediately, and test with the pre-populated demo workspace or build custom role-tailored resumes and roadmaps from scratch.
 
 ### Prerequisites
 - Node.js `v18+` or `v20+` (Tested on Node `v24`)
@@ -19,7 +19,10 @@
 # 1. Install dependencies
 npm install
 
-# 2. Launch the development server
+# 2. Run unit test suite (10 test suites)
+npm test
+
+# 3. Launch the development server
 npm run dev
 ```
 
@@ -27,62 +30,161 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to immediate
 
 ---
 
-## 🔒 Mandatory Architecture Decision: Zero-Auth & Zero-OCR MVP
+## 🔒 Architecture Philosophy: Explainable Rules-Based Engine & Zero Cloud Lock-In
 
-**Authentication and OCR scanning are intentionally avoided.**
+**Skill_pulse ai intentionally avoids black-box AI models, mandatory cloud accounts, and authentication hurdles.**
 
 This build deliberately **does NOT implement**:
 - ❌ Signup or login screens, passwords, or authentication middleware
 - ❌ Supabase Auth or third-party OAuth
-- ❌ Mandatory cloud database credentials, environment keys, or paid API secrets
-- ❌ Automatic image scanning or OCR (resumes are built through manual guided entry and verified profile reuse)
+- ❌ Mandatory cloud database credentials, environment keys, or paid AI API secrets
+- ❌ Black-box "AI hiring probability" or "job readiness guarantee" claims
 
 ### Why This Decision Was Made
-1. **Frictionless Developer & Stakeholder Experience:** Anyone can clone, test, and evaluate every screen without configuring database schemas, OAuth providers, or payment gateways.
-2. **Clean Domain Modeling First:** The platform architecture focuses on structured student profile models, resume field graphs, STAR bullet builders, and print-accurate templates.
-3. **Decoupled Repository Pattern:** All mutations and queries pass through TypeScript interfaces (`IProfileRepository`, `IResumeRepository`, etc.). Data persists cleanly in browser `localStorage`.
-4. **Deterministic & Modular Generation:** The resume workflow works out-of-the-box without requiring an AI API key.
+1. **Explainability & Transparency:** Students and fresh graduates deserve to know *exactly* why their alignment score is 65% versus 85%. Every score is derived from an audited, unit-testable formula based on recorded skills and demonstrable portfolio evidence.
+2. **Pedagogical Honesty:** A score does not represent a hiring probability or guarantee employment. If a skill is marked "Not Yet Recorded", it simply means it is not yet documented or evidenced in the profile—not that the candidate lacks the skill.
+3. **Decoupled Repository Pattern:** All mutations and queries pass through TypeScript interfaces (`IProfileRepository`, `ISkillRepository`, `IResumeRepository`, `IRoadmapRepository`). Data persists cleanly in browser `localStorage`.
+4. **Frictionless Local Evaluation:** Reviewers and recruiters can clone and test all features instantly without configuring cloud infrastructure.
 
 ---
 
-## 📄 Stage 3: Personalized Resume Builder (`/resume`)
+## 🎯 Stage 4: Skill Analyzer & Career PathPilot (`/skills` & `/roadmap`)
 
-Stage 3 replaces the previous preview with a full-featured, ATS-conscious resume creation and editing suite.
+Stage 4 introduces an explainable skill-matching engine, a configurable career catalogue of 8 starter tracks, an interactive diagnostic dashboard, and an adaptive 5-phase career roadmap.
 
-### 1. Guided Resume Creation Workflow
-1. **Target Purpose Selection:** Choose from popular career tracks (*Data Analyst Internship*, *Data Science Internship*, *AI/ML Internship*, *Entry-Level Software Developer*, *Junior AI Solutions Engineer*, *Full-Stack Developer*) or define a custom target role and company.
-2. **Profile Data Synchronization:** Automatically imports candidate details, education, recorded skills, projects, and work experience from the profile repository.
-3. **Missing Information Identification:** Identifies only missing fields (e.g., missing phone number, city, or projects lacking outcome metrics). Avoids repeatedly asking for information already recorded in the profile.
-4. **STAR / Action-Problem-Tech-Impact Bullet Helper:** Guides users to describe projects and internships using:
-   - *Action performed*
-   - *Problem addressed*
-   - *Tools or technologies used*
-   - *Actual result or impact*
-5. **Truthful Representation Safeguard:** Never invents qualifications, certifications, achievements, experience, or quantitative results. If a needed outcome or metric is missing, the generator leaves a clearly marked editable placeholder: `[Measurable impact: e.g. reduced latency by X% / served Y users]`.
-6. **Full Content Review & Template Selection:** Review all sections and select an initial layout before draft generation.
+### 1. Configurable Career & Skill Catalogue
+The starter catalogue (`lib/career-catalogue/career-catalogue.ts`) is completely modularized in its own decoupled module, organized across engineering and data domains:
+- **Data Analyst** (Data & Analytics) — Core: SQL, Python, Tableau; Supporting: Excel & Data Cleaning, Statistical Foundations.
+- **Data Scientist** (Data Science & Analytics) — Core: Python, Machine Learning, Statistical Modeling, SQL; Supporting: Data Visualization, Big Data & Cloud.
+- **Machine Learning Engineer** (AI & Machine Learning) — Core: Python, PyTorch / Deep Learning, MLOps & Model Deployment, Software Engineering; Supporting: Docker, Data Engineering.
+- **Business Intelligence Analyst** (Data & Analytics) — Core: SQL, Power BI / Tableau, Data Modeling, KPI Development; Supporting: Excel, Stakeholder Communication.
+- **Software Developer** (Software Engineering) — Core: Core Programming, Data Structures & Algorithms, Git & Team Collaboration, SQL & Relational Databases; Supporting: REST APIs, Automated Testing.
+- **Frontend Developer** (Web & Frontend) — Core: JavaScript / TypeScript, React & Modern UI, CSS / Tailwind, Web Performance; Supporting: State Management, Testing.
+- **Backend Developer** (Systems & Backend) — Core: Backend Language, REST & GraphQL APIs, Relational & NoSQL Databases, System Design; Supporting: Docker, CI/CD.
+- **AI Engineer** (AI & Systems) — Core: LLM Orchestration & Prompting, Python, RAG & Vector Databases, API Engineering; Supporting: Docker, AI Evals & Observability.
 
-### 2. Three Polished ATS-Conscious Templates
-All templates render on a white background with dark typography, standard margins, and print-accurate A4 page dimensions:
-- **Classic Professional:** Traditional serif headers, centered contact bar, clean divider rules. Designed for high ATS compliance in enterprise, corporate, and finance applications.
-- **Modern Minimal:** Sleek contemporary sans typography, left-aligned header, subtle accent badges, balanced whitespace, and crisp line dividers.
-- **Technical / Project-Focused:** Emphasizes technical skills and engineering projects. Prominently displays stack badges, repository links, monospace indicators, and outcome metrics.
+Each role profile defines:
+- Required core competencies (weight 3x) and supporting competencies (weight 1x)
+- Expected target proficiency level (Beginner, Intermediate, Advanced, Expert)
+- Real-world capstone example projects with suggested tech stacks and deliverables
+- Curated learning activities and portfolio evidence tips (what recruiters look for)
+- Verified learning resource URLs (documentation, free tutorials, official guides)
 
-### 3. Interactive Split-Pane Editor & Live Preview
-- **Section Management:** Accordion tabs for Contact, Professional Summary, Categorized Skills (Technical, Tools, Soft), Experience, Projects, Education, Certifications, Achievements, and Coursework.
-- **Section Reordering & Visibility:** Users can reorder any section using Up/Down controls and toggle visibility of optional sections on or off.
-- **Inline STAR Bullet Builder:** Modal assistant with strong action verbs categorized by engineering domain (Development, Optimization, Analysis, Leadership) to help formulate impactful bullet points.
-- **Real-Time Print Preview:** Scaled A4 preview with zoom controls (60% to 120%), template switcher, and fullscreen preview mode.
+---
 
-### 4. Optional Job Description Keyword Matcher
-- Paste any job posting description into the ATS analyzer.
-- Inspect vocabulary alignment (match percentage heuristic), matched keywords, and gap keywords.
-- Actionable recommendations for highlighting relevant tools if the user has experience with them.
-- **Prominent Disclaimer:** Clearly informs candidates that ATS alignment scores are informational heuristics and do not guarantee interviews or employment offers.
+### 2. Transparent Skill-Matching Mathematical Formula
 
-### 5. Draft Persistence & PDF Export
-- Stores independent drafts in HTML5 `localStorage` with draft ID, title, target role, template, structured content, and timestamps.
-- **Draft Operations:** Create, Save, Edit, Duplicate, Rename, Set as Primary, and Delete with confirmation modal.
-- **A4 PDF Export:** Print-specific stylesheet (`@media print`) isolates the resume document, applies standard 12mm page margins, suppresses application navigation, and enables the browser's native Print / Save-as-PDF flow without paid third-party dependencies.
+The scoring engine (`lib/skill-analyzer/matching-engine.ts`) calculates an explainable alignment percentage:
+
+$$\text{Score} = \text{round}\left( \frac{\sum_{i=1}^N W_i \times \text{EffectiveRatio}_i}{\sum_{i=1}^N W_i \times 1.0} \times 100 \right)$$
+
+Where:
+- **Numerical Scale:** `None = 0`, `Beginner = 1`, `Intermediate = 2`, `Advanced = 3`, `Expert = 4`.
+- **Competency Importance Weight ($W_i$):** Core skills = `3x`; Supporting skills = `1x`.
+- **Proficiency Ratio:** $\min\left(\frac{\text{UserLevel}_i}{\text{ExpectedLevel}_i}, 1.0\right)$.
+- **Portfolio Evidence Bonus:** Skills demonstrated in profile projects receive a $+0.1$ verification boost (capped at 1.0).
+- **Practical Baseline:** If a skill was not explicitly recorded in the skills list but was demonstrated in a portfolio project, it receives baseline practical credit (`Level 1 / Beginner`).
+- **Edge Case Protection:**
+  - Zero denominator protection (roles with zero requirements safely return `0`).
+  - Empty candidate skill lists safely return `0%`.
+  - Duplicate user skills safely take the maximum proficiency level recorded.
+  - Case-insensitive tokenization and synonym resolution (e.g., `"PostgreSQL"` matches `"SQL"`, `"Next.js"` matches `"React"`).
+
+---
+
+### 3. Interactive Skill Analyzer Dashboard (`/skills`)
+
+- **Target Role Selector:** Switch between any of the 8 configured tracks or use quick-switch pills. Selection is persisted in `localStorage`.
+- **Match Metrics Grid:**
+  - *Overall Match Index* with progress indicator and an accessible badge (*Strong Match*, *Moderate Match*, *Development Target*).
+  - *Core Skill Coverage %* and *Supporting Skill Coverage %*.
+  - *Project Proof Evidence* count linking demonstrable profile projects.
+  - *Scoring Audit Modal:* Full breakdown of points earned vs points possible and mathematical formula audit.
+- **High-Impact Next Actions Card:** Top 3 prioritized recommendations (e.g., missing core competencies, skills needing advancement, or capstone project suggestions).
+- **Skill Gap Diagnostic:**
+  - Filterable tabs: *Not Yet Recorded*, *Partially Developed*, and *Matched*.
+  - Expandable detail drawers providing:
+    - *Role Competency Scope*
+    - *Suggested Learning Activity*
+    - *Portfolio Evidence Tip* (what recruiters verify in code repositories)
+  - Quick `+ Record in Profile` button opening pre-filled skill modal.
+- **Benchmark Comparison Chart:** Accessible table with dual-layer visual level meters comparing user proficiency against expected benchmark.
+- **Project Evidence Card:** Maps portfolio projects to required competencies with links to profile management.
+- **Multi-Role Alignment Comparison Modal:** Side-by-side comparison across all 8 roles sorted by highest match index, allowing immediate target role switching.
+
+---
+
+### 4. Personalized 5-Phase Career Roadmap (`/roadmap`)
+
+Generates an adaptive, step-by-step career development plan based on the selected target role and detected skill gaps:
+
+1. **Phase 1: Foundational Mastery** — Focuses on syntax, core principles, and mental models of missing core competencies.
+2. **Phase 2: Deliberate Practice** — Focuses on applied algorithmic exercises and practical problem sets to advance partially developed skills to expected proficiency.
+3. **Phase 3: Capstone Engineering** — Focuses on designing, building, and deploying the recommended role capstone project with clean repository structure.
+4. **Phase 4: Presentation & Artifacts** — Focuses on translating project outcomes into STAR bullet points and generating a tailored resume in the PathPilot Resume Builder (`/resume`).
+5. **Phase 5: Career Transition** — Focuses on technical interview problem domains, bookmarking opportunities (`/opportunities`), and tracking applications (`/tracker`).
+
+**Roadmap Features:**
+- **Interactive Checklists:** Check/uncheck action items to dynamically update milestone progress percentage and overall roadmap progress.
+- **External Resource Links:** Direct clickable links to verified documentation and tutorials.
+- **Custom Tasks:** Users can add personal study tasks to any phase.
+- **Personal Notes & Reflection Log:** Persistent notes textarea per milestone to record study notes, repository links, or blockers.
+- **Time Estimates:** Clearly marked as estimates (e.g., `~3w (Est)`).
+- **Controls & Persistence:**
+  - "Re-generate from Skill Gaps" button to synchronize roadmap with recent profile skill edits.
+  - "Restore Demo Roadmap" button to restore initial starter state.
+  - Persists in `localStorage` across page refreshes.
+
+---
+
+## 🧪 Unit Test Suite Coverage & Results
+
+A dedicated unit test suite (`scripts/test-matching-engine.ts`) validates the rules-based matching engine and edge cases using Node.js assertions:
+
+```bash
+npm test
+```
+
+### Test Suite Execution Output:
+```
+=================================================
+   PATHPILOT SKILL ANALYZER UNIT TEST SUITE
+=================================================
+
+TEST 1: Token matching & synonym resolution...
+  ✓ Token matching & synonyms pass
+
+TEST 2: Proficiency level numerical scale (0 to 4)...
+  ✓ Proficiency conversions pass
+
+TEST 3: Candidate with zero recorded skills...
+  ✓ Zero skills empty state handled safely
+
+TEST 4: Candidate with 1 or 2 skills...
+  ✓ 1 skill score: 7% (partially developed) passes
+
+TEST 5: Several skills across different proficiency levels...
+  ✓ Mixed proficiencies score: 63% passes
+
+TEST 6: Project evidence verification...
+  ✓ Project evidence accurately filters relevant vs irrelevant proof
+
+TEST 7: Catalogue integrity across all 8 configured roles...
+  ✓ All 8 roles evaluated successfully without exceptions
+
+TEST 8: Adaptive Roadmap generation from detected skill gaps...
+  ✓ Roadmap generated 5 valid phases with action items
+
+TEST 9: Edge case - Zero denominator / Empty role requirements...
+  ✓ Zero denominator safely returns 0 without division by zero error
+
+TEST 10: Duplicate skills in profile (takes highest proficiency)...
+  ✓ Duplicate skills handled by selecting highest proficiency
+
+=================================================
+   ALL 10 TEST SUITES PASSED SUCCESSFULLY! ✓
+=================================================
+```
 
 ---
 
@@ -94,50 +196,12 @@ All templates render on a white background with dark typography, standard margin
 | `/onboarding` | **Profile Wizard** | 7-step guided onboarding wizard for students and early-career candidates. | **Stage 2** |
 | `/profile` | **My Profile** | Comprehensive profile management: education, skills, projects, experience, certs, and score breakdown. | **Stage 2** |
 | `/resume` | **Resume Builder** | Multi-draft ATS resume generator, split-pane editor, STAR bullet helper, and A4 PDF export. | **Stage 3 (Active)** |
-| `/skills` | **Skill Analyzer** | Categorized skills, proficiency bars, target role flags, and Add Skill modal. | **Stage 3 Preview** |
-| `/roadmap` | **Career Roadmap** | Multi-phase milestone progression timeline with interactive checklists. | **Stage 4 Preview** |
+| `/skills` | **Skill Analyzer** | Explainable 8-role matching engine, gap diagnostics, proficiency comparisons, and multi-role comparison. | **Stage 4 (Active)** |
+| `/roadmap` | **Career Roadmap** | Adaptive 5-phase career progression roadmap with interactive tasks, resources, and personal notes. | **Stage 4 (Active)** |
 | `/opportunities` | **Opportunities** | Curated role listings with match scores and skill chips. | **Stage 5 Preview** |
 | `/saved-opportunities`| **Saved Roles** | Pinned opportunities with empty-state handling. | **Stage 5 Preview** |
 | `/tracker` | **Application Tracker** | Visual Kanban pipeline (Applied, Screening, Technical, Offer). | **Stage 5 Preview** |
 | `/settings` | **Settings & Storage** | Storage diagnostics, JSON backup export/import, and demo reset modal. | **Stage 1 & 2** |
-
----
-
-## 🧪 Verification & Testing Guide
-
-### Testing Stage 3 Resume Builder Locally:
-1. **Access the Dashboard:**
-   - Navigate to `/resume`. Confirm existing demo drafts (*AI Solutions Engineer*, *Full-Stack Developer*, *Machine Learning Research*) render in the draft grid with template tags, ATS alignment heuristics, and completion percentages.
-2. **Create a New Draft via the Wizard:**
-   - Click **Create New Resume**.
-   - Step 1: Select **Data Analyst Internship** (or choose any preset / custom role).
-   - Step 2: Observe verified data imported from your profile. Paste an optional job description to check keyword alignment.
-   - Step 3: Enter any missing details (e.g., location or target skills).
-   - Step 4: Choose between *Classic Professional*, *Modern Minimal*, or *Technical / Project-Focused* templates. Click **Generate & Open in Editor**.
-3. **Test the Split-Pane Editor:**
-   - Edit the summary or contact details. Observe instant live updates on the right-hand A4 preview.
-   - Open a project or experience entry and click **STAR Bullet Helper**. Build a structured bullet using action verbs, tools, and impact metrics.
-   - Expand **Reorder or Hide Resume Sections** at the bottom of the editor. Toggle visibility of Coursework or reorder sections.
-   - Click **Save Draft** and confirm the storage confirmation badge appears.
-4. **Test Draft Duplication & Deletion:**
-   - Return to the Drafts dashboard.
-   - Click the **Duplicate** button on a draft. Confirm an independent copy is created with `(Copy)` appended.
-   - Click **Delete** on the copy and confirm deletion in the confirmation modal. Ensure the original draft remains intact.
-5. **Test PDF Export:**
-   - Open any draft in Preview mode and click **Export / Print PDF**.
-   - Confirm the browser print preview opens showing a clean, white A4 document with black text, zero UI clutter, and proper page breaks.
-6. **Verify Refresh Persistence:**
-   - Refresh the page (`F5`) and confirm all newly created and edited drafts persist in local storage.
-
-### Quality Assurance Commands
-
-```bash
-# 1. ESLint verification (Zero errors, zero warnings)
-npm run lint
-
-# 2. Production build & TypeScript check
-npm run build
-```
 
 ---
 

@@ -59,8 +59,8 @@ const NAV_ITEMS: NavItem[] = [
     label: "Skill Analyzer",
     href: "/skills",
     icon: Cpu,
-    badge: "14 skills",
-    stageTag: "Stage 3",
+    badge: "8 roles",
+    stageTag: "Stage 4",
   },
   {
     label: "Career Roadmap",
