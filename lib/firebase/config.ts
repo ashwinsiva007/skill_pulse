@@ -35,14 +35,14 @@ export function getFirebaseConfig(): FirebaseClientConfig | null {
     }
   }
 
-  // 2. Check process.env Next.js public variables
+  // 2. Check process.env Next.js public variables, falling back to linked project skillpulse007
   const envConfig: FirebaseClientConfig = {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "",
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "",
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "",
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyAAYrMoMXnKOKoeFSHh9oVa1FCievU3vfQ",
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "skillpulse007.firebaseapp.com",
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "skillpulse007",
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "skillpulse007.firebasestorage.app",
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "347344087701",
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:347344087701:web:6d5e5a17e4b39931a1099c",
   };
 
   if (envConfig.apiKey && envConfig.projectId) {

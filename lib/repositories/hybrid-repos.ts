@@ -59,8 +59,6 @@ export class HybridProfileRepository implements IProfileRepository {
       try {
         const cloudProfile = await firestoreService.getUserProfile(uid);
         if (cloudProfile) {
-          // Sync to local fallback cache
-          await localProfile.updateProfile(cloudProfile);
           return cloudProfile;
         }
       } catch (err) {
@@ -203,12 +201,13 @@ export class HybridSkillRepository implements ISkillRepository {
     if (uid) {
       try {
         const cloudSkills = await firestoreService.getUserSkills(uid);
-        if (cloudSkills && cloudSkills.length > 0) {
+        if (cloudSkills !== null) {
           return cloudSkills;
         }
       } catch (err) {
         console.warn("[Cloud Skills Fetch Warning]:", err);
       }
+      return [];
     }
     return localSkill.getSkills();
   }
@@ -267,12 +266,13 @@ export class HybridResumeRepository implements IResumeRepository {
     if (uid) {
       try {
         const cloud = await firestoreService.getUserResumes(uid);
-        if (cloud && cloud.length > 0) {
+        if (cloud !== null) {
           return cloud;
         }
       } catch (err) {
         console.warn("[Cloud Resumes Fetch Warning]:", err);
       }
+      return [];
     }
     return localResume.getResumes();
   }
@@ -360,12 +360,13 @@ export class HybridRoadmapRepository implements IRoadmapRepository {
     if (uid) {
       try {
         const cloud = await firestoreService.getUserRoadmap(uid);
-        if (cloud && cloud.length > 0) {
+        if (cloud !== null) {
           return cloud;
         }
       } catch (err) {
         console.warn("[Cloud Roadmap Fetch Warning]:", err);
       }
+      return [];
     }
     return localRoadmap.getMilestones(targetRole);
   }
@@ -490,12 +491,13 @@ export class HybridApplicationRepository implements IApplicationRepository {
     if (uid) {
       try {
         const cloud = await firestoreService.getUserApplications(uid);
-        if (cloud && cloud.length > 0) {
+        if (cloud !== null) {
           return cloud;
         }
       } catch (err) {
         console.warn("[Cloud Applications Fetch Warning]:", err);
       }
+      return [];
     }
     return localApp.getApplications();
   }

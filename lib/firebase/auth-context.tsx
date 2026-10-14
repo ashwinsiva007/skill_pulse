@@ -14,7 +14,7 @@ import {
 import { getFirebaseAuth, isFirebaseConfigured, getFirebaseConfig } from "./config";
 import { firestoreService } from "./firestore-service";
 import { CandidateProfile } from "@/types/profile";
-import { DEMO_PROFILE } from "@/lib/demo/seed-data";
+import { DEMO_PROFILE, createBlankCandidateProfile } from "@/lib/demo/seed-data";
 import { storageAdapter } from "@/lib/storage/storage-adapter";
 import { STORAGE_KEYS } from "@/lib/storage/keys";
 
@@ -28,6 +28,7 @@ export interface AuthContextType {
   signUp: (email: string, pass: string, name: string, targetRole?: string, careerLevel?: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  resetProfileToCleanSlate: () => Promise<void>;
   clearError: () => void;
 }
 
@@ -63,14 +64,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         try {
           let userProf = await firestoreService.getUserProfile(fbUser.uid);
           if (!userProf) {
-            // First time login or migrating: initialize profile in Firestore
-            const baseProfile: CandidateProfile = {
-              ...DEMO_PROFILE,
-              id: fbUser.uid,
-              name: fbUser.displayName || fbUser.email?.split("@")[0] || "Candidate",
-              email: fbUser.email || "",
-              updatedAt: new Date().toISOString(),
-            };
+            // First time login: create clean blank profile in Firestore
+            const baseProfile = createBlankCandidateProfile(
+              fbUser.uid,
+              fbUser.displayName || fbUser.email?.split("@")[0] || "Candidate",
+              fbUser.email || ""
+            );
             userProf = await firestoreService.saveUserProfile(fbUser.uid, baseProfile);
           }
           setProfile(userProf);
@@ -160,25 +159,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Update Firebase Auth profile
       await fbUpdateProfile(fbUser, { displayName: name.trim() });
 
-      // Mandatory profile record saved in Firestore
-      const newProfile: CandidateProfile = {
-        ...DEMO_PROFILE,
-        id: fbUser.uid,
-        name: name.trim(),
-        email: email.trim(),
-        headline: `${targetRole || "Software Developer"} Candidate | SkillPulse AI`,
-        bio: `Driven ${careerLevel || "Student / Graduate"} passionate about software development, algorithms, and continuous learning.`,
-        targetRole: targetRole || "Full Stack Developer",
-        currentRole: careerLevel || "Student",
-        careerLevel: (careerLevel as any) || "Student",
-        location: "Global / Remote",
-        updatedAt: new Date().toISOString(),
-      };
+      // Mandatory profile record saved in Firestore — 100% clean blank slate!
+      const newProfile = createBlankCandidateProfile(
+        fbUser.uid,
+        name.trim(),
+        email.trim(),
+        targetRole,
+        careerLevel
+      );
 
       await firestoreService.saveUserProfile(fbUser.uid, newProfile);
       setUser(fbUser);
       setProfile(newProfile);
+      
+      // Clear all cached collections so new user starts completely fresh
       storageAdapter.setItem(STORAGE_KEYS.PROFILE, newProfile);
+      storageAdapter.setItem(STORAGE_KEYS.SKILLS, []);
+      storageAdapter.setItem(STORAGE_KEYS.RESUMES, []);
+      storageAdapter.setItem(STORAGE_KEYS.ROADMAP, []);
+      storageAdapter.setItem(STORAGE_KEYS.APPLICATIONS, []);
     } catch (err: any) {
       let msg = err.message || "Failed to create account";
       if (err.code === "auth/email-already-in-use") {
@@ -195,13 +194,35 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const resetProfileToCleanSlate = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const blank = createBlankCandidateProfile(
+        user.uid,
+        user.displayName || user.email?.split("@")[0] || "Candidate",
+        user.email || ""
+      );
+      await firestoreService.saveUserProfile(user.uid, blank);
+      setProfile(blank);
+      storageAdapter.setItem(STORAGE_KEYS.PROFILE, blank);
+      storageAdapter.setItem(STORAGE_KEYS.SKILLS, []);
+      storageAdapter.setItem(STORAGE_KEYS.RESUMES, []);
+      storageAdapter.setItem(STORAGE_KEYS.ROADMAP, []);
+      storageAdapter.setItem(STORAGE_KEYS.APPLICATIONS, []);
+    } catch (err) {
+      console.error("Failed to reset profile to clean slate:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const signOut = async () => {
     const auth = getFirebaseAuth();
     if (auth) {
       await fbSignOut(auth);
     }
     setUser(null);
-    // Reset to demo profile in session
     setProfile(DEMO_PROFILE);
     storageAdapter.setItem(STORAGE_KEYS.PROFILE, DEMO_PROFILE);
   };
@@ -220,6 +241,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         signUp,
         signOut,
         refreshProfile,
+        resetProfileToCleanSlate,
         clearError,
       }}
     >

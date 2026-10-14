@@ -22,6 +22,7 @@ import { ResumeDraft } from "@/types/resume";
 import { Opportunity } from "@/types/opportunity";
 import { JobApplication } from "@/types/application";
 import { DEMO_PROFILE } from "@/lib/demo/seed-data";
+import { QuickProfileSetupModal } from "@/components/profile/quick-profile-setup-modal";
 import {
   getCareerRoleByTitle,
   CAREER_ROLES_CATALOGUE,
@@ -50,6 +51,7 @@ export const DashboardView: React.FC = () => {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isQuickSetupOpen, setIsQuickSetupOpen] = useState(false);
 
   useEffect(() => {
     if (authProfile) {
@@ -162,6 +164,18 @@ export const DashboardView: React.FC = () => {
                   Explore Real Live Opportunities ({opportunities.length})
                 </Button>
               </Link>
+
+              {user && (!profile.education || profile.education.length === 0) && (
+                <Button
+                  variant="primary"
+                  size="md"
+                  onClick={() => setIsQuickSetupOpen(true)}
+                  className="text-xs font-bold bg-emerald-600 hover:bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-950"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Personalize Profile (3 Quick Steps)
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -510,6 +524,13 @@ export const DashboardView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <QuickProfileSetupModal
+        isOpen={isQuickSetupOpen}
+        onClose={() => setIsQuickSetupOpen(false)}
+        onCompleted={loadData}
+        initialProfile={profile}
+      />
     </AppLayout>
   );
 };

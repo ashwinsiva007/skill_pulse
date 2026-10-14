@@ -44,24 +44,41 @@ export class LocalProfileRepository implements IProfileRepository {
     ensureInitialized();
     const stored = storageAdapter.getItem<Partial<CandidateProfile>>(STORAGE_KEYS.PROFILE, DEMO_PROFILE);
     
-    // Defensive merge to guarantee all Stage 2 fields exist even if user had older Stage 1 stored session
+    // Check if this is the default demo persona or a real candidate profile
+    const isDemoUser = !stored.id || stored.id === "demo-cand-001";
+
     const fullProfile: CandidateProfile = {
-      ...DEMO_PROFILE,
+      ...(isDemoUser ? DEMO_PROFILE : {}),
       ...stored,
-      education: Array.isArray(stored.education) ? stored.education : DEMO_PROFILE.education,
-      projects: Array.isArray(stored.projects) ? stored.projects : DEMO_PROFILE.projects,
-      experience: Array.isArray(stored.experience) ? stored.experience : DEMO_PROFILE.experience,
-      certifications: Array.isArray(stored.certifications) ? stored.certifications : DEMO_PROFILE.certifications,
-      courses: Array.isArray(stored.courses) ? stored.courses : DEMO_PROFILE.courses,
-      hackathons: Array.isArray(stored.hackathons) ? stored.hackathons : DEMO_PROFILE.hackathons,
-      awards: Array.isArray(stored.awards) ? stored.awards : DEMO_PROFILE.awards,
-      leadership: Array.isArray(stored.leadership) ? stored.leadership : DEMO_PROFILE.leadership,
+      id: stored.id || "demo-cand-001",
+      name: stored.name || (isDemoUser ? DEMO_PROFILE.name : "Candidate"),
+      email: stored.email || "",
+      headline: stored.headline || (isDemoUser ? DEMO_PROFILE.headline : "Software Developer"),
+      location: stored.location || (isDemoUser ? DEMO_PROFILE.location : ""),
+      bio: stored.bio || (isDemoUser ? DEMO_PROFILE.bio : ""),
+      currentRole: stored.currentRole || (isDemoUser ? DEMO_PROFILE.currentRole : "Student"),
+      targetRole: stored.targetRole || (isDemoUser ? DEMO_PROFILE.targetRole : "Software Developer"),
+      careerLevel: (stored.careerLevel as any) || (isDemoUser ? DEMO_PROFILE.careerLevel : "Student"),
+      yearsOfExperience: stored.yearsOfExperience ?? (isDemoUser ? DEMO_PROFILE.yearsOfExperience : 0),
+      profileCompletionPercentage: stored.profileCompletionPercentage ?? (isDemoUser ? DEMO_PROFILE.profileCompletionPercentage : 15),
+      careerReadinessScore: stored.careerReadinessScore ?? (isDemoUser ? DEMO_PROFILE.careerReadinessScore : 20),
+      targetIndustry: stored.targetIndustry || (isDemoUser ? DEMO_PROFILE.targetIndustry : "Technology"),
+      availability: stored.availability || (isDemoUser ? DEMO_PROFILE.availability : "Immediate"),
+      education: Array.isArray(stored.education) ? stored.education : (isDemoUser ? DEMO_PROFILE.education : []),
+      projects: Array.isArray(stored.projects) ? stored.projects : (isDemoUser ? DEMO_PROFILE.projects : []),
+      experience: Array.isArray(stored.experience) ? stored.experience : (isDemoUser ? DEMO_PROFILE.experience : []),
+      certifications: Array.isArray(stored.certifications) ? stored.certifications : (isDemoUser ? DEMO_PROFILE.certifications : []),
+      courses: Array.isArray(stored.courses) ? stored.courses : (isDemoUser ? DEMO_PROFILE.courses : []),
+      hackathons: Array.isArray(stored.hackathons) ? stored.hackathons : (isDemoUser ? DEMO_PROFILE.hackathons : []),
+      awards: Array.isArray(stored.awards) ? stored.awards : (isDemoUser ? DEMO_PROFILE.awards : []),
+      leadership: Array.isArray(stored.leadership) ? stored.leadership : (isDemoUser ? DEMO_PROFILE.leadership : []),
       preferences: stored.preferences || DEMO_PROFILE.preferences,
-      links: Array.isArray(stored.links) ? stored.links : DEMO_PROFILE.links,
+      links: Array.isArray(stored.links) ? stored.links : (isDemoUser ? DEMO_PROFILE.links : []),
+      updatedAt: stored.updatedAt || new Date().toISOString(),
     };
 
     // Calculate actual score with skills
-    const skills = storageAdapter.getItem<Skill[]>(STORAGE_KEYS.SKILLS, DEMO_SKILLS);
+    const skills = storageAdapter.getItem<Skill[]>(STORAGE_KEYS.SKILLS, isDemoUser ? DEMO_SKILLS : []);
     fullProfile.profileCompletionPercentage = calculateProfileCompletion(fullProfile, skills).percentage;
 
     return fullProfile;

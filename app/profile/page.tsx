@@ -18,6 +18,7 @@ import { ProjectStatus } from "@/types/project";
 import { ExperienceEntry } from "@/types/experience";
 import { calculateProfileCompletion } from "@/lib/profile-completion";
 import { CompletionBreakdownModal } from "@/components/profile/completion-breakdown-modal";
+import { QuickProfileSetupModal } from "@/components/profile/quick-profile-setup-modal";
 import { DEMO_PROFILE } from "@/lib/demo/seed-data";
 import {
   Mail,
@@ -41,11 +42,12 @@ import {
 
 function ProfileContent() {
   const searchParams = useSearchParams();
-  const { user, isFirebaseReady, refreshProfile } = useAuth();
+  const { user, isFirebaseReady, refreshProfile, resetProfileToCleanSlate } = useAuth();
   const [profile, setProfile] = useState<CandidateProfile>(DEMO_PROFILE);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [isBreakdownOpen, setIsBreakdownOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isQuickSetupOpen, setIsQuickSetupOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -120,6 +122,15 @@ function ProfileContent() {
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleResetBlank = async () => {
+    if (confirm("Reset your profile to a completely clean slate (remove all demo education, skills, and links)?")) {
+      await resetProfileToCleanSlate();
+      await loadData();
+      setSuccessMessage("Profile reset to clean slate! All demo data removed.");
+      setTimeout(() => setSuccessMessage(null), 4000);
     }
   };
 
@@ -314,10 +325,31 @@ function ProfileContent() {
               </Button>
             )}
 
+            {user && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleResetBlank}
+                className="text-xs text-rose-300 border-rose-900/50 hover:bg-rose-950/40"
+              >
+                <Trash2 className="w-3.5 h-3.5 mr-1 text-rose-400" />
+                Reset to Blank Slate
+              </Button>
+            )}
+
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setIsQuickSetupOpen(true)}
+              className="text-xs bg-indigo-600 hover:bg-indigo-500"
+            >
+              <Sparkles className="w-3.5 h-3.5 mr-1" />
+              Quick Setup (3 Steps)
+            </Button>
+
             <Link href="/onboarding">
-              <Button variant="primary" size="sm" className="text-xs">
-                <Sparkles className="w-3.5 h-3.5 mr-1" />
-                Profile Wizard
+              <Button variant="outline" size="sm" className="text-xs">
+                Full Wizard
               </Button>
             </Link>
 
@@ -332,6 +364,32 @@ function ProfileContent() {
             </Button>
           </div>
         </div>
+
+        {/* New Profile Quick Setup Welcome Banner */}
+        {user && (!profile.education || profile.education.length === 0) && (
+          <div className="p-4 rounded-xl bg-gradient-to-r from-indigo-950/70 via-[#0d1527] to-indigo-950/70 border border-indigo-500/30 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-lg shadow-indigo-950/40">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
+                <h3 className="text-sm font-semibold text-white">
+                  Welcome to your new profile, {profile.name}!
+                </h3>
+              </div>
+              <p className="text-xs text-slate-300">
+                Your profile is brand-new and empty. Answer 3 bite-sized questions (social links, college/education, and top skills) to personalize it.
+              </p>
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setIsQuickSetupOpen(true)}
+              className="text-xs shrink-0 bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30"
+            >
+              <Sparkles className="w-3.5 h-3.5 mr-1" />
+              Personalize Profile (3 Steps) →
+            </Button>
+          </div>
+        )}
 
         {/* Cloud Database Status Card */}
         <div className={`p-4 rounded-xl border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
@@ -1133,6 +1191,14 @@ function ProfileContent() {
         isOpen={isBreakdownOpen}
         onClose={() => setIsBreakdownOpen(false)}
         result={completionResult}
+      />
+
+      {/* Quick Profile Setup Modal */}
+      <QuickProfileSetupModal
+        isOpen={isQuickSetupOpen}
+        onClose={() => setIsQuickSetupOpen(false)}
+        onCompleted={loadData}
+        initialProfile={profile}
       />
 
       {/* Cloud Authentication & Database Modal */}
