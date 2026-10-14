@@ -1,0 +1,237 @@
+"use client";
+
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  User as FirebaseUser,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut as fbSignOut,
+  updateProfile as fbUpdateProfile,
+  browserLocalPersistence,
+  setPersistence,
+} from "firebase/auth";
+import { getFirebaseAuth, isFirebaseConfigured, getFirebaseConfig } from "./config";
+import { firestoreService } from "./firestore-service";
+import { CandidateProfile } from "@/types/profile";
+import { DEMO_PROFILE } from "@/lib/demo/seed-data";
+import { storageAdapter } from "@/lib/storage/storage-adapter";
+import { STORAGE_KEYS } from "@/lib/storage/keys";
+
+export interface AuthContextType {
+  user: FirebaseUser | null;
+  profile: CandidateProfile | null;
+  loading: boolean;
+  isFirebaseReady: boolean;
+  error: string | null;
+  signIn: (email: string, pass: string) => Promise<void>;
+  signUp: (email: string, pass: string, name: string, targetRole?: string, careerLevel?: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
+  clearError: () => void;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [profile, setProfile] = useState<CandidateProfile | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isFirebaseReady, setIsFirebaseReady] = useState<boolean>(false);
+
+  // Initialize Auth listener
+  useEffect(() => {
+    const auth = getFirebaseAuth();
+    const ready = isFirebaseConfigured() && Boolean(auth);
+    setIsFirebaseReady(ready);
+
+    if (!auth) {
+      // In local mode without active Firebase keys, read local stored profile
+      const local = storageAdapter.getItem<CandidateProfile>(STORAGE_KEYS.PROFILE, DEMO_PROFILE);
+      setProfile(local);
+      setLoading(false);
+      return;
+    }
+
+    // Ensure persistent login session across device restarts
+    setPersistence(auth, browserLocalPersistence).catch(console.warn);
+
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      setUser(fbUser);
+      if (fbUser) {
+        try {
+          let userProf = await firestoreService.getUserProfile(fbUser.uid);
+          if (!userProf) {
+            // First time login or migrating: initialize profile in Firestore
+            const baseProfile: CandidateProfile = {
+              ...DEMO_PROFILE,
+              id: fbUser.uid,
+              name: fbUser.displayName || fbUser.email?.split("@")[0] || "Candidate",
+              email: fbUser.email || "",
+              updatedAt: new Date().toISOString(),
+            };
+            userProf = await firestoreService.saveUserProfile(fbUser.uid, baseProfile);
+          }
+          setProfile(userProf);
+          // Sync local storage mirror for offline resilience
+          if (userProf) {
+            storageAdapter.setItem(STORAGE_KEYS.PROFILE, userProf);
+          }
+        } catch (err: any) {
+          console.error("Error loading user profile from Firestore:", err);
+        }
+      } else {
+        // User logged out
+        const local = storageAdapter.getItem<CandidateProfile>(STORAGE_KEYS.PROFILE, DEMO_PROFILE);
+        setProfile(local);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const refreshProfile = async () => {
+    if (user) {
+      const p = await firestoreService.getUserProfile(user.uid);
+      if (p) {
+        setProfile(p);
+        storageAdapter.setItem(STORAGE_KEYS.PROFILE, p);
+      }
+    } else {
+      const local = storageAdapter.getItem<CandidateProfile>(STORAGE_KEYS.PROFILE, DEMO_PROFILE);
+      setProfile(local);
+    }
+  };
+
+  const signIn = async (email: string, pass: string) => {
+    setError(null);
+    setLoading(true);
+    const auth = getFirebaseAuth();
+    if (!auth) {
+      setLoading(false);
+      throw new Error("Firebase is not configured yet. Please enter your Firebase API credentials in Settings.");
+    }
+
+    try {
+      await setPersistence(auth, browserLocalPersistence);
+      const res = await signInWithEmailAndPassword(auth, email.trim(), pass);
+      setUser(res.user);
+      const p = await firestoreService.getUserProfile(res.user.uid);
+      if (p) {
+        setProfile(p);
+        storageAdapter.setItem(STORAGE_KEYS.PROFILE, p);
+      }
+    } catch (err: any) {
+      let msg = err.message || "Failed to sign in";
+      if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
+        msg = "Invalid email or password. Please verify and try again.";
+      } else if (err.code === "auth/too-many-requests") {
+        msg = "Too many failed attempts. Please wait a few moments before trying again.";
+      }
+      setError(msg);
+      throw new Error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signUp = async (
+    email: string,
+    pass: string,
+    name: string,
+    targetRole?: string,
+    careerLevel?: string
+  ) => {
+    setError(null);
+    setLoading(true);
+    const auth = getFirebaseAuth();
+    if (!auth) {
+      setLoading(false);
+      throw new Error("Firebase is not configured yet. Please enter your Firebase API credentials in Settings.");
+    }
+
+    try {
+      await setPersistence(auth, browserLocalPersistence);
+      const res = await createUserWithEmailAndPassword(auth, email.trim(), pass);
+      const fbUser = res.user;
+
+      // Update Firebase Auth profile
+      await fbUpdateProfile(fbUser, { displayName: name.trim() });
+
+      // Mandatory profile record saved in Firestore
+      const newProfile: CandidateProfile = {
+        ...DEMO_PROFILE,
+        id: fbUser.uid,
+        name: name.trim(),
+        email: email.trim(),
+        headline: `${targetRole || "Software Developer"} Candidate | SkillPulse AI`,
+        bio: `Driven ${careerLevel || "Student / Graduate"} passionate about software development, algorithms, and continuous learning.`,
+        targetRole: targetRole || "Full Stack Developer",
+        currentRole: careerLevel || "Student",
+        careerLevel: (careerLevel as any) || "Student",
+        location: "Global / Remote",
+        updatedAt: new Date().toISOString(),
+      };
+
+      await firestoreService.saveUserProfile(fbUser.uid, newProfile);
+      setUser(fbUser);
+      setProfile(newProfile);
+      storageAdapter.setItem(STORAGE_KEYS.PROFILE, newProfile);
+    } catch (err: any) {
+      let msg = err.message || "Failed to create account";
+      if (err.code === "auth/email-already-in-use") {
+        msg = "An account with this email already exists. Try signing in instead.";
+      } else if (err.code === "auth/weak-password") {
+        msg = "Password should be at least 6 characters.";
+      } else if (err.code === "auth/invalid-email") {
+        msg = "Please provide a valid email address.";
+      }
+      setError(msg);
+      throw new Error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signOut = async () => {
+    const auth = getFirebaseAuth();
+    if (auth) {
+      await fbSignOut(auth);
+    }
+    setUser(null);
+    // Reset to demo profile in session
+    setProfile(DEMO_PROFILE);
+    storageAdapter.setItem(STORAGE_KEYS.PROFILE, DEMO_PROFILE);
+  };
+
+  const clearError = () => setError(null);
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        loading,
+        isFirebaseReady,
+        error,
+        signIn,
+        signUp,
+        signOut,
+        refreshProfile,
+        clearError,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = (): AuthContextType => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return ctx;
+};

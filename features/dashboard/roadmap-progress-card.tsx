@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RoadmapMilestone } from "@/types/roadmap";
-import { roadmapRepo, activityRepo } from "@/lib/repositories/local-repos";
+import { roadmapRepo, activityRepo } from "@/lib/repositories";
 import { Milestone, CheckCircle2, Circle, ArrowRight } from "lucide-react";
 
 export interface RoadmapProgressCardProps {

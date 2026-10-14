@@ -6,21 +6,34 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ResetConfirmModal } from "@/components/layout/reset-confirm-modal";
+import { AuthModal } from "@/components/auth/auth-modal";
+import { useAuth } from "@/lib/firebase/auth-context";
+import { getFirebaseConfig } from "@/lib/firebase/config";
 import { DemoManager } from "@/lib/demo/demo-manager";
 import {
   HardDrive,
   RotateCcw,
   Download,
   Upload,
-  AlertTriangle,
+  Database,
   CheckCircle2,
   Trash2,
+  ShieldCheck,
+  ExternalLink,
+  Lock,
+  LogOut,
+  Sparkles,
 } from "lucide-react";
 
 export default function SettingsPage() {
+  const { user, isFirebaseReady, signOut } = useAuth();
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState<"signin" | "signup" | "firebase">("firebase");
   const [summary, setSummary] = useState(DemoManager.getStorageSummary());
   const [importStatus, setImportStatus] = useState<string | null>(null);
+
+  const fbConfig = getFirebaseConfig();
 
   const refreshSummary = () => {
     setSummary(DemoManager.getStorageSummary());
@@ -63,48 +76,179 @@ export default function SettingsPage() {
   };
 
   const handlePurge = () => {
-    if (confirm("Are you sure you want to completely purge all Skill_pulse ai keys from this browser?")) {
+    if (confirm("Are you sure you want to completely purge local cache keys from this browser?")) {
       DemoManager.purgeAllData();
       refreshSummary();
       if (typeof window !== "undefined") window.location.reload();
     }
   };
 
+  const openAuthWithTab = (tab: "signin" | "signup" | "firebase") => {
+    setAuthModalTab(tab);
+    setIsAuthModalOpen(true);
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
         {/* Header */}
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-2xl font-bold text-white tracking-tight">Settings & Storage</h1>
-            <Badge variant="indigo" size="sm">
-              Local Browser State
-            </Badge>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <h1 className="text-2xl font-bold text-white tracking-tight">Database & Settings</h1>
+              <Badge variant={user ? "emerald" : "indigo"} size="sm">
+                {user ? "Firestore Connected" : "Local / Cloud Hybrid"}
+              </Badge>
+            </div>
+            <p className="text-xs text-slate-400">
+              Manage your Firebase Cloud Firestore connection, persistent device sessions, and local data backups.
+            </p>
           </div>
-          <p className="text-xs text-slate-400">
-            Inspect, backup, or reset your local demo dataset and review Skill_pulse ai architecture.
-          </p>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => openAuthWithTab("firebase")}
+              className="text-xs"
+            >
+              <Database className="w-3.5 h-3.5 mr-1" />
+              Firebase Setup
+            </Button>
+          </div>
         </div>
 
-        {/* Security Warning & Architecture Banner */}
-        <div className="p-4 rounded-xl bg-amber-950/25 border border-amber-800/40 text-xs space-y-2">
-          <div className="flex items-center gap-2 text-amber-300 font-semibold">
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
-            Browser Local Storage Architecture Warning
-          </div>
-          <p className="text-amber-200/80 leading-relaxed">
-            Skill_pulse ai Stage 2 uses HTML5 browser storage (localStorage) for zero-friction local development. No user accounts, passwords, or cloud database credentials are required. <strong>Browser storage is intended strictly for development and testing, not secure production storage.</strong>
-          </p>
-        </div>
+        {/* Cloud Database & Authentication Card */}
+        <Card className="border-indigo-500/20 bg-gradient-to-r from-slate-900/90 via-[#0f172a] to-slate-900">
+          <CardHeader>
+            <div className="flex items-start justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="w-4 h-4 text-indigo-400" />
+                  Firebase Cloud Firestore & Authentication
+                </CardTitle>
+                <CardDescription>
+                  Enterprise-grade cloud database with automatic session persistence across device restarts
+                </CardDescription>
+              </div>
+              <Badge variant={user ? "emerald" : isFirebaseReady ? "indigo" : "amber"} size="sm">
+                {user ? "● User Authenticated" : isFirebaseReady ? "● Configured" : "● Local Mode"}
+              </Badge>
+            </div>
+          </CardHeader>
 
-        {/* Storage Diagnostics */}
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+              <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+                <span className="text-slate-400 block text-[11px]">Database Provider</span>
+                <span className="font-semibold text-white flex items-center gap-1.5 text-sm">
+                  <Database className="w-4 h-4 text-amber-400" />
+                  Google Cloud Firestore
+                </span>
+                <span className="text-[10px] text-slate-400 block">
+                  Project: {fbConfig?.projectId || "Default / Local Cache"}
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+                <span className="text-slate-400 block text-[11px]">Authentication Session</span>
+                <span className="font-semibold text-white flex items-center gap-1.5 text-sm">
+                  {user ? (
+                    <>
+                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                      Persistent Device Active
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-4 h-4 text-slate-400" />
+                      Guest / Demo Session
+                    </>
+                  )}
+                </span>
+                <span className="text-[10px] text-slate-400 block truncate">
+                  {user ? user.email : "Sign in to activate cloud sync"}
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+                <span className="text-slate-400 block text-[11px]">Data Loss Prevention</span>
+                <span className="font-semibold text-emerald-400 flex items-center gap-1.5 text-sm">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  Zero-Data-Loss Architecture
+                </span>
+                <span className="text-[10px] text-slate-400 block">
+                  Atomic Firestore merge + Local replica
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800/80">
+              <div className="flex flex-wrap items-center gap-2">
+                {user ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => signOut()}
+                    className="text-xs text-rose-300 border-rose-900/50 hover:bg-rose-950/40"
+                  >
+                    <LogOut className="w-3.5 h-3.5 mr-1 text-rose-400" />
+                    Log Out of Device
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => openAuthWithTab("signin")}
+                      className="text-xs"
+                    >
+                      <Lock className="w-3.5 h-3.5 mr-1" />
+                      Sign In
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openAuthWithTab("signup")}
+                      className="text-xs border-indigo-500/40 text-indigo-300"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 mr-1 text-indigo-400" />
+                      Create Account
+                    </Button>
+                  </>
+                )}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openAuthWithTab("firebase")}
+                  className="text-xs"
+                >
+                  <Database className="w-3.5 h-3.5 mr-1 text-cyan-400" />
+                  Configure Firebase Credentials
+                </Button>
+              </div>
+
+              <a
+                href="https://console.firebase.google.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-indigo-400 hover:underline inline-flex items-center gap-1 font-medium"
+              >
+                Open Firebase Console
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Local Storage & Cache Health */}
         <Card>
           <CardHeader>
             <div className="flex items-start justify-between">
               <div>
-                <CardTitle>Storage Health & Metrics</CardTitle>
+                <CardTitle>Local Offline Cache & Storage Metrics</CardTitle>
                 <CardDescription>
-                  Summary of keys saved under the <code>skillpulse_mvp_v1</code> namespace
+                  Instant-load browser cache with snapshot backup & restore
                 </CardDescription>
               </div>
               <div className="p-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-400">
@@ -116,7 +260,7 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
-                <span className="text-slate-400 block mb-1">Schema Version</span>
+                <span className="text-slate-400 block mb-1">Active Schema</span>
                 <span className="font-bold text-white text-base">v{summary.schemaVersion ?? 1}</span>
               </div>
               <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800">
@@ -137,144 +281,52 @@ export default function SettingsPage() {
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Button
-                variant="danger"
+                variant="outline"
                 size="sm"
-                onClick={() => setIsResetModalOpen(true)}
+                onClick={handleExport}
+                className="text-xs"
               >
-                <RotateCcw className="w-3.5 h-3.5 mr-1" />
-                Reset to Demo Seed Data
-              </Button>
-
-              <Button variant="outline" size="sm" onClick={handleExport}>
                 <Download className="w-3.5 h-3.5 mr-1" />
-                Export JSON Backup
+                Export Local JSON Snapshot
               </Button>
 
-              <label className="cursor-pointer inline-flex items-center justify-center font-medium transition-colors border border-slate-700 text-slate-300 hover:bg-slate-800/60 text-xs px-2.5 py-1.5 rounded-lg">
-                <Upload className="w-3.5 h-3.5 mr-1 text-slate-400" />
-                Import JSON Backup
+              <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 text-xs text-slate-200 transition-colors">
+                <Upload className="w-3.5 h-3.5 text-slate-400" />
+                <span>Restore Snapshot</span>
                 <input
                   type="file"
-                  accept=".json"
+                  accept="application/json"
                   onChange={handleImport}
                   className="hidden"
                 />
               </label>
 
               <Button
-                variant="ghost"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsResetModalOpen(true)}
+                className="text-xs text-amber-300 hover:text-amber-200 border-amber-800/60"
+              >
+                <RotateCcw className="w-3.5 h-3.5 mr-1" />
+                Reset Sample Persona
+              </Button>
+
+              <Button
+                variant="danger"
                 size="sm"
                 onClick={handlePurge}
-                className="text-slate-500 hover:text-rose-400"
+                className="text-xs ml-auto"
               >
                 <Trash2 className="w-3.5 h-3.5 mr-1" />
-                Purge All Local Data
+                Purge Local Cache
               </Button>
             </div>
 
             {importStatus && (
-              <p className="text-xs text-indigo-300 bg-indigo-950/60 p-2.5 rounded-lg border border-indigo-800/60 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs text-indigo-300">
                 {importStatus}
-              </p>
+              </div>
             )}
-          </CardContent>
-        </Card>
-
-        {/* Five Stage Roadmap Overview */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Skill_pulse ai Platform Roadmap (Stages 1 – 5)</CardTitle>
-            <CardDescription>
-              Architectural phases for full autonomous career guidance platform
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800 flex items-start gap-3">
-                <Badge variant="neutral" size="sm" className="shrink-0 mt-0.5">
-                  Stage 1 (Completed)
-                </Badge>
-                <div>
-                  <h4 className="font-semibold text-slate-200">
-                    Foundation Architecture & Demo Workspace
-                  </h4>
-                  <p className="text-slate-400 mt-0.5 leading-relaxed">
-                    Zero-auth frictionless launch, typed repository abstraction, local persistence adapter, responsive dark-first dashboard, and fictional candidate dataset.
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-lg bg-indigo-950/30 border border-indigo-800/50 flex items-start gap-3">
-                <Badge variant="indigo" size="sm" className="shrink-0 mt-0.5">
-                  Stage 2 (Active)
-                </Badge>
-                <div>
-                  <h4 className="font-semibold text-slate-200">
-                    Profile Builder, Onboarding Wizard & Candidate Profile System
-                  </h4>
-                  <p className="text-slate-400 mt-0.5 leading-relaxed">
-                    7-step onboarding wizard, full profile manager, multiple education/skills/projects/experience entries, transparent score calculation, and robust local persistence.
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800 flex items-start gap-3">
-                <Badge variant="neutral" size="sm" className="shrink-0 mt-0.5">
-                  Stage 3
-                </Badge>
-                <div>
-                  <h4 className="font-semibold text-slate-200">
-                    Diagnostic Skill Analyzer & Market Benchmarking
-                  </h4>
-                  <p className="text-slate-400 mt-0.5 leading-relaxed">
-                    Comparative skill vector scoring, targeted learning resource recommendations, and gap visualizations.
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800 flex items-start gap-3">
-                <Badge variant="neutral" size="sm" className="shrink-0 mt-0.5">
-                  Stage 4
-                </Badge>
-                <div>
-                  <h4 className="font-semibold text-slate-200">
-                    Adaptive Career Progression Planner
-                  </h4>
-                  <p className="text-slate-400 mt-0.5 leading-relaxed">
-                    Multi-week sprint planner that adjusts milestones based on interview performance and skill certifications.
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800 flex items-start gap-3">
-                <Badge variant="neutral" size="sm" className="shrink-0 mt-0.5">
-                  Stage 5
-                </Badge>
-                <div>
-                  <h4 className="font-semibold text-slate-200">
-                    Opportunity Discovery & Application Pipeline
-                  </h4>
-                  <p className="text-slate-400 mt-0.5 leading-relaxed">
-                    Integrated job aggregation, automated match scoring, and interactive interview tracking board.
-                  </p>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-800/80 flex items-start gap-3 text-slate-400">
-                <Badge variant="neutral" size="sm" className="shrink-0 mt-0.5">
-                  Post-Stage 5
-                </Badge>
-                <div>
-                  <h4 className="font-semibold text-slate-300">
-                    Authentication & Cloud Persistence (Supabase / Postgres)
-                  </h4>
-                  <p className="text-slate-400 mt-0.5 leading-relaxed">
-                    Decoupled repository architecture makes swapping local repositories with cloud API repositories seamless without touching UI components.
-                  </p>
-                </div>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
@@ -283,6 +335,12 @@ export default function SettingsPage() {
         isOpen={isResetModalOpen}
         onClose={() => setIsResetModalOpen(false)}
         onResetComplete={refreshSummary}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        defaultTab={authModalTab}
       />
     </AppLayout>
   );

@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Modal } from "@/components/ui/modal";
-import { profileRepo, skillRepo } from "@/lib/repositories/local-repos";
+import { profileRepo, skillRepo } from "@/lib/repositories";
+import { useAuth } from "@/lib/firebase/auth-context";
+import { AuthModal } from "@/components/auth/auth-modal";
 import { CandidateProfile, CareerLevel } from "@/types/profile";
 import { Skill, SkillCategory, ProficiencyLevel } from "@/types/skill";
 import { ProjectStatus } from "@/types/project";
@@ -31,13 +33,20 @@ import {
   FolderGit2,
   Info,
   X,
+  Database,
+  ShieldCheck,
+  CloudUpload,
+  RefreshCw,
 } from "lucide-react";
 
 function ProfileContent() {
   const searchParams = useSearchParams();
+  const { user, isFirebaseReady, refreshProfile } = useAuth();
   const [profile, setProfile] = useState<CandidateProfile>(DEMO_PROFILE);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [isBreakdownOpen, setIsBreakdownOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Modal active states
@@ -242,6 +251,28 @@ function ProfileContent() {
     }
   };
 
+  const handleSyncToCloud = async () => {
+    setIsSyncing(true);
+    try {
+      await profileRepo.updateProfile(profile);
+      await refreshProfile();
+      setSuccessMessage("Profile dataset successfully synchronized with Firebase Firestore!");
+      setTimeout(() => setSuccessMessage(null), 3500);
+    } catch (err: any) {
+      console.error(err);
+      setSuccessMessage("Cloud sync notice: " + (err.message || "Failed to sync"));
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const initials = (profile.name || "Candidate")
+    .split(" ")
+    .map((w: string) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "CP";
+
   return (
     <AppLayout>
       <div className="space-y-6 max-w-5xl mx-auto">
@@ -250,20 +281,43 @@ function ProfileContent() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <h1 className="text-2xl font-bold text-white tracking-tight">Candidate Profile</h1>
-              <Badge variant="indigo" size="sm">
-                Stage 2 Profile System
+              <Badge variant={user ? "emerald" : "indigo"} size="sm">
+                {user ? "Firestore Cloud Database" : "Local & Cloud Ready"}
               </Badge>
             </div>
             <p className="text-xs text-slate-400">
-              Interactive career profile for students, graduates, and developers. All information persists locally.
+              Interactive career profile and dataset for students, graduates, and developers. Persistent across sessions.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            {user ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSyncToCloud}
+                isLoading={isSyncing}
+                className="text-xs border-emerald-500/40 text-emerald-300 hover:bg-emerald-950/40"
+              >
+                <CloudUpload className="w-3.5 h-3.5 mr-1 text-emerald-400" />
+                Sync to Firestore
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsAuthModalOpen(true)}
+                className="text-xs border-amber-500/40 text-amber-300 hover:bg-amber-950/40"
+              >
+                <Database className="w-3.5 h-3.5 mr-1 text-amber-400" />
+                Connect Cloud DB
+              </Button>
+            )}
+
             <Link href="/onboarding">
               <Button variant="primary" size="sm" className="text-xs">
                 <Sparkles className="w-3.5 h-3.5 mr-1" />
-                Launch Multi-Step Wizard
+                Profile Wizard
               </Button>
             </Link>
 
@@ -276,6 +330,41 @@ function ProfileContent() {
               <Edit3 className="w-3.5 h-3.5 mr-1" />
               Edit Details
             </Button>
+          </div>
+        </div>
+
+        {/* Cloud Database Status Card */}
+        <div className={`p-4 rounded-xl border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+          user
+            ? "bg-emerald-950/20 border-emerald-800/40 text-emerald-200"
+            : "bg-slate-900/60 border-slate-800 text-slate-300"
+        }`}>
+          <div className="flex items-center gap-3">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+              user ? "bg-emerald-500/20 text-emerald-400" : "bg-indigo-500/20 text-indigo-400"
+            }`}>
+              {user ? <ShieldCheck className="w-4 h-4" /> : <Database className="w-4 h-4" />}
+            </div>
+            <div>
+              <p className="font-semibold text-white">
+                {user ? "Firebase Cloud Database Active" : "Local Workspace Mode (Cloud DB Optional)"}
+              </p>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                {user
+                  ? `Authenticated as ${user.email} (UID: ${user.uid.slice(0, 8)}...). Device remains signed in until manual logout.`
+                  : "All profile edits are saved locally. Connect your Firebase Console or sign in with Email & Password for cloud synchronization across devices."}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setIsAuthModalOpen(true)}
+              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-white transition-colors flex items-center gap-1.5"
+            >
+              <Database className="w-3 h-3 text-indigo-400" />
+              {user ? "Cloud Settings" : "Sign In / Setup DB"}
+            </button>
           </div>
         </div>
 
@@ -293,14 +382,16 @@ function ProfileContent() {
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div className="flex items-start md:items-center gap-5">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white text-2xl font-extrabold shadow-lg shrink-0">
-                  AM
+                  {initials}
                 </div>
 
                 <div className="space-y-1.5">
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-xl font-bold text-white">{profile.name}</h2>
                     <Badge variant="indigo">{profile.careerLevel || "Student"}</Badge>
-                    <Badge variant="neutral">Demo Persona</Badge>
+                    <Badge variant={user ? "emerald" : "neutral"}>
+                      {user ? "Cloud Synced Profile" : "Candidate Profile"}
+                    </Badge>
                   </div>
 
                   <p className="text-xs sm:text-sm text-indigo-300 font-medium">{profile.headline}</p>
@@ -308,11 +399,11 @@ function ProfileContent() {
                   <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 pt-0.5">
                     <span className="flex items-center gap-1.5">
                       <Mail className="w-3.5 h-3.5 text-slate-400" />
-                      {profile.email || "alex.morgan@demo-candidate.internal"}
+                      {profile.email || user?.email || "candidate@skillpulse.internal"}
                     </span>
                     <span className="flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                      {profile.location || "San Francisco, CA, USA"}
+                      {profile.location || "Global / Remote"}
                     </span>
                     <span className="flex items-center gap-1.5">
                       <Briefcase className="w-3.5 h-3.5 text-slate-400" />
@@ -1042,6 +1133,13 @@ function ProfileContent() {
         isOpen={isBreakdownOpen}
         onClose={() => setIsBreakdownOpen(false)}
         result={completionResult}
+      />
+
+      {/* Cloud Authentication & Database Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        defaultTab={user ? "firebase" : "signin"}
       />
     </AppLayout>
   );

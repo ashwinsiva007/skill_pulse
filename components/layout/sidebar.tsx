@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { profileRepo } from "@/lib/repositories/local-repos";
+import { profileRepo } from "@/lib/repositories";
 import { CandidateProfile } from "@/types/profile";
 import {
   Sparkles,
@@ -86,6 +86,8 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
+import { useAuth } from "@/lib/firebase/auth-context";
+
 export interface SidebarProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
@@ -100,13 +102,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobile,
 }) => {
   const pathname = usePathname();
+  const { user, profile: authProfile } = useAuth();
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
 
   useEffect(() => {
-    profileRepo.getProfile().then(setProfile).catch(console.error);
-  }, []);
+    if (authProfile) {
+      setProfile(authProfile);
+    } else {
+      profileRepo.getProfile().then(setProfile).catch(console.error);
+    }
+  }, [authProfile]);
 
-  const displayName = profile?.name?.trim() || "My Workspace";
+  const displayName = profile?.name?.trim() || user?.displayName || "My Workspace";
   const initials = displayName
     .split(" ")
     .map((w: string) => w[0])
@@ -114,6 +121,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     .slice(0, 2)
     .toUpperCase() || "SP";
   const displayRole = profile?.targetRole || "Software Developer";
+
 
   return (
     <>
@@ -236,7 +244,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
               <span className="truncate">{displayRole}</span>
-              <span className="text-emerald-400 font-medium">Ready</span>
+              <span className="text-emerald-400 font-medium flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                {user ? "Cloud Synced" : "Local Mode"}
+              </span>
             </div>
           </div>
         ) : (

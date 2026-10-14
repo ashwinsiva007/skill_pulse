@@ -18,7 +18,7 @@ import {
   skillRepo,
   roadmapRepo,
   activityRepo,
-} from "@/lib/repositories/local-repos";
+} from "@/lib/repositories";
 import { storageAdapter } from "@/lib/storage/storage-adapter";
 import { STORAGE_KEYS } from "@/lib/storage/keys";
 import { RoadmapMilestone, MilestoneStatus } from "@/types/roadmap";

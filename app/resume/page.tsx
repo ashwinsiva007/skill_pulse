@@ -14,7 +14,7 @@ import {
   skillRepo,
   resumeRepo,
   activityRepo,
-} from "@/lib/repositories/local-repos";
+} from "@/lib/repositories";
 import { CandidateProfile } from "@/types/profile";
 import { Skill } from "@/types/skill";
 import { ResumeDraft, ResumeTemplate } from "@/types/resume";

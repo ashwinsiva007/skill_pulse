@@ -14,7 +14,8 @@ import {
   roadmapRepo,
   opportunityRepo,
   applicationRepo,
-} from "@/lib/repositories/local-repos";
+} from "@/lib/repositories";
+import { useAuth } from "@/lib/firebase/auth-context";
 import { CandidateProfile } from "@/types/profile";
 import { Skill } from "@/types/skill";
 import { ResumeDraft } from "@/types/resume";
@@ -42,12 +43,19 @@ import {
 } from "lucide-react";
 
 export const DashboardView: React.FC = () => {
-  const [profile, setProfile] = useState<CandidateProfile>(DEMO_PROFILE);
+  const { user, profile: authProfile } = useAuth();
+  const [profile, setProfile] = useState<CandidateProfile>(authProfile || DEMO_PROFILE);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [resumes, setResumes] = useState<ResumeDraft[]>([]);
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (authProfile) {
+      setProfile(authProfile);
+    }
+  }, [authProfile]);
 
   const loadData = useCallback(async () => {
     try {
@@ -109,9 +117,22 @@ export const DashboardView: React.FC = () => {
           <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 space-y-4 max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-              <span>SkillPulse AI Career Platform</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                <span>SkillPulse AI Career Platform</span>
+              </div>
+              {user ? (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Firestore Cloud Synced</span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300 text-xs font-medium">
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  <span>Local Mode (Cloud DB Optional)</span>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">

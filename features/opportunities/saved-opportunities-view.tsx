@@ -13,7 +13,7 @@ import {
   activityRepo,
   profileRepo,
   skillRepo,
-} from "@/lib/repositories/local-repos";
+} from "@/lib/repositories";
 import { Opportunity } from "@/types/opportunity";
 import { CandidateProfile } from "@/types/profile";
 import { Skill } from "@/types/skill";

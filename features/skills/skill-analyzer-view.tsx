@@ -20,7 +20,7 @@ import {
   profileRepo,
   skillRepo,
   activityRepo,
-} from "@/lib/repositories/local-repos";
+} from "@/lib/repositories";
 import { storageAdapter } from "@/lib/storage/storage-adapter";
 import { STORAGE_KEYS } from "@/lib/storage/keys";
 import { CandidateProfile } from "@/types/profile";

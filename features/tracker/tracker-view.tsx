@@ -9,7 +9,7 @@ import { Modal } from "@/components/ui/modal";
 import {
   applicationRepo,
   activityRepo,
-} from "@/lib/repositories/local-repos";
+} from "@/lib/repositories";
 import { JobApplication, ApplicationStage } from "@/types/application";
 import { EditApplicationModal } from "./edit-application-modal";
 import {

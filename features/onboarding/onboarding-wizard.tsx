@@ -15,7 +15,7 @@ import {
   LeadershipEntry,
 } from "@/types/experience";
 import { CareerPreferences } from "@/types/preferences";
-import { profileRepo, skillRepo, activityRepo } from "@/lib/repositories/local-repos";
+import { profileRepo, skillRepo, activityRepo } from "@/lib/repositories";
 import { DEMO_PROFILE, DEMO_SKILLS } from "@/lib/demo/seed-data";
 import { personalDetailsSchema } from "@/lib/validations/profile";
 import { WizardStepper } from "./wizard-stepper";
@@ -166,6 +166,18 @@ export const OnboardingWizard: React.FC = () => {
     setIsSaving(true);
     try {
       await profileRepo.updateProfile(profileData);
+      for (const s of skillsList) {
+        await skillRepo.addSkill({
+          name: s.name,
+          category: s.category,
+          proficiency: s.proficiency,
+          levelValue: s.levelValue,
+          yearsOfExperience: s.yearsOfExperience,
+          verified: s.verified,
+          targetRoleRequirement: s.targetRoleRequirement,
+          evidence: s.evidence,
+        });
+      }
       await activityRepo.logActivity({
         type: "system",
         title: "Completed Profile Wizard",
