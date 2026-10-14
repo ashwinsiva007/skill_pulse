@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { Sidebar } from "./sidebar";
 import { TopBar } from "./top-bar";
-import { DemoBanner } from "./demo-banner";
 import { cn } from "@/lib/utils";
 import { DemoManager } from "@/lib/demo/demo-manager";
 
@@ -22,9 +21,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col font-sans selection:bg-indigo-600/40 selection:text-indigo-200">
-      {/* Persistent Demo Notice Banner */}
-      <DemoBanner />
-
       <div className="flex-1 flex w-full relative">
         {/* Navigation Sidebar */}
         <Sidebar

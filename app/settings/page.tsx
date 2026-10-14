@@ -29,11 +29,31 @@ export default function SettingsPage() {
   const { user, isFirebaseReady, signOut } = useAuth();
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authModalTab, setAuthModalTab] = useState<"signin" | "signup" | "firebase">("firebase");
+  const [authModalTab, setAuthModalTab] = useState<"signin" | "signup" | "firebase">("signin");
   const [summary, setSummary] = useState(DemoManager.getStorageSummary());
   const [importStatus, setImportStatus] = useState<string | null>(null);
+  
+  // Admin Credentials Protection
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
+  const [showAdminPinModal, setShowAdminPinModal] = useState(false);
+  const [adminPin, setAdminPin] = useState("");
+  const [adminError, setAdminError] = useState<string | null>(null);
 
   const fbConfig = getFirebaseConfig();
+
+  const handleUnlockAdmin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (adminPin.trim() === "admin007" || adminPin.trim() === "admin") {
+      setIsAdminUnlocked(true);
+      setShowAdminPinModal(false);
+      setAdminPin("");
+      setAdminError(null);
+      setAuthModalTab("firebase");
+      setIsAuthModalOpen(true);
+    } else {
+      setAdminError("Invalid Admin PIN. Credentials access is restricted to system administrators.");
+    }
+  };
 
   const refreshSummary = () => {
     setSummary(DemoManager.getStorageSummary());
@@ -106,15 +126,17 @@ export default function SettingsPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => openAuthWithTab("firebase")}
-              className="text-xs"
-            >
-              <Database className="w-3.5 h-3.5 mr-1" />
-              Firebase Setup
-            </Button>
+            {!user && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => openAuthWithTab("signin")}
+                className="text-xs"
+              >
+                <Lock className="w-3.5 h-3.5 mr-1" />
+                Sign In / Profile
+              </Button>
+            )}
           </div>
         </div>
 
@@ -220,23 +242,23 @@ export default function SettingsPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => openAuthWithTab("firebase")}
-                  className="text-xs"
+                  onClick={() => {
+                    if (isAdminUnlocked) {
+                      openAuthWithTab("firebase");
+                    } else {
+                      setShowAdminPinModal(true);
+                    }
+                  }}
+                  className="text-xs text-slate-400 hover:text-slate-200 border-slate-700"
                 >
-                  <Database className="w-3.5 h-3.5 mr-1 text-cyan-400" />
-                  Configure Firebase Credentials
+                  <Lock className="w-3.5 h-3.5 mr-1 text-slate-400" />
+                  {isAdminUnlocked ? "Admin Firebase Console" : "Admin Credentials Access"}
                 </Button>
               </div>
 
-              <a
-                href="https://console.firebase.google.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-indigo-400 hover:underline inline-flex items-center gap-1 font-medium"
-              >
-                Open Firebase Console
-                <ExternalLink className="w-3 h-3" />
-              </a>
+              <div className="text-[11px] text-slate-400">
+                Data is isolated and securely synced. Credentials access is restricted to Administrators.
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -337,10 +359,78 @@ export default function SettingsPage() {
         onResetComplete={refreshSummary}
       />
 
+      {/* Admin Unlock Modal */}
+      {showAdminPinModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in">
+          <div className="w-full max-w-sm rounded-2xl bg-slate-900 border border-slate-700 p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
+                <Lock className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white">Administrator Verification</h3>
+                <p className="text-[11px] text-slate-400">Restricted cloud credentials maintenance</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300">
+              Firebase API Keys and Project Infrastructure setup are accessible to system administrators only.
+            </p>
+
+            <form onSubmit={handleUnlockAdmin} className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-medium text-slate-400 mb-1">
+                  Enter Admin Passcode / PIN
+                </label>
+                <input
+                  type="password"
+                  value={adminPin}
+                  onChange={(e) => {
+                    setAdminPin(e.target.value);
+                    setAdminError(null);
+                  }}
+                  placeholder="Enter administrator PIN..."
+                  autoFocus
+                  className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
+                />
+                {adminError && (
+                  <p className="text-[11px] text-rose-400 mt-1 font-medium">{adminError}</p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowAdminPinModal(false);
+                    setAdminPin("");
+                    setAdminError(null);
+                  }}
+                  className="text-xs"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  className="text-xs"
+                >
+                  Verify & Unlock
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         defaultTab={authModalTab}
+        showAdminCredentials={isAdminUnlocked}
       />
     </AppLayout>
   );

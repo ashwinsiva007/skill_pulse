@@ -36,6 +36,7 @@ import {
   Trophy,
   GraduationCap,
   Globe,
+  MapPin,
 } from "lucide-react";
 
 export const OpportunitiesView: React.FC = () => {
@@ -49,6 +50,8 @@ export const OpportunitiesView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string>("All");
   const [selectedWorkMode, setSelectedWorkMode] = useState<string>("All");
+  const [selectedRegion, setSelectedRegion] = useState<string>("All India");
+  const [selectedPortal, setSelectedPortal] = useState<string>("All");
   const [sortBy, setSortBy] = useState<"match" | "title">("match");
 
   // Modals and API refresh state
@@ -63,7 +66,12 @@ export const OpportunitiesView: React.FC = () => {
   const fetchLiveOpportunities = async () => {
     try {
       setIsRefreshingLive(true);
-      const res = await fetch("/api/opportunities");
+      const params = new URLSearchParams();
+      if (selectedRegion !== "All India") params.append("region", selectedRegion);
+      if (selectedPortal !== "All") params.append("portal", selectedPortal);
+      if (selectedType !== "All") params.append("type", selectedType);
+
+      const res = await fetch(`/api/opportunities?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
         if (data.opportunities && Array.isArray(data.opportunities) && data.opportunities.length > 0) {
@@ -79,7 +87,7 @@ export const OpportunitiesView: React.FC = () => {
 
           setOpportunities(updatedOpportunities);
           setLastLiveFetch(new Date().toLocaleTimeString());
-          setFeedbackToast(`Fetched ${updatedOpportunities.length} live opportunities (Jobs, Hackathons, Internships)!`);
+          setFeedbackToast(`Fetched ${updatedOpportunities.length} verified India opportunities (INR Packages)!`);
           setTimeout(() => setFeedbackToast(null), 3500);
         }
       }
@@ -153,13 +161,39 @@ export const OpportunitiesView: React.FC = () => {
         // Work mode filter
         if (selectedWorkMode !== "All" && opp.workMode !== selectedWorkMode) return false;
 
+        // Region filter (India Mandatory & Hub-focused)
+        if (selectedRegion !== "All India") {
+          const loc = opp.location.toLowerCase();
+          if (selectedRegion === "South India") {
+            const isSouth = opp.region === "South India" || loc.includes("bengaluru") || loc.includes("chennai") || loc.includes("hyderabad") || loc.includes("coimbatore") || loc.includes("tamil nadu") || loc.includes("karnataka") || loc.includes("telangana");
+            if (!isSouth) return false;
+          } else if (selectedRegion === "North India") {
+            const isNorth = opp.region === "North India" || loc.includes("delhi") || loc.includes("gurugram") || loc.includes("noida") || loc.includes("haryana") || loc.includes("uttar pradesh");
+            if (!isNorth) return false;
+          } else if (selectedRegion === "West India") {
+            const isWest = opp.region === "West India" || loc.includes("mumbai") || loc.includes("pune") || loc.includes("maharashtra");
+            if (!isWest) return false;
+          } else if (selectedRegion === "Pan-India Remote") {
+            const isRemote = opp.region === "Pan-India Remote" || opp.workMode === "Remote" || loc.includes("remote");
+            if (!isRemote) return false;
+          } else if (opp.region !== selectedRegion) {
+            return false;
+          }
+        }
+
+        // Official Portal filter
+        if (selectedPortal !== "All") {
+          const portalMatch = opp.portal?.toLowerCase() === selectedPortal.toLowerCase() || opp.sourceName.toLowerCase().includes(selectedPortal.toLowerCase());
+          if (!portalMatch) return false;
+        }
+
         return true;
       })
       .sort((a, b) => {
         if (sortBy === "match") return b.matchScore - a.matchScore;
         return a.title.localeCompare(b.title);
       });
-  }, [evaluatedList, searchQuery, selectedType, selectedWorkMode, sortBy]);
+  }, [evaluatedList, searchQuery, selectedType, selectedWorkMode, selectedRegion, selectedPortal, sortBy]);
 
   // Handle Save / Bookmark
   const handleToggleSave = async (id: string) => {
@@ -246,15 +280,15 @@ export const OpportunitiesView: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h1 className="text-2xl font-bold text-white tracking-tight">
-                Live Opportunities & Challenges
+              <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+                <span>🇮🇳 India Tech Vacancies & Opportunities</span>
               </h1>
-              <Badge variant="indigo" size="sm">
-                Live Aggregator
+              <Badge variant="emerald" size="sm">
+                INR Salaried Roles
               </Badge>
             </div>
             <p className="text-xs text-slate-400 max-w-2xl">
-              Authentic live vacancies from Devpost, Arbeitnow, and verified global internships — tailored to your skill set with direct application links.
+              Authentic live vacancies strictly within India with salaries in INR (₹ LPA). Filter by South, North, West India and Pan-India Remote with verified direct application links on Naukri, LinkedIn India, Indeed, and Unstop.
             </p>
           </div>
 
@@ -266,7 +300,7 @@ export const OpportunitiesView: React.FC = () => {
               onClick={fetchLiveOpportunities}
               isLoading={isRefreshingLive}
               className="text-xs border-indigo-500/40 text-indigo-300 hover:bg-indigo-950/40"
-              title="Scrape and fetch latest live jobs, hackathons and internships"
+              title="Refresh live feeds from verified Indian portals"
             >
               <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isRefreshingLive ? "animate-spin" : ""}`} />
               Refresh Live Feed
@@ -295,15 +329,51 @@ export const OpportunitiesView: React.FC = () => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span className="text-slate-300 font-medium">Real-Time Opportunity Engine Active</span>
-            <span className="text-slate-500 text-[11px] hidden sm:inline">
-              · Verified open jobs, hackathons & internships
+            <span className="text-slate-300 font-medium">India-First Engine Active</span>
+            <span className="text-emerald-400 font-semibold text-[11px] bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/60">
+              ₹ INR Compensation Guaranteed
             </span>
           </div>
 
           <div className="flex items-center gap-3 text-[11px] text-slate-400">
-            <span>Live Sources: Devpost, Arbeitnow, Jobicy, Global Programs</span>
+            <span>Verified Portals: Naukri, LinkedIn India, Indeed India, Unstop, Devpost</span>
             {lastLiveFetch && <span className="text-slate-500">Last updated: {lastLiveFetch}</span>}
+          </div>
+        </div>
+
+        {/* Regional Filter Selector (South India, North India, West India, Remote) */}
+        <div className="p-4 rounded-xl bg-slate-900/90 border border-indigo-500/20 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-white flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-indigo-400" />
+              Target Work Region in India:
+            </span>
+            <span className="text-[11px] text-slate-400">
+              Active Region: <strong className="text-indigo-300">{selectedRegion}</strong>
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {[
+              { id: "All India", label: "🇮🇳 All India (Default)" },
+              { id: "South India", label: "📍 South India (Bengaluru, Chennai, Hyd, CBE)" },
+              { id: "North India", label: "📍 North India (Delhi NCR, Gurugram, Noida)" },
+              { id: "West India", label: "📍 West India (Mumbai, Pune)" },
+              { id: "Pan-India Remote", label: "🌐 Pan-India Remote" },
+            ].map((reg) => (
+              <button
+                key={reg.id}
+                type="button"
+                onClick={() => setSelectedRegion(reg.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  selectedRegion === reg.id
+                    ? "bg-indigo-600 text-white shadow-xs font-semibold"
+                    : "bg-slate-950 text-slate-400 hover:text-white border border-slate-800 hover:border-slate-700"
+                }`}
+              >
+                {reg.label}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -342,7 +412,7 @@ export const OpportunitiesView: React.FC = () => {
             }`}
           >
             <GraduationCap className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Internships & Fellowships ({internshipsCount})</span>
+            <span>Internships & Trainees ({internshipsCount})</span>
           </button>
 
           <button
@@ -367,19 +437,32 @@ export const OpportunitiesView: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by role, company, skill (e.g. Python, React)..."
+              placeholder="Search by role, company, city (e.g. Coimbatore, Bengaluru, React)..."
               className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-xs"
             />
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            {/* Official Portal Filter */}
+            <select
+              value={selectedPortal}
+              onChange={(e) => setSelectedPortal(e.target.value)}
+              className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 text-xs focus:outline-none"
+            >
+              <option value="All">All Official Portals</option>
+              <option value="Naukri">Naukri Verified</option>
+              <option value="LinkedIn">LinkedIn India</option>
+              <option value="Indeed">Indeed India</option>
+              <option value="Unstop">Unstop Official</option>
+            </select>
+
             {/* Work Mode Filter */}
             <select
               value={selectedWorkMode}
               onChange={(e) => setSelectedWorkMode(e.target.value)}
               className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 text-xs focus:outline-none"
             >
-              <option value="All">All Locations & Modes</option>
+              <option value="All">All Modes</option>
               <option value="Remote">Remote Only</option>
               <option value="Hybrid">Hybrid</option>
               <option value="On-site">On-site</option>
@@ -401,13 +484,15 @@ export const OpportunitiesView: React.FC = () => {
         {filteredOpportunities.length === 0 ? (
           <EmptyState
             icon={Briefcase}
-            title="No Opportunities Match Your Filter"
-            description="Try clearing search filters or click 'Refresh Live Feed' to pull new trending opportunities from Devpost, Arbeitnow, and Jobicy."
-            actionLabel="Reset Filter Settings"
+            title="No Indian Opportunities Match Your Selected Region"
+            description="Try switching the regional filter or clicking 'Refresh Live Feed' to pull active tech vacancies from Naukri, LinkedIn India, and Indeed."
+            actionLabel="Reset Regional Filters"
             onAction={() => {
               setSearchQuery("");
               setSelectedType("All");
               setSelectedWorkMode("All");
+              setSelectedRegion("All India");
+              setSelectedPortal("All");
             }}
           />
         ) : (

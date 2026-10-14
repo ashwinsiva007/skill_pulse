@@ -92,25 +92,25 @@ export const TopBar: React.FC<TopBarProps> = ({
 
           {/* Database / Cloud Status Badge */}
           {user ? (
-            <button
-              onClick={() => handleOpenAuth("firebase")}
+            <Link
+              href="/settings"
               title="Cloud Database Synchronized with Firestore"
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs bg-emerald-950/60 border border-emerald-800/80 text-emerald-300 hover:bg-emerald-900/60 transition-colors"
             >
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
               <span className="hidden md:inline">Firestore Synced</span>
-            </button>
+            </Link>
           ) : (
-            <button
-              onClick={() => handleOpenAuth("firebase")}
-              title="Click to connect Firebase Cloud Database or Sign In"
+            <Link
+              href="/settings"
+              title="Click to view Cloud Database Connection & Settings"
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs bg-slate-800/80 border border-slate-700/60 text-slate-300 hover:bg-slate-800 hover:border-slate-600 transition-colors"
             >
               <Database className="w-3.5 h-3.5 text-amber-400" />
               <span className="hidden md:inline">
-                {isFirebaseReady ? "Firebase Ready" : "Cloud DB Setup"}
+                {isFirebaseReady ? "Cloud Sync Ready" : "Local Mode"}
               </span>
-            </button>
+            </Link>
           )}
 
           {/* User Profile dropdown menu OR Sign In button */}
@@ -126,7 +126,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 </div>
                 <div className="hidden md:block text-xs leading-none">
                   <p className="font-semibold text-slate-200">{displayName}</p>
-                  <p className="text-[10px] text-emerald-400 mt-0.5">● Logged In (Persistent)</p>
+                  <p className="text-[10px] text-emerald-400 mt-0.5">● Active Session</p>
                 </div>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
               </button>
@@ -145,7 +145,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                         {user.email || profile?.email || "Cloud Profile"}
                       </p>
                       <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800">
-                        Persistent Device Session Active
+                        Device Session Active
                       </span>
                     </div>
 
@@ -155,7 +155,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                       className="flex items-center gap-2 p-2 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"
                     >
                       <User className="w-3.5 h-3.5 text-indigo-400" />
-                      <span>My Profile & DB Records</span>
+                      <span>My Profile & Skills</span>
                     </Link>
 
                     <Link
@@ -167,24 +167,14 @@ export const TopBar: React.FC<TopBarProps> = ({
                       <span>Profile Setup Wizard</span>
                     </Link>
 
-                    <button
-                      onClick={() => handleOpenAuth("firebase")}
-                      className="w-full flex items-center gap-2 p-2 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors text-left"
+                    <Link
+                      href="/settings"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center gap-2 p-2 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"
                     >
                       <Database className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>Firebase Console Status</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setIsUserMenuOpen(false);
-                        setIsResetModalOpen(true);
-                      }}
-                      className="w-full flex items-center gap-2 p-2 rounded-lg text-amber-300 hover:bg-slate-800 transition-colors text-left"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Reset Local Cache</span>
-                    </button>
+                      <span>Settings & Storage</span>
+                    </Link>
 
                     <div className="pt-1 border-t border-slate-800">
                       <button

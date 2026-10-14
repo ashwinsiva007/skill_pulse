@@ -28,15 +28,18 @@ export interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultTab?: "signin" | "signup" | "firebase";
+  showAdminCredentials?: boolean;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
   defaultTab = "signin",
+  showAdminCredentials = false,
 }) => {
   const { user, signIn, signUp, isFirebaseReady } = useAuth();
   const [tab, setTab] = useState<"signin" | "signup" | "firebase">(defaultTab);
+  const [rememberMe, setRememberMe] = useState(true);
 
   // Sign In Form State
   const [signInEmail, setSignInEmail] = useState("");
@@ -230,25 +233,27 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             Create Account
           </button>
 
-          <button
-            onClick={() => {
-              setTab("firebase");
-              setErrorMessage(null);
-            }}
-            className={`flex items-center gap-1.5 px-4 py-2.5 font-medium border-b-2 transition-colors ml-auto ${
-              tab === "firebase"
-                ? "border-indigo-500 text-indigo-400"
-                : "border-transparent text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <Database className="w-3.5 h-3.5" />
-            Firebase Console
-            {isFirebaseReady ? (
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            ) : (
-              <span className="w-2 h-2 rounded-full bg-amber-400" />
-            )}
-          </button>
+          {showAdminCredentials && (
+            <button
+              onClick={() => {
+                setTab("firebase");
+                setErrorMessage(null);
+              }}
+              className={`flex items-center gap-1.5 px-4 py-2.5 font-medium border-b-2 transition-colors ml-auto ${
+                tab === "firebase"
+                  ? "border-indigo-500 text-indigo-400"
+                  : "border-transparent text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              <Database className="w-3.5 h-3.5" />
+              Firebase Console (Admin)
+              {isFirebaseReady ? (
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              ) : (
+                <span className="w-2 h-2 rounded-full bg-amber-400" />
+              )}
+            </button>
+          )}
         </div>
 
         {/* Status Alerts */}
@@ -322,6 +327,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                 />
               </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                type="checkbox"
+                id="rememberUser"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="rounded bg-slate-950 border-slate-700 text-indigo-600 focus:ring-0 cursor-pointer"
+              />
+              <label htmlFor="rememberUser" className="text-[11px] text-slate-300 cursor-pointer select-none">
+                Save user session on this device (Stay signed in)
+              </label>
             </div>
 
             <div className="pt-2 flex items-center justify-between">

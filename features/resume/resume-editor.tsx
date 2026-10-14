@@ -224,8 +224,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                   type="text"
                   value={content.contact.fullName}
                   onChange={(e) => updateContact("fullName", e.target.value)}
-                  placeholder="e.g. Alex Morgan"
-                  className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
+                  placeholder="e.g. Ashwin Sivaram"
+                  className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -235,8 +235,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                   type="email"
                   value={content.contact.email}
                   onChange={(e) => updateContact("email", e.target.value)}
-                  placeholder="alex.morgan@example.com"
-                  className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
+                  placeholder="e.g. yourname@example.com"
+                  className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -246,8 +246,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                   type="text"
                   value={content.contact.phone || ""}
                   onChange={(e) => updateContact("phone", e.target.value)}
-                  placeholder="+1 (555) 349-8201"
-                  className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
+                  placeholder="e.g. +91 98765 43210"
+                  className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -257,8 +257,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                   type="text"
                   value={content.contact.location || ""}
                   onChange={(e) => updateContact("location", e.target.value)}
-                  placeholder="San Francisco, CA, USA"
-                  className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
+                  placeholder="e.g. Coimbatore, Tamil Nadu, India"
+                  className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -268,8 +268,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                   type="text"
                   value={content.contact.linkedInUrl || ""}
                   onChange={(e) => updateContact("linkedInUrl", e.target.value)}
-                  placeholder="https://linkedin.com/in/alexmorgan"
-                  className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
+                  placeholder="e.g. https://linkedin.com/in/yourprofile"
+                  className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -279,8 +279,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                   type="text"
                   value={content.contact.githubUrl || ""}
                   onChange={(e) => updateContact("githubUrl", e.target.value)}
-                  placeholder="https://github.com/alexmorgan"
-                  className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
+                  placeholder="e.g. https://github.com/yourusername"
+                  className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
@@ -290,8 +290,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                   type="text"
                   value={content.contact.portfolioUrl || ""}
                   onChange={(e) => updateContact("portfolioUrl", e.target.value)}
-                  placeholder="https://alexmorgan.dev"
-                  className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
+                  placeholder="e.g. https://yourportfolio.dev"
+                  className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                 />
               </div>
             </div>
@@ -413,16 +413,13 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                 onClick={() => {
                   const newExp: ResumeExperienceEntry = {
                     id: `exp-${Date.now()}`,
-                    company: "Company Name",
-                    role: "Software Engineering Intern",
+                    company: "",
+                    role: "",
                     type: "Internship",
-                    startDate: "June 2025",
-                    endDate: "August 2025",
-                    isCurrent: false,
-                    bullets: [
-                      "Collaborated on core platform features using TypeScript and Python.",
-                      "[Measurable impact: e.g. reduced query latency by 20% / supported 500+ users]",
-                    ],
+                    startDate: "",
+                    endDate: "Present",
+                    isCurrent: true,
+                    bullets: [""],
                   };
                   updateContent({ experience: [newExp, ...content.experience] });
                 }}
@@ -471,7 +468,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                             );
                             updateContent({ experience: updated });
                           }}
-                          className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white"
+                          placeholder="e.g. Swiggy / Zoho / Tech Solutions"
+                          className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white placeholder-slate-500"
                         />
                       </div>
                       <div>
@@ -485,7 +483,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                             );
                             updateContent({ experience: updated });
                           }}
-                          className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white"
+                          placeholder="e.g. Software Engineer Intern"
+                          className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white placeholder-slate-500"
                         />
                       </div>
                       <div>
@@ -499,7 +498,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                             );
                             updateContent({ experience: updated });
                           }}
-                          className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white"
+                          placeholder="e.g. June 2024"
+                          className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white placeholder-slate-500"
                         />
                       </div>
                       <div>
@@ -514,7 +514,7 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                             updateContent({ experience: updated });
                           }}
                           placeholder="e.g. Present"
-                          className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white"
+                          className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white placeholder-slate-500"
                         />
                       </div>
                     </div>
@@ -609,15 +609,11 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                 onClick={() => {
                   const newProj: ResumeProjectEntry = {
                     id: `proj-${Date.now()}`,
-                    title: "New Software Project",
-                    technologies: ["React", "TypeScript", "Node.js"],
-                    problem: "Manual process required hours of repetitive work.",
-                    outcomes: "[Add measured outcome: e.g. reduced execution time by 30%]",
-                    bullets: [
-                      "Engineered full-stack application using React and TypeScript.",
-                      "Addressed problem of repetitive manual processing with automated workflow.",
-                      "[Add measured outcome: e.g. reduced execution time by 30%]",
-                    ],
+                    title: "",
+                    technologies: [],
+                    problem: "",
+                    outcomes: "",
+                    bullets: [""],
                   };
                   updateContent({ projects: [newProj, ...content.projects] });
                 }}
@@ -666,7 +662,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                             );
                             updateContent({ projects: updated });
                           }}
-                          className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white"
+                          placeholder="e.g. AI-Powered Skill Assessment Platform"
+                          className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white placeholder-slate-500"
                         />
                       </div>
                       <div>
@@ -683,7 +680,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                             );
                             updateContent({ projects: updated });
                           }}
-                          className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white"
+                          placeholder="e.g. React, Next.js, TypeScript, PostgreSQL, Docker"
+                          className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white placeholder-slate-500"
                         />
                       </div>
                       <div>
@@ -806,13 +804,13 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                 onClick={() => {
                   const newEdu: ResumeEducationEntry = {
                     id: `edu-${Date.now()}`,
-                    institution: "University / Institute Name",
-                    degree: "Bachelor of Science",
-                    fieldOfStudy: "Computer Science",
-                    startDate: "2022",
-                    endDate: "2026",
-                    gpa: "3.8 / 4.0",
-                    location: "City, Country",
+                    institution: "",
+                    degree: "",
+                    fieldOfStudy: "",
+                    startDate: "",
+                    endDate: "",
+                    gpa: "",
+                    location: "",
                   };
                   updateContent({ education: [newEdu, ...content.education] });
                 }}
@@ -850,7 +848,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                           );
                           updateContent({ education: updated });
                         }}
-                        className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white"
+                        placeholder="e.g. Anna University / IIT Madras"
+                        className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white placeholder-slate-500"
                       />
                     </div>
                     <div>
@@ -864,7 +863,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                           );
                           updateContent({ education: updated });
                         }}
-                        className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white"
+                        placeholder="e.g. Bachelor of Technology (B.Tech)"
+                        className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white placeholder-slate-500"
                       />
                     </div>
                     <div>
@@ -878,7 +878,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                           );
                           updateContent({ education: updated });
                         }}
-                        className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white"
+                        placeholder="e.g. Computer Science & Engineering"
+                        className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white placeholder-slate-500"
                       />
                     </div>
                     <div>
@@ -892,8 +893,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                           );
                           updateContent({ education: updated });
                         }}
-                        placeholder="Expected May 2026"
-                        className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white"
+                        placeholder="e.g. 2026"
+                        className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white placeholder-slate-500"
                       />
                     </div>
                     <div>
@@ -907,8 +908,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                           );
                           updateContent({ education: updated });
                         }}
-                        placeholder="e.g. 3.85 / 4.0"
-                        className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white"
+                        placeholder="e.g. 8.5 / 10.0 CGPA"
+                        className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white placeholder-slate-500"
                       />
                     </div>
                     <div>
@@ -922,8 +923,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                           );
                           updateContent({ education: updated });
                         }}
-                        placeholder="e.g. Pasadena, CA"
-                        className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white"
+                        placeholder="e.g. Chennai, Tamil Nadu, India"
+                        className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white placeholder-slate-500"
                       />
                     </div>
                   </div>
@@ -947,9 +948,9 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                 onClick={() => {
                   const newCert: ResumeCertificationEntry = {
                     id: `cert-${Date.now()}`,
-                    name: "Certification Title",
-                    issuer: "Issuing Organization",
-                    date: "2025",
+                    name: "",
+                    issuer: "",
+                    date: "",
                   };
                   updateContent({ certifications: [...content.certifications, newCert] });
                 }}
@@ -972,8 +973,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                         );
                         updateContent({ certifications: updated });
                       }}
-                      placeholder="Certificate Name"
-                      className="px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white"
+                      placeholder="e.g. AWS Certified Developer"
+                      className="px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white placeholder-slate-500"
                     />
                     <input
                       type="text"
@@ -984,8 +985,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                         );
                         updateContent({ certifications: updated });
                       }}
-                      placeholder="Issuer (e.g. AWS)"
-                      className="px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white"
+                      placeholder="e.g. Amazon Web Services"
+                      className="px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white placeholder-slate-500"
                     />
                     <input
                       type="text"
@@ -996,8 +997,8 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                         );
                         updateContent({ certifications: updated });
                       }}
-                      placeholder="Issue Date"
-                      className="px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white"
+                      placeholder="e.g. 2025"
+                      className="px-2.5 py-1.5 text-xs rounded bg-slate-900 border border-slate-700 text-white placeholder-slate-500"
                     />
                   </div>
                   <button
@@ -1029,9 +1030,9 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                 onClick={() => {
                   const newAch: ResumeAchievementEntry = {
                     id: `ach-${Date.now()}`,
-                    title: "Honor / Hackathon Award",
-                    organization: "Organization",
-                    date: "2025",
+                    title: "",
+                    organization: "",
+                    date: "",
                   };
                   updateContent({ achievements: [...content.achievements, newAch] });
                 }}

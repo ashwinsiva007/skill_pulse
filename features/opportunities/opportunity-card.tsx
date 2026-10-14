@@ -98,6 +98,16 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
           <span className="text-[10px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800 font-medium">
             {opportunity.domain}
           </span>
+          {opportunity.region && (
+            <span className="text-[10px] text-cyan-300 bg-cyan-950/70 px-2 py-0.5 rounded border border-cyan-800/60 font-semibold">
+              📍 {opportunity.region}
+            </span>
+          )}
+          {opportunity.portal && (
+            <span className="text-[10px] text-indigo-300 bg-indigo-950/70 px-2 py-0.5 rounded border border-indigo-800/60 font-semibold">
+              via {opportunity.portal}
+            </span>
+          )}
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
             <ShieldCheck className="w-3 h-3 text-emerald-400" />
             Verified Live
@@ -129,8 +139,8 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
           </span>
 
           {opportunity.salaryRange && (
-            <span className="flex items-center gap-1 text-emerald-400 font-medium">
-              <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="flex items-center gap-1 text-emerald-400 font-semibold bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-800/50">
+              <span className="font-bold text-xs">₹</span>
               {opportunity.salaryRange}
             </span>
           )}
@@ -258,7 +268,17 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
               title="Open official listing and registration in a new tab"
             >
               <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-              {opportunity.type === "Hackathon" ? "Register on Devpost ↗" : "Apply on Official Site ↗"}
+              {opportunity.portal === "Naukri"
+                ? "Apply on Naukri ↗"
+                : opportunity.portal === "LinkedIn"
+                ? "Apply on LinkedIn ↗"
+                : opportunity.portal === "Indeed"
+                ? "Apply on Indeed ↗"
+                : opportunity.portal === "Unstop"
+                ? "Apply on Unstop ↗"
+                : opportunity.portal === "Devpost"
+                ? "Register on Devpost ↗"
+                : "Apply on Portal ↗"}
             </Button>
           </a>
 

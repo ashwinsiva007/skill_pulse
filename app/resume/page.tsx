@@ -300,7 +300,7 @@ function ResumePageContent() {
           {/* Editor & Preview Split Layout */}
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 min-h-[calc(100vh-14rem)]">
             {/* Left 6-7 cols: Interactive Editor */}
-            <div className="xl:col-span-6 2xl:col-span-6 flex flex-col">
+            <div className="xl:col-span-6 2xl:col-span-6 flex flex-col no-print resume-editor-pane">
               <ResumeEditor
                 draft={activeDraft}
                 onChange={(updated) => {

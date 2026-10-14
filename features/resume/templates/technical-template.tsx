@@ -289,7 +289,7 @@ export const TechnicalTemplate: React.FC<ResumeTemplateProps> = ({ content }) =>
             <span>
               |{" "}
               <a href={contact.githubUrl} target="_blank" rel="noreferrer" className="text-blue-700 hover:underline">
-                github.com/alexmorgan-demo
+                {contact.githubUrl.replace(/^https?:\/\/(www\.)?/, "")}
               </a>
             </span>
           )}
@@ -297,7 +297,7 @@ export const TechnicalTemplate: React.FC<ResumeTemplateProps> = ({ content }) =>
             <span>
               |{" "}
               <a href={contact.linkedInUrl} target="_blank" rel="noreferrer" className="text-blue-700 hover:underline">
-                linkedin.com/in/alexmorgan
+                {contact.linkedInUrl.replace(/^https?:\/\/(www\.)?/, "")}
               </a>
             </span>
           )}
@@ -305,7 +305,7 @@ export const TechnicalTemplate: React.FC<ResumeTemplateProps> = ({ content }) =>
             <span>
               |{" "}
               <a href={contact.portfolioUrl} target="_blank" rel="noreferrer" className="text-blue-700 hover:underline">
-                portfolio
+                {contact.portfolioUrl.replace(/^https?:\/\/(www\.)?/, "")}
               </a>
             </span>
           )}

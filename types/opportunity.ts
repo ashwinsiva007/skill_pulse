@@ -17,6 +17,21 @@ export type VerificationStatus =
   | "official_verified"
   | "unverified";
 
+export type OpportunityRegion =
+  | "South India"
+  | "North India"
+  | "West India"
+  | "Pan-India Remote"
+  | "All India";
+
+export type OpportunityPortal =
+  | "Naukri"
+  | "LinkedIn"
+  | "Indeed"
+  | "Unstop"
+  | "Devpost"
+  | "Direct Careers";
+
 export type ListingStatus = "open" | "demo_only" | "closed";
 
 export interface Opportunity {
@@ -34,6 +49,8 @@ export interface Opportunity {
   location: string;
   workMode: WorkMode;
   workplaceType: WorkplaceType; // Alias for workMode for backwards compatibility
+  region?: OpportunityRegion;
+  portal?: OpportunityPortal;
   
   // Optional / available fields (never invented if unknown)
   applicationUrl?: string; // Genuine application URL if available

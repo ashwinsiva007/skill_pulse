@@ -78,10 +78,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
   });
 
   // Step 3: Summary
-  const [summary, setSummary] = useState<string>(
-    profile.bio ||
-      `Motivated ${targetRole} with hands-on experience building performant, accessible applications. Proficient in modern software engineering principles, clean code practices, and rapid problem-solving.`
-  );
+  const [summary, setSummary] = useState<string>(profile.bio || "");
 
   // Step 4: Education
   const [educationList, setEducationList] = useState<ResumeEducationEntry[]>(
@@ -93,17 +90,17 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
           fieldOfStudy: e.specialization || "",
           endDate: e.expectedGraduationYear ? e.expectedGraduationYear.toString() : "",
           gpa: e.gpa || "",
-          highlights: ["Data Structures & Algorithms", "Database Systems"],
+          highlights: [],
         }))
       : [
           {
             id: `edu-${Date.now()}-1`,
             institution: "",
-            degree: "Bachelor of Science",
-            fieldOfStudy: "Computer Science",
-            endDate: new Date().getFullYear().toString(),
+            degree: "",
+            fieldOfStudy: "",
+            endDate: "",
             gpa: "",
-            highlights: ["Data Structures & Algorithms", "Database Management Systems", "Web Engineering"],
+            highlights: [],
           },
         ]
   );
@@ -115,7 +112,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
           id: exp.id || `exp-${idx}`,
           company: exp.company,
           role: exp.role,
-          location: exp.location || "Remote",
+          location: exp.location || "",
           startDate: exp.startDate || "",
           endDate: exp.endDate || "Present",
           isCurrent: exp.isCurrent ?? true,
@@ -126,7 +123,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
             id: `exp-${Date.now()}-1`,
             company: "",
             role: "",
-            location: "Remote / Hybrid",
+            location: "",
             startDate: "",
             endDate: "Present",
             isCurrent: true,
@@ -149,7 +146,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
           {
             id: `proj-${Date.now()}-1`,
             title: "",
-            technologies: ["React", "TypeScript", "Node.js"],
+            technologies: [],
             link: "",
             bullets: [""],
           },
@@ -158,14 +155,10 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
 
   // Step 7: Skills
   const [techSkillsInput, setTechSkillsInput] = useState<string>(
-    skills.length > 0
-      ? skills.map((s) => s.name).join(", ")
-      : "JavaScript, TypeScript, React, Next.js, Node.js, Python, SQL, Git & GitHub"
+    skills.length > 0 ? skills.map((s) => s.name).join(", ") : ""
   );
-  const [toolsInput, setToolsInput] = useState<string>("Git, Docker, VS Code, Postman, Linux, Vercel, Supabase");
-  const [softSkillsInput, setSoftSkillsInput] = useState<string>(
-    "Problem Solving, Code Review, Team Collaboration, Agile Development, Technical Writing"
-  );
+  const [toolsInput, setToolsInput] = useState<string>("");
+  const [softSkillsInput, setSoftSkillsInput] = useState<string>("");
 
   // Step 8: Certifications
   const [certificationsList, setCertificationsList] = useState<ResumeCertificationEntry[]>(
@@ -488,8 +481,8 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                   type="text"
                   value={contact.fullName}
                   onChange={(e) => setContact({ ...contact, fullName: e.target.value })}
-                  placeholder="e.g. Alex Morgan"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                  placeholder="e.g. Ashwin Sivaram"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs"
                 />
               </div>
 
@@ -501,8 +494,8 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                   type="email"
                   value={contact.email}
                   onChange={(e) => setContact({ ...contact, email: e.target.value })}
-                  placeholder="e.g. alex.morgan@example.com"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                  placeholder="e.g. yourname@example.com"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs"
                 />
               </div>
 
@@ -512,8 +505,8 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                   type="tel"
                   value={contact.phone}
                   onChange={(e) => setContact({ ...contact, phone: e.target.value })}
-                  placeholder="e.g. +1 (555) 019-2834"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                  placeholder="e.g. +91 90800 00910"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs"
                 />
               </div>
 
@@ -523,8 +516,8 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                   type="text"
                   value={contact.location}
                   onChange={(e) => setContact({ ...contact, location: e.target.value })}
-                  placeholder="e.g. San Francisco, CA / Remote"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                  placeholder="e.g. Coimbatore, Tamil Nadu, India"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs"
                 />
               </div>
 
@@ -534,8 +527,8 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                   type="url"
                   value={contact.linkedInUrl}
                   onChange={(e) => setContact({ ...contact, linkedInUrl: e.target.value })}
-                  placeholder="https://linkedin.com/in/username"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                  placeholder="e.g. https://linkedin.com/in/yourprofile"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs"
                 />
               </div>
 
@@ -545,8 +538,8 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                   type="url"
                   value={contact.githubUrl}
                   onChange={(e) => setContact({ ...contact, githubUrl: e.target.value })}
-                  placeholder="https://github.com/username"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                  placeholder="e.g. https://github.com/yourusername"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs"
                 />
               </div>
 
@@ -556,8 +549,8 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                   type="url"
                   value={contact.portfolioUrl}
                   onChange={(e) => setContact({ ...contact, portfolioUrl: e.target.value })}
-                  placeholder="https://myportfolio.dev"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                  placeholder="e.g. https://yourportfolio.dev"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs"
                 />
               </div>
             </div>
