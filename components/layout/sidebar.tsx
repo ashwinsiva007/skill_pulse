@@ -1,9 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { profileRepo } from "@/lib/repositories/local-repos";
+import { CandidateProfile } from "@/types/profile";
 import {
   Sparkles,
   LayoutDashboard,
@@ -25,7 +27,6 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
-  stageTag?: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -33,67 +34,55 @@ const NAV_ITEMS: NavItem[] = [
     label: "Dashboard",
     href: "/",
     icon: LayoutDashboard,
-    stageTag: "Stage 1",
   },
   {
-    label: "Profile Wizard",
-    href: "/onboarding",
-    icon: Sparkles,
-    badge: "7 Steps",
-    stageTag: "Stage 2",
-  },
-  {
-    label: "My Profile",
-    href: "/profile",
-    icon: User,
-    stageTag: "Stage 2",
-  },
-  {
-    label: "Resume Builder",
+    label: "ATS Resume Builder",
     href: "/resume",
     icon: FileText,
-    badge: "3 drafts",
-    stageTag: "Stage 3",
+    badge: "ATS Engine",
   },
   {
-    label: "Skill Analyzer",
+    label: "Skills Enhancer",
     href: "/skills",
     icon: Cpu,
-    badge: "8 roles",
-    stageTag: "Stage 4",
+    badge: "Roadmaps",
   },
   {
-    label: "Career Roadmap",
-    href: "/roadmap",
-    icon: Milestone,
-    badge: "Phase 2",
-    stageTag: "Stage 4",
-  },
-  {
-    label: "Opportunities",
+    label: "Live Opportunities",
     href: "/opportunities",
     icon: Briefcase,
-    badge: "10 roles",
-    stageTag: "Stage 5",
+    badge: "Live Feed",
   },
   {
     label: "Saved Opportunities",
     href: "/saved-opportunities",
     icon: Bookmark,
-    stageTag: "Stage 5",
+  },
+  {
+    label: "Career Roadmap",
+    href: "/roadmap",
+    icon: Milestone,
   },
   {
     label: "Application Tracker",
     href: "/tracker",
     icon: Kanban,
     badge: "Kanban",
-    stageTag: "Stage 5",
+  },
+  {
+    label: "Profile Wizard",
+    href: "/onboarding",
+    icon: Sparkles,
+  },
+  {
+    label: "My Profile",
+    href: "/profile",
+    icon: User,
   },
   {
     label: "Settings & Storage",
     href: "/settings",
     icon: Settings,
-    stageTag: "MVP",
   },
 ];
 
@@ -111,6 +100,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobile,
 }) => {
   const pathname = usePathname();
+  const [profile, setProfile] = useState<CandidateProfile | null>(null);
+
+  useEffect(() => {
+    profileRepo.getProfile().then(setProfile).catch(console.error);
+  }, []);
+
+  const displayName = profile?.name?.trim() || "My Workspace";
+  const initials = displayName
+    .split(" ")
+    .map((w: string) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() || "SP";
+  const displayRole = profile?.targetRole || "Software Developer";
 
   return (
     <>
@@ -143,13 +146,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {!isCollapsed && (
               <div className="flex flex-col truncate">
                 <span className="font-bold text-sm tracking-tight text-white flex items-center gap-1.5">
-                  Skill_pulse ai
+                  SkillPulse
                   <span className="text-[10px] uppercase font-semibold tracking-wider px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                    MVP
+                    Pro
                   </span>
                 </span>
                 <span className="text-[11px] text-slate-400 truncate">
-                  AI Career & Skill Navigator
+                  AI Career & Skill Platform
                 </span>
               </div>
             )}
@@ -167,8 +170,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Navigation List */}
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          <div className={cn("px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400", isCollapsed && "text-center")}>
-            {isCollapsed ? "•••" : "Workspace Navigation"}
+          <div className={cn("px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500", isCollapsed && "text-center")}>
+            {isCollapsed ? "•••" : "Platform Navigation"}
           </div>
 
           {NAV_ITEMS.map((item) => {
@@ -219,30 +222,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
           })}
         </div>
 
-        {/* Fictional Candidate Footer Badge */}
+        {/* Dynamic Candidate Footer Badge */}
         {!isCollapsed ? (
           <div className="p-3 m-3 rounded-xl bg-slate-900/80 border border-slate-800 text-xs">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-sm">
-                AM
+                {initials}
               </div>
               <div className="overflow-hidden leading-tight">
-                <p className="font-semibold text-slate-200 truncate">Alex Morgan</p>
-                <p className="text-[11px] text-slate-400 truncate">Demo Candidate</p>
+                <p className="font-semibold text-slate-200 truncate">{displayName}</p>
+                <p className="text-[11px] text-slate-400 truncate">Candidate Workspace</p>
               </div>
             </div>
             <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
-              <span className="truncate">Junior AI Solutions Eng</span>
-              <span className="text-emerald-400 font-medium">94% Match</span>
+              <span className="truncate">{displayRole}</span>
+              <span className="text-emerald-400 font-medium">Ready</span>
             </div>
           </div>
         ) : (
           <div className="p-3 flex justify-center border-t border-slate-800/70">
             <div
-              title="Alex Morgan (Demo Candidate)"
+              title={displayName}
               className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white font-bold text-xs shadow-sm"
             >
-              AM
+              {initials}
             </div>
           </div>
         )}

@@ -103,13 +103,13 @@ export const ResumeDashboard: React.FC<ResumeDashboardProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-2xl font-bold text-white tracking-tight">Resume Builder</h1>
-            <Badge variant="cyan" size="sm">
-              Stage 3
+            <h1 className="text-2xl font-bold text-white tracking-tight">ATS Resume Builder</h1>
+            <Badge variant="indigo" size="sm">
+              ATS Engine
             </Badge>
           </div>
           <p className="text-xs text-slate-400">
-            Create, edit, duplicate, and export role-tailored ATS-conscious resumes for multiple targets.
+            Create, edit, duplicate, and download recruiter-compliant ATS resumes from scratch with real-time scoring.
           </p>
         </div>
 

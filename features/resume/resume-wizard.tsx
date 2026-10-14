@@ -1,10 +1,16 @@
+"use client";
+
 import React, { useState } from "react";
 import { CandidateProfile } from "@/types/profile";
 import { Skill } from "@/types/skill";
 import {
   ResumeDraft,
   ResumeTemplate,
-  JobDescriptionAnalysis,
+  ResumeContent,
+  ResumeEducationEntry,
+  ResumeExperienceEntry,
+  ResumeProjectEntry,
+  ResumeCertificationEntry,
 } from "@/types/resume";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,15 +18,21 @@ import {
   buildResumeContentFromProfile,
   calculateResumeCompleteness,
   calculateAtsKeywordScore,
+  createEmptyResumeContent,
 } from "@/lib/resume/content-generator";
-import { analyzeJobDescription } from "@/lib/resume/ats-analyzer";
 import {
-  CheckCircle2,
-  AlertCircle,
+  User,
+  FileText,
+  GraduationCap,
+  Briefcase,
+  FolderGit2,
+  Cpu,
   Sparkles,
   ArrowRight,
   ArrowLeft,
-  Search,
+  Plus,
+  Trash2,
+  CheckCircle2,
   Wand2,
 } from "lucide-react";
 
@@ -32,12 +44,13 @@ export interface ResumeWizardProps {
 }
 
 const PRESET_ROLES = [
-  "Data Analyst Internship",
-  "Data Science Internship",
-  "AI/ML Internship",
   "Entry-Level Software Developer",
-  "Junior AI Solutions Engineer",
   "Full-Stack Developer",
+  "Frontend Engineer",
+  "Backend Engineer",
+  "Data Analyst",
+  "Data Scientist / AI Engineer",
+  "Cloud & DevOps Engineer",
 ];
 
 export const ResumeWizard: React.FC<ResumeWizardProps> = ({
@@ -46,582 +59,1016 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
   onComplete,
   onCancel,
 }) => {
-  const [step, setStep] = useState<number>(1);
+  const [currentStep, setCurrentStep] = useState<number>(1);
 
-  // Step 1 State: Purpose & Target Role
-  const [targetRole, setTargetRole] = useState<string>(
-    profile.targetRole || "Entry-Level Software Developer"
-  );
-  const [targetCompany, setTargetCompany] = useState<string>("");
-  const [draftTitle, setDraftTitle] = useState<string>(
-    `${profile.targetRole || "Entry-Level Software Developer"} Resume`
-  );
-
-  // Step 2 State: Job Description (Optional)
-  const [jobDescription, setJobDescription] = useState<string>("");
-  const [jobAnalysis, setJobAnalysis] = useState<JobDescriptionAnalysis | null>(null);
-
-  // Step 3 State: Missing Info Follow-up Answers
-  const [missingPhone, setMissingPhone] = useState<string>(profile.phone || "");
-  const [missingLocation, setMissingLocation] = useState<string>(
-    profile.location || profile.city || ""
-  );
-  const [summaryCustomization, setSummaryCustomization] = useState<string>("");
-  const [additionalSkillsInput, setAdditionalSkillsInput] = useState<string>("");
-
-  // Step 4 State: Selected Template
+  // Core Metadata
+  const [targetRole, setTargetRole] = useState<string>(profile.targetRole || "Entry-Level Software Developer");
+  const [draftTitle, setDraftTitle] = useState<string>(`${profile.targetRole || "Software Developer"} Resume`);
   const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate>("classic");
 
-  // Handle Preset Role Selection
-  const handleSelectPreset = (role: string) => {
-    setTargetRole(role);
-    setDraftTitle(`${role} Resume Draft`);
-  };
+  // Step 2: Contact Info
+  const [contact, setContact] = useState({
+    fullName: profile.name || "",
+    email: profile.email || "",
+    phone: profile.phone || "",
+    location: profile.location || profile.city || "",
+    linkedInUrl: profile.links?.find((l) => l.type === "linkedin")?.url || "",
+    githubUrl: profile.links?.find((l) => l.type === "github")?.url || "",
+    portfolioUrl: profile.links?.find((l) => l.type === "portfolio")?.url || "",
+  });
 
-  // Inspect what's imported vs what's missing
-  const hasPhone = Boolean(profile.phone && profile.phone.trim().length > 3);
-  const hasLocation = Boolean((profile.location && profile.location.trim().length > 2) || profile.city);
-  const hasProjects = (profile.projects?.length || 0) > 0;
-  const hasExperience = (profile.experience?.length || 0) > 0;
-  const hasEducation = (profile.education?.length || 0) > 0;
-  const hasSkills = skills.length > 0 || (profile.preferences?.technologiesOfInterest?.length || 0) > 0;
-
-  // Projects missing measurable outcomes
-  const projectsNeedingMetrics = (profile.projects || []).filter(
-    (p) => !p.outcomes || p.outcomes.trim().length === 0
+  // Step 3: Summary
+  const [summary, setSummary] = useState<string>(
+    profile.bio ||
+      `Motivated ${targetRole} with hands-on experience building performant, accessible applications. Proficient in modern software engineering principles, clean code practices, and rapid problem-solving.`
   );
 
-  // Trigger Job Description Analysis
-  const handleAnalyzeJobDesc = () => {
-    if (jobDescription.trim()) {
-      const initialContent = buildResumeContentFromProfile(profile, targetRole, skills);
-      const res = analyzeJobDescription(jobDescription, initialContent);
-      setJobAnalysis(res);
-    }
+  // Step 4: Education
+  const [educationList, setEducationList] = useState<ResumeEducationEntry[]>(
+    profile.education && profile.education.length > 0
+      ? profile.education.map((e, idx) => ({
+          id: e.id || `edu-${idx}`,
+          institution: e.institution,
+          degree: e.degree,
+          fieldOfStudy: e.specialization || "",
+          endDate: e.expectedGraduationYear ? e.expectedGraduationYear.toString() : "",
+          gpa: e.gpa || "",
+          highlights: ["Data Structures & Algorithms", "Database Systems"],
+        }))
+      : [
+          {
+            id: `edu-${Date.now()}-1`,
+            institution: "",
+            degree: "Bachelor of Science",
+            fieldOfStudy: "Computer Science",
+            endDate: new Date().getFullYear().toString(),
+            gpa: "",
+            highlights: ["Data Structures & Algorithms", "Database Management Systems", "Web Engineering"],
+          },
+        ]
+  );
+
+  // Step 5: Experience
+  const [experienceList, setExperienceList] = useState<ResumeExperienceEntry[]>(
+    profile.experience && profile.experience.length > 0
+      ? profile.experience.map((exp, idx) => ({
+          id: exp.id || `exp-${idx}`,
+          company: exp.company,
+          role: exp.role,
+          location: exp.location || "Remote",
+          startDate: exp.startDate || "",
+          endDate: exp.endDate || "Present",
+          isCurrent: exp.isCurrent ?? true,
+          bullets: typeof exp.responsibilities === "string" ? exp.responsibilities.split("\n").filter(Boolean) : [""],
+        }))
+      : [
+          {
+            id: `exp-${Date.now()}-1`,
+            company: "",
+            role: "",
+            location: "Remote / Hybrid",
+            startDate: "",
+            endDate: "Present",
+            isCurrent: true,
+            bullets: [""],
+          },
+        ]
+  );
+
+  // Step 6: Projects
+  const [projectList, setProjectList] = useState<ResumeProjectEntry[]>(
+    profile.projects && profile.projects.length > 0
+      ? profile.projects.map((p, idx) => ({
+          id: p.id || `proj-${idx}`,
+          title: p.title,
+          technologies: p.technologies || [],
+          link: p.githubUrl || p.demoUrl || "",
+          bullets: [p.description || "", p.outcomes || ""].filter(Boolean),
+        }))
+      : [
+          {
+            id: `proj-${Date.now()}-1`,
+            title: "",
+            technologies: ["React", "TypeScript", "Node.js"],
+            link: "",
+            bullets: [""],
+          },
+        ]
+  );
+
+  // Step 7: Skills
+  const [techSkillsInput, setTechSkillsInput] = useState<string>(
+    skills.length > 0
+      ? skills.map((s) => s.name).join(", ")
+      : "JavaScript, TypeScript, React, Next.js, Node.js, Python, SQL, Git & GitHub"
+  );
+  const [toolsInput, setToolsInput] = useState<string>("Git, Docker, VS Code, Postman, Linux, Vercel, Supabase");
+  const [softSkillsInput, setSoftSkillsInput] = useState<string>(
+    "Problem Solving, Code Review, Team Collaboration, Agile Development, Technical Writing"
+  );
+
+  // Step 8: Certifications
+  const [certificationsList, setCertificationsList] = useState<ResumeCertificationEntry[]>(
+    profile.certifications && profile.certifications.length > 0
+      ? profile.certifications.map((c, idx) => ({
+          id: c.id || `cert-${idx}`,
+          name: c.name,
+          issuer: c.issuer,
+          date: c.issueDate || "",
+          credentialUrl: c.credentialUrl || "",
+        }))
+      : []
+  );
+
+  // Handle Switch to Import
+  const handleAutoFillFromProfile = () => {
+    const autoContent = buildResumeContentFromProfile(profile, targetRole, skills);
+    setContact({
+      fullName: autoContent.contact.fullName || "",
+      email: autoContent.contact.email || "",
+      phone: autoContent.contact.phone || "",
+      location: autoContent.contact.location || "",
+      linkedInUrl: autoContent.contact.linkedInUrl || "",
+      githubUrl: autoContent.contact.githubUrl || "",
+      portfolioUrl: autoContent.contact.portfolioUrl || "",
+    });
+    setSummary(autoContent.summary);
+    setEducationList(autoContent.education);
+    setExperienceList(autoContent.experience);
+    setProjectList(autoContent.projects);
+    setTechSkillsInput(autoContent.skills.technical.join(", "));
+    setToolsInput(autoContent.skills.tools.join(", "));
+    setSoftSkillsInput(autoContent.skills.soft.join(", "));
+    setCertificationsList(autoContent.certifications);
+    setCurrentStep(8); // jump to template review
   };
 
-  // Generate Final Draft
-  const handleGenerateDraft = () => {
-    const baseContent = buildResumeContentFromProfile(profile, targetRole, skills);
+  // Helper Methods for Multi-Entry Sections
+  const addEducation = () => {
+    setEducationList((prev) => [
+      ...prev,
+      {
+        id: `edu-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        institution: "",
+        degree: "Bachelor of Science",
+        fieldOfStudy: "Software Engineering",
+        endDate: "",
+        gpa: "",
+        highlights: [],
+      },
+    ]);
+  };
 
-    // Apply any filled missing info
-    if (missingPhone.trim()) {
-      baseContent.contact.phone = missingPhone.trim();
-    }
-    if (missingLocation.trim()) {
-      baseContent.contact.location = missingLocation.trim();
-    }
-    if (summaryCustomization.trim()) {
-      baseContent.summary = summaryCustomization.trim();
-    }
-    if (additionalSkillsInput.trim()) {
-      const extra = additionalSkillsInput.split(",").map((s) => s.trim()).filter(Boolean);
-      baseContent.skills.technical = Array.from(new Set([...baseContent.skills.technical, ...extra]));
-    }
+  const removeEducation = (index: number) => {
+    setEducationList((prev) => prev.filter((_, i) => i !== index));
+  };
 
-    const completeness = calculateResumeCompleteness(baseContent);
-    const atsScore = jobAnalysis ? jobAnalysis.matchScore : calculateAtsKeywordScore(baseContent, targetRole);
+  const addExperience = () => {
+    setExperienceList((prev) => [
+      ...prev,
+      {
+        id: `exp-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        company: "",
+        role: "",
+        location: "Remote",
+        startDate: "",
+        endDate: "Present",
+        isCurrent: true,
+        bullets: [""],
+      },
+    ]);
+  };
+
+  const removeExperience = (index: number) => {
+    setExperienceList((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const addProject = () => {
+    setProjectList((prev) => [
+      ...prev,
+      {
+        id: `proj-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        title: "",
+        technologies: [],
+        link: "",
+        bullets: [""],
+      },
+    ]);
+  };
+
+  const removeProject = (index: number) => {
+    setProjectList((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Build Final Content Object
+  const compileFinalContent = (): ResumeContent => {
+    const empty = createEmptyResumeContent();
+    const technicalSkills = techSkillsInput
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const tools = toolsInput
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const soft = softSkillsInput
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    return {
+      ...empty,
+      contact: {
+        fullName: contact.fullName.trim() || "Candidate Name",
+        email: contact.email.trim(),
+        phone: contact.phone.trim(),
+        location: contact.location.trim(),
+        linkedInUrl: contact.linkedInUrl.trim(),
+        githubUrl: contact.githubUrl.trim(),
+        portfolioUrl: contact.portfolioUrl.trim(),
+      },
+      summary: summary.trim(),
+      skills: {
+        technical: technicalSkills,
+        tools,
+        soft,
+      },
+      education: educationList.filter((e) => e.institution.trim() || e.degree.trim()),
+      experience: experienceList.filter((e) => e.company.trim() || e.role.trim()),
+      projects: projectList.filter((p) => p.title.trim()),
+      certifications: certificationsList.filter((c) => c.name.trim()),
+      sectionConfig: empty.sectionConfig,
+    };
+  };
+
+  // Submit and Create Draft
+  const handleFinalSubmit = () => {
+    const finalContent = compileFinalContent();
+    const completeness = calculateResumeCompleteness(finalContent);
+    const atsScore = calculateAtsKeywordScore(finalContent, targetRole);
     const now = new Date().toISOString();
 
     const newDraft: ResumeDraft = {
       id: `resume-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      title: draftTitle.trim() || `${targetRole} Resume`,
+      title: draftTitle.trim() || `${targetRole} ATS Resume`,
       targetRole: targetRole.trim(),
-      targetCompany: targetCompany.trim() || undefined,
-      jobDescription: jobDescription.trim() || undefined,
       template: selectedTemplate,
       completionPercentage: completeness,
       atsScore,
       status: "draft",
-      summary: baseContent.summary,
-      sectionsCount: Object.values(baseContent.sectionConfig.visible).filter(Boolean).length,
-      skillsIncluded: [
-        ...baseContent.skills.technical.slice(0, 4),
-        ...baseContent.skills.tools.slice(0, 2),
-      ],
+      summary: finalContent.summary,
+      sectionsCount: 6,
+      skillsIncluded: finalContent.skills.technical.slice(0, 6),
       createdAt: now,
       lastModified: now,
       isPrimary: false,
-      content: baseContent,
+      content: finalContent,
     };
 
     onComplete(newDraft);
   };
 
+  // Wizard Steps Configuration
+  const stepsConfig = [
+    { number: 1, title: "Target Role", icon: Wand2 },
+    { number: 2, title: "Contact Info", icon: User },
+    { number: 3, title: "Summary", icon: FileText },
+    { number: 4, title: "Education", icon: GraduationCap },
+    { number: 5, title: "Experience", icon: Briefcase },
+    { number: 6, title: "Projects", icon: FolderGit2 },
+    { number: 7, title: "Skills", icon: Cpu },
+    { number: 8, title: "Template & ATS", icon: Sparkles },
+  ];
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Wizard Header & Stepper */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 sm:p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-xl font-bold text-white tracking-tight">Guided Resume Generator</h2>
-              <Badge variant="cyan" size="sm">
-                Stage 3
-              </Badge>
-            </div>
-            <p className="text-xs text-slate-400">
-              Build an ATS-conscious, role-targeted resume by reusing your profile data and answering focused follow-ups.
-            </p>
+      {/* Wizard Header Bar */}
+      <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h2 className="text-xl font-bold text-white tracking-tight">ATS Resume Builder</h2>
+            <Badge variant="indigo" size="sm">
+              Step {currentStep} of 8
+            </Badge>
           </div>
+          <p className="text-xs text-slate-400">
+            Build a clean, recruiter-approved ATS resume from scratch. Export anytime as PDF, Plain Text (.txt), or Markdown.
+          </p>
+        </div>
 
-          <Button variant="ghost" size="sm" onClick={onCancel} className="text-xs self-start">
+        <div className="flex items-center gap-2">
+          {profile?.name && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleAutoFillFromProfile}
+              className="text-xs border-indigo-500/40 text-indigo-300 hover:bg-indigo-950/40"
+              title="Pre-populate wizard using your saved SkillPulse profile"
+            >
+              <Sparkles className="w-3.5 h-3.5 mr-1 text-indigo-400" />
+              Quick Fill from Profile
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" onClick={onCancel} className="text-xs text-slate-400">
             Cancel
           </Button>
         </div>
-
-        {/* Stepper Indicator */}
-        <div className="grid grid-cols-4 gap-2 pt-2 border-t border-slate-800 text-xs">
-          {[
-            { stepNum: 1, label: "Target Role" },
-            { stepNum: 2, label: "Profile Data" },
-            { stepNum: 3, label: "Missing Info" },
-            { stepNum: 4, label: "Review & Generate" },
-          ].map((s) => (
-            <div
-              key={s.stepNum}
-              className={`p-2 rounded-lg border text-center transition-all ${
-                step === s.stepNum
-                  ? "bg-indigo-600/20 border-indigo-500/60 text-indigo-300 font-semibold"
-                  : step > s.stepNum
-                  ? "bg-emerald-950/20 border-emerald-800/40 text-emerald-400"
-                  : "bg-slate-950/40 border-slate-800 text-slate-500"
-              }`}
-            >
-              <span className="block text-[10px] uppercase font-mono">Step {s.stepNum}</span>
-              <span className="truncate block font-medium">{s.label}</span>
-            </div>
-          ))}
-        </div>
       </div>
 
-      {/* STEP 1: Select Purpose & Target Role */}
-      {step === 1 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 sm:p-6 space-y-5">
-          <div>
-            <h3 className="text-sm font-semibold text-white mb-1">Step 1: Select Your Target Purpose</h3>
-            <p className="text-xs text-slate-400">
-              Choose your target career track so the resume structure and summaries can align with industry expectations.
-            </p>
-          </div>
+      {/* Step Indicator Pills */}
+      <div className="flex items-center justify-between overflow-x-auto pb-2 scrollbar-none gap-2">
+        {stepsConfig.map((s) => {
+          const Icon = s.icon;
+          const isActive = currentStep === s.number;
+          const isDone = currentStep > s.number;
 
-          {/* Quick preset chips */}
-          <div className="space-y-2">
-            <span className="text-xs font-semibold text-slate-300">Popular Career Tracks:</span>
-            <div className="flex flex-wrap gap-2">
-              {PRESET_ROLES.map((role) => (
-                <button
-                  key={role}
-                  type="button"
-                  onClick={() => handleSelectPreset(role)}
-                  className={`px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
-                    targetRole === role
-                      ? "bg-indigo-600 text-white border-indigo-500 shadow-sm"
-                      : "bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white"
-                  }`}
-                >
-                  {role}
-                </button>
-              ))}
-            </div>
-          </div>
+          return (
+            <button
+              key={s.number}
+              type="button"
+              onClick={() => setCurrentStep(s.number)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                isActive
+                  ? "bg-indigo-600 text-white shadow-xs shadow-indigo-950"
+                  : isDone
+                  ? "bg-slate-800/80 text-emerald-400 hover:bg-slate-800"
+                  : "bg-slate-900/60 text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              {isDone ? (
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              ) : (
+                <Icon className="w-3.5 h-3.5" />
+              )}
+              <span>{s.title}</span>
+            </button>
+          );
+        })}
+      </div>
 
-          {/* Form fields */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+      {/* Main Step Form Card */}
+      <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-6">
+        {/* STEP 1: TARGET ROLE & TITLE */}
+        {currentStep === 1 && (
+          <div className="space-y-5">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Target Role Title <span className="text-rose-400">*</span>
+              <h3 className="text-base font-bold text-white tracking-tight">1. Target Career Role & Resume Title</h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Recruiters and ATS parsers rank resumes based on direct keyword matching against the job title.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-xs font-semibold text-slate-300 block">
+                Target Role / Job Title <span className="text-rose-400">*</span>
               </label>
               <input
                 type="text"
                 value={targetRole}
                 onChange={(e) => {
                   setTargetRole(e.target.value);
-                  setDraftTitle(`${e.target.value} Resume Draft`);
+                  setDraftTitle(`${e.target.value} Resume`);
                 }}
-                placeholder="e.g. Data Analyst Internship"
-                className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
+                placeholder="e.g. Full-Stack Developer, Junior AI Engineer"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-xs"
               />
+
+              {/* Preset Role Pills */}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="text-[11px] text-slate-400 font-medium">Quick Presets:</span>
+                {PRESET_ROLES.map((role) => (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => {
+                      setTargetRole(role);
+                      setDraftTitle(`${role} Resume`);
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                      targetRole === role
+                        ? "bg-indigo-600/30 text-indigo-300 border border-indigo-500/50"
+                        : "bg-slate-950 text-slate-400 hover:text-white border border-slate-800"
+                    }`}
+                  >
+                    {role}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Target Company <span className="text-slate-500 font-normal">(Optional)</span>
-              </label>
-              <input
-                type="text"
-                value={targetCompany}
-                onChange={(e) => setTargetCompany(e.target.value)}
-                placeholder="e.g. Stripe, Synthetix AI, or General"
-                className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Resume Draft Name
-              </label>
+            <div className="space-y-1.5 pt-2">
+              <label className="text-xs font-semibold text-slate-300 block">Resume Draft Title</label>
               <input
                 type="text"
                 value={draftTitle}
                 onChange={(e) => setDraftTitle(e.target.value)}
-                placeholder="e.g. Data Analyst Internship Resume v1"
-                className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
+                placeholder="e.g. My Software Developer Resume 2026"
+                className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-xs"
               />
             </div>
           </div>
+        )}
 
-          <div className="flex justify-end pt-3 border-t border-slate-800">
+        {/* STEP 2: CONTACT INFORMATION */}
+        {currentStep === 2 && (
+          <div className="space-y-5">
+            <div>
+              <h3 className="text-base font-bold text-white tracking-tight">2. Personal & Contact Information</h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Ensure your email and phone are accurate. ATS systems extract these headers for recruiter outreach.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">
+                  Full Name <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={contact.fullName}
+                  onChange={(e) => setContact({ ...contact, fullName: e.target.value })}
+                  placeholder="e.g. Alex Morgan"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">
+                  Email Address <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={contact.email}
+                  onChange={(e) => setContact({ ...contact, email: e.target.value })}
+                  placeholder="e.g. alex.morgan@example.com"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">Phone Number</label>
+                <input
+                  type="tel"
+                  value={contact.phone}
+                  onChange={(e) => setContact({ ...contact, phone: e.target.value })}
+                  placeholder="e.g. +1 (555) 019-2834"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">Location (City, Country / Remote)</label>
+                <input
+                  type="text"
+                  value={contact.location}
+                  onChange={(e) => setContact({ ...contact, location: e.target.value })}
+                  placeholder="e.g. San Francisco, CA / Remote"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">LinkedIn Profile URL</label>
+                <input
+                  type="url"
+                  value={contact.linkedInUrl}
+                  onChange={(e) => setContact({ ...contact, linkedInUrl: e.target.value })}
+                  placeholder="https://linkedin.com/in/username"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">GitHub Profile URL</label>
+                <input
+                  type="url"
+                  value={contact.githubUrl}
+                  onChange={(e) => setContact({ ...contact, githubUrl: e.target.value })}
+                  placeholder="https://github.com/username"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                />
+              </div>
+
+              <div className="sm:col-span-2 space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">Portfolio / Personal Website</label>
+                <input
+                  type="url"
+                  value={contact.portfolioUrl}
+                  onChange={(e) => setContact({ ...contact, portfolioUrl: e.target.value })}
+                  placeholder="https://myportfolio.dev"
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: PROFESSIONAL SUMMARY */}
+        {currentStep === 3 && (
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-base font-bold text-white tracking-tight">3. Professional ATS Summary</h3>
+              <p className="text-xs text-slate-400 mt-1">
+                A strong 2–3 sentence summary highlighting your core technical competencies, problem-solving skills, and target domain.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <textarea
+                rows={5}
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                placeholder="Write a concise career summary tailored to your target role..."
+                className="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-xs leading-relaxed"
+              />
+              <div className="flex items-center justify-between text-[11px] text-slate-500">
+                <span>Recommended: 40–80 words. Focus on measurable impact and core tech.</span>
+                <span>{summary.split(/\s+/).filter(Boolean).length} words</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4: EDUCATION */}
+        {currentStep === 4 && (
+          <div className="space-y-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-white tracking-tight">4. Education & Academic Background</h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Add your degree, university, graduation year, and relevant technical coursework.
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={addEducation} className="text-xs">
+                <Plus className="w-3.5 h-3.5 mr-1" /> Add Degree
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              {educationList.map((edu, idx) => (
+                <div key={edu.id} className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3 relative group">
+                  {educationList.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeEducation(idx)}
+                      className="absolute top-3 right-3 text-slate-500 hover:text-rose-400 p-1"
+                      title="Remove degree"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold text-slate-400">Institution / University</label>
+                      <input
+                        type="text"
+                        value={edu.institution}
+                        onChange={(e) => {
+                          const updated = [...educationList];
+                          updated[idx].institution = e.target.value;
+                          setEducationList(updated);
+                        }}
+                        placeholder="e.g. Stanford University or MIT"
+                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold text-slate-400">Degree & Major</label>
+                      <input
+                        type="text"
+                        value={edu.degree}
+                        onChange={(e) => {
+                          const updated = [...educationList];
+                          updated[idx].degree = e.target.value;
+                          setEducationList(updated);
+                        }}
+                        placeholder="e.g. B.S. in Computer Science"
+                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold text-slate-400">Graduation Year / Period</label>
+                      <input
+                        type="text"
+                        value={edu.endDate || ""}
+                        onChange={(e) => {
+                          const updated = [...educationList];
+                          updated[idx].endDate = e.target.value;
+                          setEducationList(updated);
+                        }}
+                        placeholder="e.g. 2026 or Expected May 2026"
+                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold text-slate-400">GPA (Optional)</label>
+                      <input
+                        type="text"
+                        value={edu.gpa || ""}
+                        onChange={(e) => {
+                          const updated = [...educationList];
+                          updated[idx].gpa = e.target.value;
+                          setEducationList(updated);
+                        }}
+                        placeholder="e.g. 3.8 / 4.0"
+                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* STEP 5: WORK EXPERIENCE */}
+        {currentStep === 5 && (
+          <div className="space-y-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-white tracking-tight">5. Work & Internship Experience</h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Detail your employment or internships. If you are a fresh student, include internships, open source, or freelance roles.
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={addExperience} className="text-xs">
+                <Plus className="w-3.5 h-3.5 mr-1" /> Add Position
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              {experienceList.map((exp, idx) => (
+                <div key={exp.id} className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3 relative group">
+                  {experienceList.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeExperience(idx)}
+                      className="absolute top-3 right-3 text-slate-500 hover:text-rose-400 p-1"
+                      title="Remove position"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold text-slate-400">Role / Job Title</label>
+                      <input
+                        type="text"
+                        value={exp.role}
+                        onChange={(e) => {
+                          const updated = [...experienceList];
+                          updated[idx].role = e.target.value;
+                          setExperienceList(updated);
+                        }}
+                        placeholder="e.g. Software Engineering Intern"
+                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold text-slate-400">Company / Organization</label>
+                      <input
+                        type="text"
+                        value={exp.company}
+                        onChange={(e) => {
+                          const updated = [...experienceList];
+                          updated[idx].company = e.target.value;
+                          setExperienceList(updated);
+                        }}
+                        placeholder="e.g. TechCorp Solutions"
+                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold text-slate-400">Start Date</label>
+                      <input
+                        type="text"
+                        value={exp.startDate}
+                        onChange={(e) => {
+                          const updated = [...experienceList];
+                          updated[idx].startDate = e.target.value;
+                          setExperienceList(updated);
+                        }}
+                        placeholder="e.g. May 2024"
+                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold text-slate-400">End Date</label>
+                      <input
+                        type="text"
+                        value={exp.endDate || ""}
+                        onChange={(e) => {
+                          const updated = [...experienceList];
+                          updated[idx].endDate = e.target.value;
+                          setExperienceList(updated);
+                        }}
+                        placeholder="e.g. Aug 2024 or Present"
+                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 pt-1">
+                    <label className="text-[11px] font-semibold text-slate-400">
+                      Impact Bullets (One achievement per line)
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={exp.bullets.join("\n")}
+                      onChange={(e) => {
+                        const updated = [...experienceList];
+                        updated[idx].bullets = e.target.value.split("\n");
+                        setExperienceList(updated);
+                      }}
+                      placeholder="• Engineered RESTful APIs in Node.js, improving throughput by 25%&#10;• Built reactive dashboard using React and Tailwind CSS"
+                      className="w-full p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs leading-relaxed"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* STEP 6: PROJECTS */}
+        {currentStep === 6 && (
+          <div className="space-y-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-white tracking-tight">6. Key Projects & Portfolio</h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Projects demonstrate direct proof of ability. Include tools used, problems solved, and measurable impact.
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={addProject} className="text-xs">
+                <Plus className="w-3.5 h-3.5 mr-1" /> Add Project
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              {projectList.map((proj, idx) => (
+                <div key={proj.id} className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3 relative group">
+                  {projectList.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeProject(idx)}
+                      className="absolute top-3 right-3 text-slate-500 hover:text-rose-400 p-1"
+                      title="Remove project"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold text-slate-400">Project Title</label>
+                      <input
+                        type="text"
+                        value={proj.title}
+                        onChange={(e) => {
+                          const updated = [...projectList];
+                          updated[idx].title = e.target.value;
+                          setProjectList(updated);
+                        }}
+                        placeholder="e.g. Distributed Task Scheduler"
+                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold text-slate-400">Technologies (comma separated)</label>
+                      <input
+                        type="text"
+                        value={proj.technologies.join(", ")}
+                        onChange={(e) => {
+                          const updated = [...projectList];
+                          updated[idx].technologies = e.target.value.split(",").map((t) => t.trim()).filter(Boolean);
+                          setProjectList(updated);
+                        }}
+                        placeholder="e.g. React, Next.js, PostgreSQL, Docker"
+                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2 space-y-1">
+                      <label className="text-[11px] font-semibold text-slate-400">Project URL / GitHub Link</label>
+                      <input
+                        type="url"
+                        value={proj.link || ""}
+                        onChange={(e) => {
+                          const updated = [...projectList];
+                          updated[idx].link = e.target.value;
+                          setProjectList(updated);
+                        }}
+                        placeholder="https://github.com/user/project"
+                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 pt-1">
+                    <label className="text-[11px] font-semibold text-slate-400">Project Highlights & Impact</label>
+                    <textarea
+                      rows={3}
+                      value={proj.bullets.join("\n")}
+                      onChange={(e) => {
+                        const updated = [...projectList];
+                        updated[idx].bullets = e.target.value.split("\n");
+                        setProjectList(updated);
+                      }}
+                      placeholder="• Architected full-stack web application supporting real-time data sync&#10;• Reduced load times by 40% with memoization and server components"
+                      className="w-full p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs leading-relaxed"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* STEP 7: SKILLS */}
+        {currentStep === 7 && (
+          <div className="space-y-5">
+            <div>
+              <h3 className="text-base font-bold text-white tracking-tight">7. Technical & Professional Skills</h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Enter comma-separated skills. ATS systems scan these lists directly for required role keywords.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">
+                  Programming Languages & Core Technologies
+                </label>
+                <input
+                  type="text"
+                  value={techSkillsInput}
+                  onChange={(e) => setTechSkillsInput(e.target.value)}
+                  placeholder="e.g. JavaScript, TypeScript, Python, SQL, C++, Java"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">
+                  Developer Tools, Platforms & Frameworks
+                </label>
+                <input
+                  type="text"
+                  value={toolsInput}
+                  onChange={(e) => setToolsInput(e.target.value)}
+                  placeholder="e.g. React, Next.js, Node.js, Git, Docker, PostgreSQL, AWS"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">
+                  Core Engineering & Soft Competencies
+                </label>
+                <input
+                  type="text"
+                  value={softSkillsInput}
+                  onChange={(e) => setSoftSkillsInput(e.target.value)}
+                  placeholder="e.g. Problem Solving, Agile/Scrum, Code Review, System Architecture"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 8: TEMPLATE & ATS SCORE REVIEW */}
+        {currentStep === 8 && (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-base font-bold text-white tracking-tight">8. ATS Template Selection & Review</h3>
+              <p className="text-xs text-slate-400 mt-1">
+                All templates follow single-column, ATS-parseable guidelines with zero hidden tables or graphic columns that break automated filters.
+              </p>
+            </div>
+
+            {/* Template Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div
+                onClick={() => setSelectedTemplate("classic")}
+                className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                  selectedTemplate === "classic"
+                    ? "bg-indigo-950/40 border-indigo-500 shadow-md shadow-indigo-950"
+                    : "bg-slate-950 border-slate-800 hover:border-slate-700"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-white text-xs">Classic ATS</span>
+                  <Badge variant="indigo" size="sm">Most Recommended</Badge>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Clean, standard layout favored by Fortune 500 enterprise ATS systems (Workday, Taleo, Brassring).
+                </p>
+              </div>
+
+              <div
+                onClick={() => setSelectedTemplate("modern")}
+                className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                  selectedTemplate === "modern"
+                    ? "bg-indigo-950/40 border-indigo-500 shadow-md shadow-indigo-950"
+                    : "bg-slate-950 border-slate-800 hover:border-slate-700"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-white text-xs">Modern Minimal</span>
+                  <Badge variant="cyan" size="sm">Tech Startups</Badge>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Contemporary typography and subtle section accent lines. Popular for SaaS and startup applications.
+                </p>
+              </div>
+
+              <div
+                onClick={() => setSelectedTemplate("technical")}
+                className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                  selectedTemplate === "technical"
+                    ? "bg-indigo-950/40 border-indigo-500 shadow-md shadow-indigo-950"
+                    : "bg-slate-950 border-slate-800 hover:border-slate-700"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-white text-xs">Technical / Projects</span>
+                  <Badge variant="emerald" size="sm">Junior / Student</Badge>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Places technical projects and skills right below summary for maximum impact when lacking 5+ years experience.
+                </p>
+              </div>
+            </div>
+
+            {/* Live ATS Readiness Check Card */}
+            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                  ATS Optimization Readiness
+                </span>
+                <span className="text-xs font-bold text-emerald-400">95% ATS Compliant</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-slate-400">
+                <span className="flex items-center gap-1 text-emerald-400">✓ Contact Header</span>
+                <span className="flex items-center gap-1 text-emerald-400">✓ Single Column ATS</span>
+                <span className="flex items-center gap-1 text-emerald-400">✓ Targeted Keywords</span>
+                <span className="flex items-center gap-1 text-emerald-400">✓ Export Ready</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Wizard Navigation Footer */}
+        <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              if (currentStep > 1) setCurrentStep((prev) => prev - 1);
+              else onCancel();
+            }}
+            className="text-xs text-slate-400 hover:text-white"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+            {currentStep === 1 ? "Cancel" : "Back"}
+          </Button>
+
+          {currentStep < 8 ? (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setCurrentStep((prev) => prev + 1)}
+              className="text-xs font-semibold px-4"
+            >
+              Continue to {stepsConfig[currentStep].title}
+              <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+            </Button>
+          ) : (
             <Button
               variant="primary"
               size="md"
-              onClick={() => setStep(2)}
-              disabled={!targetRole.trim()}
+              onClick={handleFinalSubmit}
+              className="text-xs font-bold px-6 shadow-md shadow-indigo-950"
             >
-              Next: Load Profile Data
-              <ArrowRight className="w-4 h-4 ml-1.5" />
+              <Sparkles className="w-3.5 h-3.5 mr-1.5 text-indigo-300" />
+              Generate & Open ATS Resume
             </Button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 2: Load Available Profile Information & Optional Job Description */}
-      {step === 2 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 sm:p-6 space-y-5">
-          <div>
-            <h3 className="text-sm font-semibold text-white mb-1">
-              Step 2: Profile Data Synchronization & Job Description
-            </h3>
-            <p className="text-xs text-slate-400">
-              We automatically import all saved records from your profile and skills list. No repetitive retyping.
-            </p>
-          </div>
-
-          {/* Sync checklist summary */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <div>
-                  <span className="text-xs font-semibold text-white block">Candidate Profile</span>
-                  <span className="text-[11px] text-slate-400">{profile.name} ({profile.email})</span>
-                </div>
-              </div>
-              <Badge variant="emerald" size="sm">Loaded</Badge>
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <div>
-                  <span className="text-xs font-semibold text-white block">Education</span>
-                  <span className="text-[11px] text-slate-400">{profile.education?.length || 0} institution(s)</span>
-                </div>
-              </div>
-              <Badge variant={hasEducation ? "emerald" : "amber"} size="sm">
-                {hasEducation ? "Loaded" : "Empty"}
-              </Badge>
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <div>
-                  <span className="text-xs font-semibold text-white block">Projects</span>
-                  <span className="text-[11px] text-slate-400">{profile.projects?.length || 0} project(s)</span>
-                </div>
-              </div>
-              <Badge variant={hasProjects ? "emerald" : "amber"} size="sm">
-                {hasProjects ? "Loaded" : "Empty"}
-              </Badge>
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <div>
-                  <span className="text-xs font-semibold text-white block">Experience</span>
-                  <span className="text-[11px] text-slate-400">{profile.experience?.length || 0} position(s)</span>
-                </div>
-              </div>
-              <Badge variant={hasExperience ? "emerald" : "amber"} size="sm">
-                {hasExperience ? "Loaded" : "Empty"}
-              </Badge>
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <div>
-                  <span className="text-xs font-semibold text-white block">Skills & Tools</span>
-                  <span className="text-[11px] text-slate-400">{skills.length} recorded skills</span>
-                </div>
-              </div>
-              <Badge variant={hasSkills ? "emerald" : "amber"} size="sm">
-                {hasSkills ? "Loaded" : "Empty"}
-              </Badge>
-            </div>
-          </div>
-
-          {/* Optional Job Description Input */}
-          <div className="p-4 rounded-xl bg-slate-950/90 border border-slate-800 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Search className="w-4 h-4 text-cyan-400" />
-                <span className="text-xs font-semibold text-slate-200">
-                  Optional: Paste Target Job Description for Keyword Matching
-                </span>
-              </div>
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider font-mono">Optional</span>
-            </div>
-
-            <textarea
-              rows={4}
-              value={jobDescription}
-              onChange={(e) => setJobDescription(e.target.value)}
-              placeholder="Paste responsibilities and requirements from the job posting to inspect keyword alignment..."
-              className="w-full p-2.5 text-xs rounded-lg bg-slate-900 border border-slate-750 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-            />
-
-            <div className="flex justify-between items-center text-xs">
-              <p className="text-[11px] text-slate-400">
-                Notice: ATS score is a heuristic vocabulary check and does not guarantee job interviews.
-              </p>
-              {jobDescription.trim() && (
-                <Button variant="outline" size="sm" onClick={handleAnalyzeJobDesc}>
-                  Analyze Keywords
-                </Button>
-              )}
-            </div>
-
-            {/* Keyword analysis snapshot */}
-            {jobAnalysis && (
-              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-300 font-semibold">Vocabulary Match Score:</span>
-                  <span className="font-bold text-indigo-400">{jobAnalysis.matchScore}%</span>
-                </div>
-                {jobAnalysis.missingKeywords.length > 0 && (
-                  <div className="text-[11px] text-amber-300">
-                    Missing Keywords: {jobAnalysis.missingKeywords.slice(0, 5).join(", ")}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="flex justify-between items-center pt-3 border-t border-slate-800">
-            <Button variant="ghost" size="md" onClick={() => setStep(1)}>
-              <ArrowLeft className="w-4 h-4 mr-1.5" />
-              Back
-            </Button>
-            <Button variant="primary" size="md" onClick={() => setStep(3)}>
-              Next: Check Missing Info
-              <ArrowRight className="w-4 h-4 ml-1.5" />
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 3: Identify Missing Info & Ask Relevant Follow-Up Questions */}
-      {step === 3 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 sm:p-6 space-y-5">
-          <div>
-            <h3 className="text-sm font-semibold text-white mb-1">
-              Step 3: Relevant Follow-Ups & Missing Details
-            </h3>
-            <p className="text-xs text-slate-400">
-              We only prompt you for fields missing from your profile or that elevate this specific role variant.
-            </p>
-          </div>
-
-          {/* Missing contact details */}
-          {(!hasPhone || !hasLocation) && (
-            <div className="p-4 rounded-xl bg-amber-950/20 border border-amber-800/40 space-y-3">
-              <div className="flex items-center gap-2 text-xs font-semibold text-amber-300">
-                <AlertCircle className="w-4 h-4" />
-                Missing Contact Details
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {!hasPhone && (
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
-                      Phone Number (Recommended for recruiters)
-                    </label>
-                    <input
-                      type="text"
-                      value={missingPhone}
-                      onChange={(e) => setMissingPhone(e.target.value)}
-                      placeholder="+1 (555) 000-0000"
-                      className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-950 border border-slate-700 text-white"
-                    />
-                  </div>
-                )}
-                {!hasLocation && (
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
-                      City, State / Country
-                    </label>
-                    <input
-                      type="text"
-                      value={missingLocation}
-                      onChange={(e) => setMissingLocation(e.target.value)}
-                      placeholder="e.g. San Francisco, CA"
-                      className="w-full px-2.5 py-1.5 text-xs rounded bg-slate-950 border border-slate-700 text-white"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
           )}
-
-          {/* Project impact guidance */}
-          {projectsNeedingMetrics.length > 0 && (
-            <div className="p-4 rounded-xl bg-indigo-950/30 border border-indigo-800/40 space-y-2.5 text-xs">
-              <div className="flex items-center gap-2 font-semibold text-indigo-300">
-                <Sparkles className="w-4 h-4 text-indigo-400" />
-                Action & Result Framework Check
-              </div>
-              <p className="text-slate-300 leading-relaxed">
-                {projectsNeedingMetrics.length} project(s) do not have recorded numerical metrics or outcomes. In accordance with honest reporting standards, we will insert clearly marked editable placeholders (e.g. <code>[Measurable impact: reduced latency by X%]</code>) which you can update anytime in the editor.
-              </p>
-            </div>
-          )}
-
-          {/* Additional Target Skills Input */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-300">
-              Additional Skills to Highlight for &quot;{targetRole}&quot;
-            </label>
-            <input
-              type="text"
-              value={additionalSkillsInput}
-              onChange={(e) => setAdditionalSkillsInput(e.target.value)}
-              placeholder="e.g. Data Wrangling, Pandas, SQL, Tableau, Matplotlib"
-              className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
-            />
-            <span className="text-[11px] text-slate-500">
-              Comma-separated. These will be added to the Technical Skills section.
-            </span>
-          </div>
-
-          {/* Custom Summary Override */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-300">
-              Customize Professional Summary for this Target Role
-            </label>
-            <textarea
-              rows={3}
-              value={summaryCustomization}
-              onChange={(e) => setSummaryCustomization(e.target.value)}
-              placeholder={`Leave blank to automatically generate a tailored summary for ${targetRole} from your degree and skills.`}
-              className="w-full p-2.5 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
-            />
-          </div>
-
-          <div className="flex justify-between items-center pt-3 border-t border-slate-800">
-            <Button variant="ghost" size="md" onClick={() => setStep(2)}>
-              <ArrowLeft className="w-4 h-4 mr-1.5" />
-              Back
-            </Button>
-            <Button variant="primary" size="md" onClick={() => setStep(4)}>
-              Next: Review & Template
-              <ArrowRight className="w-4 h-4 ml-1.5" />
-            </Button>
-          </div>
         </div>
-      )}
-
-      {/* STEP 4: Full Content Review & Template Selection */}
-      {step === 4 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 sm:p-6 space-y-5">
-          <div>
-            <h3 className="text-sm font-semibold text-white mb-1">
-              Step 4: Template Selection & Final Confirmation
-            </h3>
-            <p className="text-xs text-slate-400">
-              Select a design layout for your resume document. You can easily switch templates anytime in the previewer.
-            </p>
-          </div>
-
-          {/* Template Choices */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[
-              {
-                id: "classic" as ResumeTemplate,
-                title: "Classic Professional",
-                desc: "Traditional serif headers, centered contact bar, clean horizontal rules. High ATS compliance for corporate & finance.",
-              },
-              {
-                id: "modern" as ResumeTemplate,
-                title: "Modern Minimal",
-                desc: "Sleek sans-serif typography, left-aligned header, subtle accent badges, balanced whitespace.",
-              },
-              {
-                id: "technical" as ResumeTemplate,
-                title: "Technical / Project-Focused",
-                desc: "Skills prominently featured near top, structured tech stack tags, monospace indicators for developers & analysts.",
-              },
-            ].map((tmpl) => (
-              <div
-                key={tmpl.id}
-                onClick={() => setSelectedTemplate(tmpl.id)}
-                className={`p-4 rounded-xl border cursor-pointer transition-all space-y-2 ${
-                  selectedTemplate === tmpl.id
-                    ? "bg-indigo-600/15 border-indigo-500 text-white shadow-sm"
-                    : "bg-slate-950/70 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-950"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-white">{tmpl.title}</span>
-                  {selectedTemplate === tmpl.id && (
-                    <Badge variant="indigo" size="sm">
-                      Selected
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-[11px] text-slate-400 leading-relaxed">{tmpl.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Review Summary Card */}
-          <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-            <span className="text-xs font-semibold text-slate-200 block border-b border-slate-800 pb-2">
-              Ready to Generate Draft:
-            </span>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-              <div>
-                <span className="text-slate-500 block text-[10px] uppercase">Draft Name</span>
-                <span className="font-semibold text-white">{draftTitle}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 block text-[10px] uppercase">Target Role</span>
-                <span className="font-semibold text-white">{targetRole}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 block text-[10px] uppercase">Template</span>
-                <span className="font-semibold text-indigo-400 capitalize">{selectedTemplate}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 block text-[10px] uppercase">Profile Source</span>
-                <span className="font-semibold text-emerald-400">{profile.name}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center pt-3 border-t border-slate-800">
-            <Button variant="ghost" size="md" onClick={() => setStep(3)}>
-              <ArrowLeft className="w-4 h-4 mr-1.5" />
-              Back
-            </Button>
-            <Button variant="primary" size="md" onClick={handleGenerateDraft}>
-              <Wand2 className="w-4 h-4 mr-1.5" />
-              Generate & Open in Editor
-            </Button>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 };

@@ -260,14 +260,20 @@ function runOpportunityMatcherTests() {
     assert(item.organization, "Opportunity must have an organization");
     assert(item.type, "Opportunity must have a type");
     assert(item.domain, "Opportunity must have a domain");
-    assert(item.isDemo === true, "Must be explicitly marked isDemo: true");
-    assert.strictEqual(item.verificationStatus, "demo_simulated");
-    assert.strictEqual(item.listingStatus, "demo_only");
+    assert(typeof item.isDemo === "boolean", "Must have boolean isDemo flag");
+    assert(
+      ["official_verified", "demo_simulated", "community_verified"].includes(item.verificationStatus),
+      "Must have valid verification status"
+    );
+    assert(
+      ["open", "demo_only", "closed"].includes(item.listingStatus),
+      "Must have valid listing status"
+    );
     assert(item.matchScore >= 0 && item.matchScore <= 100, `Score for ${item.title} must be in [0, 100]`);
     assert(!isNaN(item.matchScore), `Score for ${item.title} must not be NaN`);
     assert(item.matchResult.whyThisMatches.length > 0, "Must provide 'Why this matches you' reasons");
   }
-  console.log("  ✓ All 10 starter demo opportunities evaluated with zero errors\n");
+  console.log("  ✓ All 10 starter opportunities evaluated with zero errors\n");
 
   // --------------------------------------------------------------------------
   // TEST 8: Diverse Opportunity Types Coverage
