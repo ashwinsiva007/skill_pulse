@@ -224,7 +224,7 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                   type="text"
                   value={content.contact.fullName}
                   onChange={(e) => updateContact("fullName", e.target.value)}
-                  placeholder="e.g. Ashwin Sivaram"
+                  placeholder="e.g. Alex Morgan"
                   className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                 />
               </div>
@@ -235,7 +235,7 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                   type="email"
                   value={content.contact.email}
                   onChange={(e) => updateContact("email", e.target.value)}
-                  placeholder="e.g. yourname@example.com"
+                  placeholder="e.g. example@gmail.com"
                   className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                 />
               </div>

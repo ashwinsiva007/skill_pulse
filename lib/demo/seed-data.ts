@@ -606,3 +606,93 @@ export function createBlankCandidateProfile(
     updatedAt: new Date().toISOString(),
   };
 }
+
+export function createAdminCandidateProfile(): CandidateProfile {
+  return {
+    id: "admin-master-account",
+    name: "System Administrator",
+    email: "admin@gmail.com",
+    headline: "SkillPulse Platform Administrator",
+    currentRole: "Platform Administrator",
+    targetRole: "System Administrator",
+    careerLevel: "Senior",
+    yearsOfExperience: 5,
+    city: "Administrative Hub",
+    state: "Secure HQ",
+    country: "India",
+    location: "System Console",
+    phone: "+91 98765 43210",
+    linkedInUrl: "https://linkedin.com/in/admin",
+    githubUrl: "https://github.com/admin",
+    portfolioUrl: "https://skillpulse.internal",
+    bio: "Permanent Master Administrator account with access to confidential candidate telemetry, system settings, and infrastructure keys.",
+    avatarUrl: "",
+    profileCompletionPercentage: 100,
+    careerReadinessScore: 100,
+    targetIndustry: "Platform Engineering & Security",
+    availability: "Managing System",
+    links: [
+      { id: "adm-l1", type: "github", label: "GitHub", url: "https://github.com/admin" },
+      { id: "adm-l2", type: "linkedin", label: "LinkedIn", url: "https://linkedin.com/in/admin" },
+    ],
+    education: [
+      {
+        id: "adm-edu-1",
+        institution: "National Institute of Systems & Technology",
+        degree: "B.Tech in Computer Science & Engineering",
+        specialization: "Security & Cloud Infrastructure",
+        yearOrSemester: "Graduate",
+        startYear: 2020,
+        expectedGraduationYear: 2024,
+        gpa: "4.0 / 4.0",
+      },
+    ],
+    projects: [
+      {
+        id: "adm-proj-1",
+        title: "SkillPulse Platform Engine",
+        problem: "Real-time candidate-to-opportunity matching and secure credentials maintenance.",
+        description: "Core career matching, ATS resume scoring, and opportunity aggregation engine.",
+        personalContribution: "Lead systems architect designing cloud sync and ATS parsing engine.",
+        technologies: ["Next.js", "TypeScript", "Tailwind CSS", "Firebase"],
+        status: "Completed",
+        startDate: "2024",
+      },
+    ],
+    experience: [
+      {
+        id: "adm-exp-1",
+        company: "SkillPulse Operations",
+        role: "Platform Administrator",
+        type: "Full-time",
+        location: "Internal Operations",
+        startDate: "2024",
+        endDate: "Present",
+        isCurrent: true,
+        responsibilities: "Overseeing confidential platform data, credentials access, and applicant tracking analytics.",
+      },
+    ],
+    certifications: [
+      {
+        id: "adm-cert-1",
+        name: "Certified Cloud Security Specialist",
+        issuer: "Cloud Systems Council",
+        issueDate: "2025",
+      },
+    ],
+    courses: [],
+    hackathons: [],
+    awards: [],
+    leadership: [],
+    preferences: {
+      targetJobRoles: ["Platform Administrator", "Security Lead"],
+      preferredDomains: ["Cloud & Infrastructure", "AI/ML Systems"],
+      preferredLocations: ["Remote", "Bengaluru", "Coimbatore"],
+      workplacePreference: "Flexible",
+      opportunityTypes: ["Full-time Jobs"],
+      technologiesOfInterest: ["Next.js", "TypeScript", "Node.js", "Security", "AI Orchestration"],
+      availability: "Immediate",
+    },
+    updatedAt: new Date().toISOString(),
+  };
+}

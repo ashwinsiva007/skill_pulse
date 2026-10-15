@@ -225,6 +225,72 @@ export function generateTailoredSummary(
   }. Driven by measurable problem-solving and engineering rigor.`;
 }
 
+export interface AiSummaryInput {
+  targetRole: string;
+  education: ResumeEducationEntry[];
+  experience: ResumeExperienceEntry[];
+  projects: ResumeProjectEntry[];
+  techSkills: string;
+  tools: string;
+  softSkills: string;
+  candidateName?: string;
+}
+
+/**
+ * Generates an ATS-compliant, high-impact professional summary
+ * strictly synthesized from user-entered form data (Target Role, Education, Experience, Projects, Skills).
+ */
+export function generateAiSummaryFromFormData(input: AiSummaryInput): string {
+  const { targetRole, education, experience, projects, techSkills, tools, softSkills } = input;
+
+  const skillsList = [
+    ...techSkills.split(",").map((s) => s.trim()).filter(Boolean),
+    ...tools.split(",").map((s) => s.trim()).filter(Boolean),
+  ];
+  const topSkillsStr = skillsList.slice(0, 4).join(", ");
+
+  const primaryEdu = education.find((e) => e.institution.trim() || e.degree.trim()) || education[0];
+  let eduPart = "";
+  if (primaryEdu && primaryEdu.degree.trim()) {
+    const deg = primaryEdu.degree.trim();
+    const inst = primaryEdu.institution.trim() ? ` from ${primaryEdu.institution.trim()}` : "";
+    eduPart = `with academic training in ${deg}${inst}`;
+  } else {
+    eduPart = `with a strong foundational background in computing and software engineering`;
+  }
+
+  const validExp = experience.filter((e) => e.company.trim() || e.role.trim());
+  const validProj = projects.filter((p) => p.title.trim());
+
+  let practicalPart = "";
+  if (validExp.length > 0) {
+    const topExp = validExp[0];
+    const role = topExp.role.trim() || "software engineer";
+    const comp = topExp.company.trim() ? ` at ${topExp.company.trim()}` : "";
+    practicalPart = `Demonstrated track record contributing as ${role}${comp}`;
+  } else if (validProj.length > 0) {
+    const topProj = validProj[0];
+    const projTech =
+      topProj.technologies && topProj.technologies.length > 0
+        ? ` using ${topProj.technologies.slice(0, 3).join(", ")}`
+        : "";
+    practicalPart = `Demonstrated hands-on engineering experience developing ${topProj.title}${projTech}`;
+  } else {
+    practicalPart = `Hands-on experience architecting scalable applications and modular codebases`;
+  }
+
+  const roleTitle = targetRole.trim() || "Software Developer";
+  const soft = softSkills.split(",").map((s) => s.trim()).filter(Boolean)[0] || "collaborative problem solving";
+
+  const sentence1 = `Results-oriented ${roleTitle} ${eduPart}${
+    topSkillsStr ? `, possessing practical proficiencies in ${topSkillsStr}` : ""
+  }.`;
+  const sentence2 = `${practicalPart}, prioritizing maintainable design patterns, clean documentation, and measurable system efficiency.`;
+  const sentence3 = `Adept in ${soft} and passionate about delivering impactful engineering outcomes aligned with core product goals.`;
+
+  return `${sentence1} ${sentence2} ${sentence3}`;
+}
+
 /**
  * Converts a candidate profile + skills into structured resume content.
  */

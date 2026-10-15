@@ -253,9 +253,9 @@ export const ClassicTemplate: React.FC<ResumeTemplateProps> = ({ content }) => {
   };
 
   return (
-    <article className="resume-print-area bg-white text-gray-900 w-full min-h-[297mm] p-8 sm:p-10 text-[10pt] font-sans antialiased shadow-xs border border-gray-200 print:border-none print:shadow-none print:p-0">
+    <article className="resume-sheet bg-white text-gray-900 w-full min-h-[297mm] p-8 sm:p-10 text-[10pt] font-sans antialiased shadow-xs border border-gray-200 print:border-none print:shadow-none print:p-0">
       {/* Header */}
-      <header className="text-center border-b-2 border-gray-800 pb-3 mb-4 page-break-inside-avoid">
+      <header className="resume-header text-center border-b-2 border-gray-800 pb-3 mb-4 page-break-inside-avoid">
         <h1 className="text-2xl sm:text-3xl font-serif font-bold uppercase tracking-wide text-gray-900 mb-1">
           {contact.fullName || "Candidate Name"}
         </h1>

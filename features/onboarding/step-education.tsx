@@ -9,9 +9,10 @@ import { Plus, Trash2, Edit3, GraduationCap } from "lucide-react";
 export interface StepEducationProps {
   entries: EducationEntry[];
   onChange: (entries: EducationEntry[]) => void;
+  error?: string;
 }
 
-export const StepEducation: React.FC<StepEducationProps> = ({ entries, onChange }) => {
+export const StepEducation: React.FC<StepEducationProps> = ({ entries, onChange, error }) => {
   const [isAdding, setIsAdding] = useState(entries.length === 0);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -97,9 +98,14 @@ export const StepEducation: React.FC<StepEducationProps> = ({ entries, onChange 
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-semibold text-white">Step B — Academic Background</h3>
+          <h3 className="text-base font-semibold text-white flex items-center gap-2">
+            <span>Step B — Academic Background</span>
+            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
+              Mandatory
+            </span>
+          </h3>
           <p className="text-xs text-slate-400 mt-0.5">
-            Add current or past colleges, universities, or degree programs.
+            Add current or past colleges, universities, or degree programs (Required).
           </p>
         </div>
 
@@ -110,6 +116,12 @@ export const StepEducation: React.FC<StepEducationProps> = ({ entries, onChange 
           </Button>
         )}
       </div>
+
+      {error && (
+        <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs">
+          {error}
+        </div>
+      )}
 
       {/* Existing Entries List */}
       <div className="space-y-3">

@@ -208,7 +208,7 @@ export const LoginLanding: React.FC<LoginLandingProps> = ({ onContinueAsGuest })
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="you@example.com"
+                        placeholder="example@gmail.com"
                         className="w-full pl-9 pr-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                       />
                     </div>
@@ -253,11 +253,29 @@ export const LoginLanding: React.FC<LoginLandingProps> = ({ onContinueAsGuest })
                     variant="primary"
                     size="md"
                     isLoading={isLoading}
-                    className="w-full text-xs font-semibold py-2.5 mt-2"
+                    className="w-full text-xs font-semibold py-2.5 mt-2 cursor-pointer"
                   >
                     Sign In to Dashboard
                     <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
                   </Button>
+
+                  {/* Master Admin Login Shortcut */}
+                  <div className="pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400">Master Admin:</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEmail("admin@gmail.com");
+                        setPassword("admin@123");
+                        setRememberUser(true);
+                      }}
+                      className="text-indigo-400 hover:text-indigo-300 font-medium underline flex items-center gap-1 cursor-pointer"
+                      title="Quick-fill admin@gmail.com / admin@123"
+                    >
+                      <Lock className="w-3 h-3 text-indigo-400" />
+                      admin@gmail.com / admin@123
+                    </button>
+                  </div>
                 </form>
               ) : (
                 /* SIGN UP FORM */
@@ -273,7 +291,7 @@ export const LoginLanding: React.FC<LoginLandingProps> = ({ onContinueAsGuest })
                         required
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        placeholder="e.g. Ashwin Sivaram"
+                        placeholder="e.g. Alex Morgan"
                         className="w-full pl-9 pr-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                       />
                     </div>
@@ -290,7 +308,7 @@ export const LoginLanding: React.FC<LoginLandingProps> = ({ onContinueAsGuest })
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="you@example.com"
+                        placeholder="example@gmail.com"
                         className="w-full pl-9 pr-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                       />
                     </div>

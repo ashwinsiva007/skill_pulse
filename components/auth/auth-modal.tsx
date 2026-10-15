@@ -306,7 +306,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <input
                   type="email"
                   required
-                  placeholder="yourname@domain.com"
+                  placeholder="example@gmail.com"
                   value={signInEmail}
                   onChange={(e) => setSignInEmail(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
@@ -363,6 +363,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               >
                 Sign In to Profile
               </Button>
+            </div>
+
+            {/* Master Admin Login Shortcut */}
+            <div className="pt-2.5 border-t border-slate-800 flex items-center justify-between text-[11px]">
+              <span className="text-slate-400">Master Admin:</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setSignInEmail("admin@gmail.com");
+                  setSignInPassword("admin@123");
+                  setRememberMe(true);
+                }}
+                className="text-indigo-400 hover:text-indigo-300 font-medium underline flex items-center gap-1 cursor-pointer"
+                title="Quick-fill admin@gmail.com / admin@123"
+              >
+                <Lock className="w-3 h-3 text-indigo-400" />
+                admin@gmail.com / admin@123
+              </button>
             </div>
           </form>
         )}
@@ -426,7 +444,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <input
                   type="email"
                   required
-                  placeholder="yourname@domain.com"
+                  placeholder="example@gmail.com"
                   value={signUpEmail}
                   onChange={(e) => setSignUpEmail(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"

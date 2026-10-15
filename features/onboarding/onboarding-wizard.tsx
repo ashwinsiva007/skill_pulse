@@ -120,6 +120,16 @@ export const OnboardingWizard: React.FC = () => {
         return false;
       }
     }
+    if (currentStep === 2) {
+      const eduList = profileData.education || [];
+      const hasValidEdu = eduList.some((e) => e.institution?.trim() && e.degree?.trim());
+      if (!hasValidEdu) {
+        setStepErrors({
+          education: "Education is mandatory. Please add at least one degree and institution before proceeding.",
+        });
+        return false;
+      }
+    }
     setStepErrors({});
     return true;
   };
@@ -256,6 +266,7 @@ export const OnboardingWizard: React.FC = () => {
           <StepEducation
             entries={profileData.education || []}
             onChange={handleEducationChange}
+            error={stepErrors.education}
           />
         )}
 

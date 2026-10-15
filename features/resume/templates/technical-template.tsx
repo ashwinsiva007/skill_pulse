@@ -269,9 +269,9 @@ export const TechnicalTemplate: React.FC<ResumeTemplateProps> = ({ content }) =>
   };
 
   return (
-    <article className="resume-print-area bg-white text-slate-900 w-full min-h-[297mm] p-8 sm:p-10 text-[9.5pt] font-sans antialiased shadow-xs border border-slate-300 print:border-none print:shadow-none print:p-0">
+    <article className="resume-sheet bg-white text-slate-900 w-full min-h-[297mm] p-8 sm:p-10 text-[9.5pt] font-sans antialiased shadow-xs border border-slate-300 print:border-none print:shadow-none print:p-0">
       {/* Header */}
-      <header className="mb-4 pb-2.5 border-b-2 border-slate-900 page-break-inside-avoid">
+      <header className="resume-header mb-4 pb-2.5 border-b-2 border-slate-900 page-break-inside-avoid">
         <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 mb-1">
           <h1 className="text-2xl sm:text-3xl font-mono font-bold tracking-tight text-slate-900 uppercase">
             {contact.fullName || "Candidate Name"}

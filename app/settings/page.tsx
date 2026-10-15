@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 
 export default function SettingsPage() {
-  const { user, isFirebaseReady, signOut } = useAuth();
+  const { user, isFirebaseReady, signOut, isAdmin } = useAuth();
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<"signin" | "signup" | "firebase">("signin");
@@ -41,9 +41,17 @@ export default function SettingsPage() {
 
   const fbConfig = getFirebaseConfig();
 
+  // Automatically unlock admin access if signed in as admin@gmail.com
+  useEffect(() => {
+    if (isAdmin || user?.email === "admin@gmail.com") {
+      setIsAdminUnlocked(true);
+    }
+  }, [isAdmin, user]);
+
   const handleUnlockAdmin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminPin.trim() === "admin007" || adminPin.trim() === "admin") {
+    const pin = adminPin.trim();
+    if (pin === "admin@123" || pin === "admin007" || pin === "admin") {
       setIsAdminUnlocked(true);
       setShowAdminPinModal(false);
       setAdminPin("");

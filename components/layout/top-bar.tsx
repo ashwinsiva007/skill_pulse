@@ -29,20 +29,21 @@ export interface TopBarProps {
 export const TopBar: React.FC<TopBarProps> = ({
   onOpenMobileSidebar,
 }) => {
-  const { user, profile, isFirebaseReady, signOut } = useAuth();
+  const { user, profile, isFirebaseReady, signOut, isAdmin } = useAuth();
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authDefaultTab, setAuthDefaultTab] = useState<"signin" | "signup" | "firebase">("signin");
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-  const displayName = profile?.name?.trim() || user?.displayName || (user ? "Cloud User" : "My Workspace");
-  const displayRole = profile?.targetRole || "Software Developer";
-  const initials = displayName
+  const isMasterAdmin = isAdmin || user?.email === "admin@gmail.com";
+  const displayName = isMasterAdmin ? "Master Administrator" : (profile?.name?.trim() || user?.displayName || (user ? "Cloud User" : "My Workspace"));
+  const displayRole = isMasterAdmin ? "Super Admin" : (profile?.targetRole || "Software Developer");
+  const initials = isMasterAdmin ? "AD" : (displayName
     .split(" ")
     .map((w: string) => w[0])
     .join("")
     .slice(0, 2)
-    .toUpperCase() || "SP";
+    .toUpperCase() || "SP");
 
   const handleOpenAuth = (tab: "signin" | "signup" | "firebase" = "signin") => {
     setAuthDefaultTab(tab);
@@ -144,9 +145,15 @@ export const TopBar: React.FC<TopBarProps> = ({
                       <p className="text-slate-400 text-[11px] truncate">
                         {user.email || profile?.email || "Cloud Profile"}
                       </p>
-                      <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800">
-                        Device Session Active
-                      </span>
+                      {isMasterAdmin ? (
+                        <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] bg-amber-950 text-amber-300 border border-amber-800 font-medium">
+                          Master Administrator
+                        </span>
+                      ) : (
+                        <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800">
+                          Device Session Active
+                        </span>
+                      )}
                     </div>
 
                     <Link

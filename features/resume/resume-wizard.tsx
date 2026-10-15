@@ -19,6 +19,7 @@ import {
   calculateResumeCompleteness,
   calculateAtsKeywordScore,
   createEmptyResumeContent,
+  generateAiSummaryFromFormData,
 } from "@/lib/resume/content-generator";
 import {
   User,
@@ -34,6 +35,7 @@ import {
   Trash2,
   CheckCircle2,
   Wand2,
+  AlertCircle,
 } from "lucide-react";
 
 export interface ResumeWizardProps {
@@ -60,6 +62,9 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
   onCancel,
 }) => {
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [educationError, setEducationError] = useState<string | null>(null);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState<boolean>(false);
+  const [aiSummaryNotice, setAiSummaryNotice] = useState<string | null>(null);
 
   // Core Metadata
   const [targetRole, setTargetRole] = useState<string>(profile.targetRole || "Entry-Level Software Developer");
@@ -77,7 +82,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
     portfolioUrl: profile.links?.find((l) => l.type === "portfolio")?.url || "",
   });
 
-  // Step 3: Summary
+  // Step 7: Summary (Positioned after Skills)
   const [summary, setSummary] = useState<string>(profile.bio || "");
 
   // Step 4: Education
@@ -321,15 +326,79 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
     onComplete(newDraft);
   };
 
-  // Wizard Steps Configuration
+  // Generate AI ATS Summary from previously entered form data
+  const handleGenerateAiSummary = () => {
+    setIsGeneratingSummary(true);
+    setTimeout(() => {
+      const generated = generateAiSummaryFromFormData({
+        targetRole,
+        education: educationList,
+        experience: experienceList,
+        projects: projectList,
+        techSkills: techSkillsInput,
+        tools: toolsInput,
+        softSkills: softSkillsInput,
+        candidateName: contact.fullName,
+      });
+      setSummary(generated);
+      setIsGeneratingSummary(false);
+      setAiSummaryNotice(
+        "AI summary successfully generated from your entered background! You can edit or refine it below."
+      );
+      setTimeout(() => setAiSummaryNotice(null), 6000);
+    }, 450);
+  };
+
+  // Step Click Guard - ensures mandatory education cannot be bypassed
+  const handleStepClick = (targetStep: number) => {
+    if (targetStep > 3) {
+      const hasValidEdu = educationList.some(
+        (e) => e.institution.trim().length > 0 && e.degree.trim().length > 0
+      );
+      if (!hasValidEdu) {
+        setEducationError(
+          "Education is mandatory. Please enter your Institution/University and Degree & Major before proceeding."
+        );
+        setCurrentStep(3);
+        return;
+      }
+    }
+    setEducationError(null);
+    setCurrentStep(targetStep);
+  };
+
+  // Step Continue Guard
+  const handleContinue = () => {
+    if (currentStep === 1) {
+      if (!targetRole.trim()) return;
+    }
+    if (currentStep === 2) {
+      if (!contact.fullName.trim() || !contact.email.trim()) return;
+    }
+    if (currentStep === 3) {
+      const hasValidEdu = educationList.some(
+        (e) => e.institution.trim().length > 0 && e.degree.trim().length > 0
+      );
+      if (!hasValidEdu) {
+        setEducationError(
+          "Education is mandatory. Please enter your Institution/University and Degree & Major before continuing."
+        );
+        return;
+      }
+      setEducationError(null);
+    }
+    setCurrentStep((prev) => prev + 1);
+  };
+
+  // Wizard Steps Configuration (Summary is now Step 7, after Skills)
   const stepsConfig = [
     { number: 1, title: "Target Role", icon: Wand2 },
     { number: 2, title: "Contact Info", icon: User },
-    { number: 3, title: "Summary", icon: FileText },
-    { number: 4, title: "Education", icon: GraduationCap },
-    { number: 5, title: "Experience", icon: Briefcase },
-    { number: 6, title: "Projects", icon: FolderGit2 },
-    { number: 7, title: "Skills", icon: Cpu },
+    { number: 3, title: "Education", icon: GraduationCap },
+    { number: 4, title: "Experience", icon: Briefcase },
+    { number: 5, title: "Projects", icon: FolderGit2 },
+    { number: 6, title: "Skills", icon: Cpu },
+    { number: 7, title: "Summary", icon: FileText },
     { number: 8, title: "Template & ATS", icon: Sparkles },
   ];
 
@@ -379,7 +448,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
             <button
               key={s.number}
               type="button"
-              onClick={() => setCurrentStep(s.number)}
+              onClick={() => handleStepClick(s.number)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                 isActive
                   ? "bg-indigo-600 text-white shadow-xs shadow-indigo-950"
@@ -481,7 +550,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                   type="text"
                   value={contact.fullName}
                   onChange={(e) => setContact({ ...contact, fullName: e.target.value })}
-                  placeholder="e.g. Ashwin Sivaram"
+                  placeholder="e.g. Alex Morgan"
                   className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs"
                 />
               </div>
@@ -494,7 +563,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                   type="email"
                   value={contact.email}
                   onChange={(e) => setContact({ ...contact, email: e.target.value })}
-                  placeholder="e.g. yourname@example.com"
+                  placeholder="e.g. example@gmail.com"
                   className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs"
                 />
               </div>
@@ -505,7 +574,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                   type="tel"
                   value={contact.phone}
                   onChange={(e) => setContact({ ...contact, phone: e.target.value })}
-                  placeholder="e.g. +91 90800 00910"
+                  placeholder="e.g. +91 98765 43210"
                   className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs"
                 />
               </div>
@@ -557,46 +626,32 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
           </div>
         )}
 
-        {/* STEP 3: PROFESSIONAL SUMMARY */}
+        {/* STEP 3: EDUCATION (MANDATORY) */}
         {currentStep === 3 && (
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-base font-bold text-white tracking-tight">3. Professional ATS Summary</h3>
-              <p className="text-xs text-slate-400 mt-1">
-                A strong 2–3 sentence summary highlighting your core technical competencies, problem-solving skills, and target domain.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <textarea
-                rows={5}
-                value={summary}
-                onChange={(e) => setSummary(e.target.value)}
-                placeholder="Write a concise career summary tailored to your target role..."
-                className="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-xs leading-relaxed"
-              />
-              <div className="flex items-center justify-between text-[11px] text-slate-500">
-                <span>Recommended: 40–80 words. Focus on measurable impact and core tech.</span>
-                <span>{summary.split(/\s+/).filter(Boolean).length} words</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 4: EDUCATION */}
-        {currentStep === 4 && (
           <div className="space-y-5">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
-                <h3 className="text-base font-bold text-white tracking-tight">4. Education & Academic Background</h3>
+                <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                  <span>3. Education & Academic Background</span>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                    Mandatory
+                  </span>
+                </h3>
                 <p className="text-xs text-slate-400 mt-1">
-                  Add your degree, university, graduation year, and relevant technical coursework.
+                  Add your degree, university, and graduation year. This section is required for ATS qualification verification and parsing.
                 </p>
               </div>
-              <Button variant="outline" size="sm" onClick={addEducation} className="text-xs">
+              <Button variant="outline" size="sm" onClick={addEducation} className="text-xs self-start sm:self-auto">
                 <Plus className="w-3.5 h-3.5 mr-1" /> Add Degree
               </Button>
             </div>
+
+            {educationError && (
+              <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs flex items-center gap-2 animate-fadeIn">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>{educationError}</span>
+              </div>
+            )}
 
             <div className="space-y-4">
               {educationList.map((edu, idx) => (
@@ -614,7 +669,9 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="text-[11px] font-semibold text-slate-400">Institution / University</label>
+                      <label className="text-[11px] font-semibold text-slate-300">
+                        Institution / University <span className="text-rose-400">*</span>
+                      </label>
                       <input
                         type="text"
                         value={edu.institution}
@@ -622,14 +679,21 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                           const updated = [...educationList];
                           updated[idx].institution = e.target.value;
                           setEducationList(updated);
+                          if (educationError) setEducationError(null);
                         }}
                         placeholder="e.g. Stanford University or MIT"
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+                        className={`w-full px-3 py-1.5 rounded-lg bg-slate-900 border text-white text-xs ${
+                          educationError && !edu.institution.trim()
+                            ? "border-rose-500 focus:border-rose-400"
+                            : "border-slate-800 focus:border-indigo-500"
+                        }`}
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[11px] font-semibold text-slate-400">Degree & Major</label>
+                      <label className="text-[11px] font-semibold text-slate-300">
+                        Degree & Major <span className="text-rose-400">*</span>
+                      </label>
                       <input
                         type="text"
                         value={edu.degree}
@@ -637,14 +701,21 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                           const updated = [...educationList];
                           updated[idx].degree = e.target.value;
                           setEducationList(updated);
+                          if (educationError) setEducationError(null);
                         }}
                         placeholder="e.g. B.S. in Computer Science"
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+                        className={`w-full px-3 py-1.5 rounded-lg bg-slate-900 border text-white text-xs ${
+                          educationError && !edu.degree.trim()
+                            ? "border-rose-500 focus:border-rose-400"
+                            : "border-slate-800 focus:border-indigo-500"
+                        }`}
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[11px] font-semibold text-slate-400">Graduation Year / Period</label>
+                      <label className="text-[11px] font-semibold text-slate-300">
+                        Graduation Year / Period <span className="text-rose-400">*</span>
+                      </label>
                       <input
                         type="text"
                         value={edu.endDate || ""}
@@ -654,7 +725,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                           setEducationList(updated);
                         }}
                         placeholder="e.g. 2026 or Expected May 2026"
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs focus:border-indigo-500"
                       />
                     </div>
 
@@ -669,7 +740,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                           setEducationList(updated);
                         }}
                         placeholder="e.g. 3.8 / 4.0"
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+                        className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs focus:border-indigo-500"
                       />
                     </div>
                   </div>
@@ -679,12 +750,12 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
           </div>
         )}
 
-        {/* STEP 5: WORK EXPERIENCE */}
-        {currentStep === 5 && (
+        {/* STEP 4: WORK EXPERIENCE */}
+        {currentStep === 4 && (
           <div className="space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-white tracking-tight">5. Work & Internship Experience</h3>
+                <h3 className="text-base font-bold text-white tracking-tight">4. Work & Internship Experience</h3>
                 <p className="text-xs text-slate-400 mt-1">
                   Detail your employment or internships. If you are a fresh student, include internships, open source, or freelance roles.
                 </p>
@@ -792,12 +863,12 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
           </div>
         )}
 
-        {/* STEP 6: PROJECTS */}
-        {currentStep === 6 && (
+        {/* STEP 5: PROJECTS */}
+        {currentStep === 5 && (
           <div className="space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-white tracking-tight">6. Key Projects & Portfolio</h3>
+                <h3 className="text-base font-bold text-white tracking-tight">5. Key Projects & Portfolio</h3>
                 <p className="text-xs text-slate-400 mt-1">
                   Projects demonstrate direct proof of ability. Include tools used, problems solved, and measurable impact.
                 </p>
@@ -888,11 +959,11 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
           </div>
         )}
 
-        {/* STEP 7: SKILLS */}
-        {currentStep === 7 && (
+        {/* STEP 6: SKILLS */}
+        {currentStep === 6 && (
           <div className="space-y-5">
             <div>
-              <h3 className="text-base font-bold text-white tracking-tight">7. Technical & Professional Skills</h3>
+              <h3 className="text-base font-bold text-white tracking-tight">6. Technical & Professional Skills</h3>
               <p className="text-xs text-slate-400 mt-1">
                 Enter comma-separated skills. ATS systems scan these lists directly for required role keywords.
               </p>
@@ -936,6 +1007,73 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                   placeholder="e.g. Problem Solving, Agile/Scrum, Code Review, System Architecture"
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
                 />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 7: PROFESSIONAL SUMMARY WITH AI GENERATOR */}
+        {currentStep === 7 && (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                  <span>7. Professional ATS Summary</span>
+                  <Badge variant="indigo" size="sm">Step 7 of 8</Badge>
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  A strong 2–3 sentence summary highlighting your core technical competencies and target domain.
+                </p>
+              </div>
+
+              {/* AI Generator Button */}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleGenerateAiSummary}
+                disabled={isGeneratingSummary}
+                className="text-xs border-indigo-500/50 bg-indigo-950/40 text-indigo-300 hover:bg-indigo-900/60 hover:text-white transition-all shadow-xs flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+                title="Synthesize a concise 2-3 sentence ATS summary strictly from your entered education, experience, projects, and skills"
+              >
+                <Sparkles className={`w-3.5 h-3.5 text-indigo-400 ${isGeneratingSummary ? "animate-spin" : ""}`} />
+                {isGeneratingSummary ? "Generating with AI..." : summary ? "Regenerate with AI" : "AI Generated Summary"}
+              </Button>
+            </div>
+
+            {aiSummaryNotice && (
+              <div className="p-3 rounded-xl bg-indigo-950/70 border border-indigo-700/70 text-indigo-200 text-xs flex items-center justify-between animate-fadeIn">
+                <span className="flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
+                  {aiSummaryNotice}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setAiSummaryNotice(null)}
+                  className="text-indigo-400 hover:text-white text-xs ml-2 font-bold"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <span className="text-[11px] text-slate-400">
+                  Type your summary below, or click <strong>AI Generated Summary</strong> above to auto-generate from your profile data:
+                </span>
+                <span className="text-[11px] text-indigo-400 font-medium">ATS Optimized</span>
+              </div>
+              <textarea
+                rows={5}
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                placeholder="Write a concise career summary tailored to your target role, or click 'AI Generated Summary' to automatically compose one from your entered background..."
+                className="w-full p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-xs leading-relaxed"
+              />
+              <div className="flex items-center justify-between text-[11px] text-slate-500">
+                <span>Recommended: 40–80 words. Focus on measurable impact and core tech.</span>
+                <span>{summary.split(/\s+/).filter(Boolean).length} words</span>
               </div>
             </div>
           </div>
@@ -1043,8 +1181,8 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
             <Button
               variant="primary"
               size="sm"
-              onClick={() => setCurrentStep((prev) => prev + 1)}
-              className="text-xs font-semibold px-4"
+              onClick={handleContinue}
+              className="text-xs font-semibold px-4 cursor-pointer"
             >
               Continue to {stepsConfig[currentStep].title}
               <ArrowRight className="w-3.5 h-3.5 ml-1.5" />

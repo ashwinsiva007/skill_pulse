@@ -102,7 +102,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobile,
 }) => {
   const pathname = usePathname();
-  const { user, profile: authProfile } = useAuth();
+  const { user, profile: authProfile, isAdmin } = useAuth();
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
 
   useEffect(() => {
@@ -113,14 +113,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [authProfile]);
 
-  const displayName = profile?.name?.trim() || user?.displayName || "My Workspace";
-  const initials = displayName
+  const isMasterAdmin = isAdmin || user?.email === "admin@gmail.com";
+  const displayName = isMasterAdmin ? "Administrator" : (profile?.name?.trim() || user?.displayName || "My Workspace");
+  const initials = isMasterAdmin ? "AD" : (displayName
     .split(" ")
     .map((w: string) => w[0])
     .join("")
     .slice(0, 2)
-    .toUpperCase() || "SP";
-  const displayRole = profile?.targetRole || "Software Developer";
+    .toUpperCase() || "SP");
+  const displayRole = isMasterAdmin ? "Super Admin" : (profile?.targetRole || "Software Developer");
 
 
   return (
@@ -239,14 +240,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
               <div className="overflow-hidden leading-tight">
                 <p className="font-semibold text-slate-200 truncate">{displayName}</p>
-                <p className="text-[11px] text-slate-400 truncate">Candidate Workspace</p>
+                <p className="text-[11px] text-slate-400 truncate">
+                  {isMasterAdmin ? "Administrator Portal" : "Candidate Workspace"}
+                </p>
               </div>
             </div>
             <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
               <span className="truncate">{displayRole}</span>
-              <span className="text-emerald-400 font-medium flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                {user ? "Cloud Synced" : "Local Mode"}
+              <span className={cn("font-medium flex items-center gap-1", isMasterAdmin ? "text-amber-400" : "text-emerald-400")}>
+                <span className={cn("w-1.5 h-1.5 rounded-full", isMasterAdmin ? "bg-amber-400" : "bg-emerald-400")} />
+                {isMasterAdmin ? "Master Admin" : user ? "Cloud Synced" : "Local Mode"}
               </span>
             </div>
           </div>

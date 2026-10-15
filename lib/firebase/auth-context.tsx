@@ -14,7 +14,7 @@ import {
 import { getFirebaseAuth, isFirebaseConfigured, getFirebaseConfig } from "./config";
 import { firestoreService } from "./firestore-service";
 import { CandidateProfile } from "@/types/profile";
-import { DEMO_PROFILE, createBlankCandidateProfile } from "@/lib/demo/seed-data";
+import { DEMO_PROFILE, createBlankCandidateProfile, createAdminCandidateProfile } from "@/lib/demo/seed-data";
 import { storageAdapter } from "@/lib/storage/storage-adapter";
 import { STORAGE_KEYS } from "@/lib/storage/keys";
 
@@ -23,6 +23,7 @@ export interface AuthContextType {
   profile: CandidateProfile | null;
   loading: boolean;
   isFirebaseReady: boolean;
+  isAdmin: boolean;
   error: string | null;
   signIn: (email: string, pass: string) => Promise<void>;
   signUp: (email: string, pass: string, name: string, targetRole?: string, careerLevel?: string) => Promise<void>;
@@ -43,6 +44,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Initialize Auth listener
   useEffect(() => {
+    // 0. Check for active permanent Master Administrator session
+    const masterAdminSession = storageAdapter.getItem<{ email: string; uid: string; role: string } | null>(
+      "skill_pulse_master_admin_session",
+      null
+    );
+    if (masterAdminSession && masterAdminSession.email === "admin@gmail.com") {
+      const adminFbUser = {
+        uid: "admin-master-account",
+        email: "admin@gmail.com",
+        displayName: "System Administrator",
+        emailVerified: true,
+      } as unknown as FirebaseUser;
+      setUser(adminFbUser);
+
+      let p = storageAdapter.getItem<CandidateProfile | null>(STORAGE_KEYS.PROFILE, null);
+      if (!p || p.email !== "admin@gmail.com") {
+        p = createAdminCandidateProfile();
+        storageAdapter.setItem(STORAGE_KEYS.PROFILE, p);
+      }
+      setProfile(p);
+      setLoading(false);
+      return;
+    }
+
     const auth = getFirebaseAuth();
     const ready = isFirebaseConfigured() && Boolean(auth);
     setIsFirebaseReady(ready);
@@ -107,6 +132,43 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const signIn = async (email: string, pass: string) => {
     setError(null);
     setLoading(true);
+
+    const trimmedEmail = email.trim().toLowerCase();
+
+    // 1. Permanent Master Administrator Authentication Check
+    if (trimmedEmail === "admin@gmail.com") {
+      if (pass === "admin@123") {
+        const adminFbUser = {
+          uid: "admin-master-account",
+          email: "admin@gmail.com",
+          displayName: "System Administrator",
+          emailVerified: true,
+        } as unknown as FirebaseUser;
+        setUser(adminFbUser);
+
+        let adminProf = storageAdapter.getItem<CandidateProfile | null>(STORAGE_KEYS.PROFILE, null);
+        if (!adminProf || adminProf.email !== "admin@gmail.com") {
+          adminProf = createAdminCandidateProfile();
+          storageAdapter.setItem(STORAGE_KEYS.PROFILE, adminProf);
+        }
+        setProfile(adminProf);
+
+        storageAdapter.setItem("skill_pulse_master_admin_session", {
+          email: "admin@gmail.com",
+          uid: "admin-master-account",
+          role: "admin",
+          loginTime: new Date().toISOString(),
+        });
+        setLoading(false);
+        return;
+      } else {
+        setLoading(false);
+        const err = "Invalid password for administrator account. Please use 'admin@123'.";
+        setError(err);
+        throw new Error(err);
+      }
+    }
+
     const auth = getFirebaseAuth();
     if (!auth) {
       setLoading(false);
@@ -145,6 +207,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   ) => {
     setError(null);
     setLoading(true);
+
+    const trimmedEmail = email.trim().toLowerCase();
+    if (trimmedEmail === "admin@gmail.com") {
+      if (pass === "admin@123") {
+        return signIn("admin@gmail.com", "admin@123");
+      }
+    }
+
     const auth = getFirebaseAuth();
     if (!auth) {
       setLoading(false);
@@ -218,9 +288,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const signOut = async () => {
+    setError(null);
+    storageAdapter.removeItem("skill_pulse_master_admin_session");
     const auth = getFirebaseAuth();
     if (auth) {
-      await fbSignOut(auth);
+      try {
+        await fbSignOut(auth);
+      } catch (err) {
+        console.warn("SignOut error:", err);
+      }
     }
     setUser(null);
     setProfile(DEMO_PROFILE);
@@ -229,6 +305,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const clearError = () => setError(null);
 
+  const isAdmin = Boolean(user?.email === "admin@gmail.com");
+
   return (
     <AuthContext.Provider
       value={{
@@ -236,6 +314,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         profile,
         loading,
         isFirebaseReady,
+        isAdmin,
         error,
         signIn,
         signUp,

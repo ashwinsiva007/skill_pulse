@@ -261,9 +261,9 @@ export const ModernTemplate: React.FC<ResumeTemplateProps> = ({ content }) => {
   };
 
   return (
-    <article className="resume-print-area bg-white text-slate-900 w-full min-h-[297mm] p-8 sm:p-10 text-[10pt] font-sans antialiased shadow-xs border border-slate-200 print:border-none print:shadow-none print:p-0">
+    <article className="resume-sheet bg-white text-slate-900 w-full min-h-[297mm] p-8 sm:p-10 text-[10pt] font-sans antialiased shadow-xs border border-slate-200 print:border-none print:shadow-none print:p-0">
       {/* Modern Header */}
-      <header className="mb-5 page-break-inside-avoid">
+      <header className="resume-header mb-5 page-break-inside-avoid">
         <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 mb-1.5">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             {contact.fullName || "Candidate Name"}
