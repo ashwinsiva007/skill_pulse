@@ -29,6 +29,33 @@ function sanitizeForFirestore<T>(data: T): T {
 
 export const firestoreService = {
   // ==========================================
+  // 0. ADMIN USER TELEMETRY (Master Admin)
+  // ==========================================
+  async getAllUsers(): Promise<{ uid: string; email: string; updatedAt?: string; profile?: CandidateProfile }[]> {
+    const db = getFirebaseDb();
+    if (!db) return [];
+
+    try {
+      const usersCol = collection(db, "users");
+      const snap = await getDocs(usersCol);
+      const list: { uid: string; email: string; updatedAt?: string; profile?: CandidateProfile }[] = [];
+      snap.forEach((d) => {
+        const data = d.data();
+        list.push({
+          uid: d.id,
+          email: data.email || (data.profile as CandidateProfile)?.email || "",
+          updatedAt: data.updatedAt,
+          profile: data.profile as CandidateProfile,
+        });
+      });
+      return list;
+    } catch (err) {
+      console.warn("[Firestore getAllUsers error]:", err);
+      return [];
+    }
+  },
+
+  // ==========================================
   // 1. CANDIDATE PROFILE
   // ==========================================
   async getUserProfile(uid: string): Promise<CandidateProfile | null> {

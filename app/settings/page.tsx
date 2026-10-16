@@ -27,6 +27,7 @@ import {
 
 export default function SettingsPage() {
   const { user, isFirebaseReady, signOut, isAdmin } = useAuth();
+  const isMasterAdmin = isAdmin || user?.email === "admin@gmail.com";
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<"signin" | "signup" | "firebase">("signin");
@@ -248,19 +249,27 @@ export default function SettingsPage() {
                 )}
 
                 <Button
-                  variant="outline"
+                  variant={isMasterAdmin ? "primary" : "outline"}
                   size="sm"
                   onClick={() => {
-                    if (isAdminUnlocked) {
+                    if (isMasterAdmin || isAdminUnlocked) {
                       openAuthWithTab("firebase");
                     } else {
                       setShowAdminPinModal(true);
                     }
                   }}
-                  className="text-xs text-slate-400 hover:text-slate-200 border-slate-700"
+                  className={`text-xs ${
+                    isMasterAdmin
+                      ? "bg-amber-600 hover:bg-amber-500 text-white font-bold shadow-md shadow-amber-950"
+                      : "text-slate-400 hover:text-slate-200 border-slate-700"
+                  }`}
                 >
-                  <Lock className="w-3.5 h-3.5 mr-1 text-slate-400" />
-                  {isAdminUnlocked ? "Admin Firebase Console" : "Admin Credentials Access"}
+                  <Lock className="w-3.5 h-3.5 mr-1" />
+                  {isMasterAdmin
+                    ? "Open Firebase Credentials Console"
+                    : isAdminUnlocked
+                    ? "Admin Firebase Console"
+                    : "Admin Credentials Access"}
                 </Button>
               </div>
 

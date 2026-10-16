@@ -39,10 +39,17 @@ import {
   CloudUpload,
   RefreshCw,
 } from "lucide-react";
+import { AdminRestrictedNotice } from "@/components/admin/admin-restricted-notice";
 
 function ProfileContent() {
   const searchParams = useSearchParams();
-  const { user, isFirebaseReady, refreshProfile, resetProfileToCleanSlate } = useAuth();
+  const { user, isFirebaseReady, refreshProfile, resetProfileToCleanSlate, isAdmin } = useAuth();
+  const isMasterAdmin = isAdmin || user?.email === "admin@gmail.com";
+
+  if (isMasterAdmin) {
+    return <AdminRestrictedNotice featureName="Candidate Profile Editor" />;
+  }
+
   const [profile, setProfile] = useState<CandidateProfile>(DEMO_PROFILE);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [isBreakdownOpen, setIsBreakdownOpen] = useState(false);

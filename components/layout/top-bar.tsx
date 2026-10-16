@@ -14,6 +14,7 @@ import {
   LogIn,
   LogOut,
   ShieldCheck,
+  Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ResetConfirmModal } from "./reset-confirm-modal";
@@ -75,21 +76,36 @@ export const TopBar: React.FC<TopBarProps> = ({
               SkillPulse
             </span>
             <span className="text-slate-600">/</span>
-            <span className="text-slate-400 truncate max-w-[200px] md:max-w-none">
-              Target Track: <strong className="text-slate-300 font-medium">{displayRole}</strong>
-            </span>
+            {isMasterAdmin ? (
+              <span className="text-slate-400 truncate max-w-[200px] md:max-w-none">
+                Console: <strong className="text-amber-400 font-semibold">Master Administrator Telemetry</strong>
+              </span>
+            ) : (
+              <span className="text-slate-400 truncate max-w-[200px] md:max-w-none">
+                Target Track: <strong className="text-slate-300 font-medium">{displayRole}</strong>
+              </span>
+            )}
           </div>
         </div>
 
         {/* Right: Actions, Database Sync Indicator, User menu */}
         <div className="flex items-center gap-2.5 sm:gap-3 ml-auto">
-          {/* Quick Create Resume Button */}
-          <Link href="/resume" className="hidden sm:inline-flex">
-            <Button variant="outline" size="sm" className="h-8 text-xs border-indigo-500/40 text-indigo-300 hover:bg-indigo-950/40">
-              <FileText className="w-3.5 h-3.5 mr-1" />
-              Build Resume
-            </Button>
-          </Link>
+          {/* Quick Action Button: Live Job QA for Admin, Build Resume for Candidates */}
+          {isMasterAdmin ? (
+            <Link href="/opportunities" className="hidden sm:inline-flex">
+              <Button variant="outline" size="sm" className="h-8 text-xs border-indigo-500/40 text-indigo-300 hover:bg-indigo-950/40">
+                <Briefcase className="w-3.5 h-3.5 mr-1 text-cyan-400" />
+                Job Openings QA
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/resume" className="hidden sm:inline-flex">
+              <Button variant="outline" size="sm" className="h-8 text-xs border-indigo-500/40 text-indigo-300 hover:bg-indigo-950/40">
+                <FileText className="w-3.5 h-3.5 mr-1" />
+                Build Resume
+              </Button>
+            </Link>
+          )}
 
           {/* Database / Cloud Status Badge */}
           {user ? (
@@ -156,32 +172,65 @@ export const TopBar: React.FC<TopBarProps> = ({
                       )}
                     </div>
 
-                    <Link
-                      href="/profile"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center gap-2 p-2 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"
-                    >
-                      <User className="w-3.5 h-3.5 text-indigo-400" />
-                      <span>My Profile & Skills</span>
-                    </Link>
+                    {isMasterAdmin ? (
+                      <>
+                        <Link
+                          href="/"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-2 p-2 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"
+                        >
+                          <HardDrive className="w-3.5 h-3.5 text-indigo-400" />
+                          <span>Candidate Database & Telemetry</span>
+                        </Link>
 
-                    <Link
-                      href="/onboarding"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center gap-2 p-2 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Profile Setup Wizard</span>
-                    </Link>
+                        <Link
+                          href="/opportunities"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-2 p-2 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"
+                        >
+                          <Briefcase className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Job Openings QA & Testing</span>
+                        </Link>
 
-                    <Link
-                      href="/settings"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center gap-2 p-2 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"
-                    >
-                      <Database className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>Settings & Storage</span>
-                    </Link>
+                        <Link
+                          href="/settings"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-2 p-2 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"
+                        >
+                          <Database className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Firebase & System Settings</span>
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        <Link
+                          href="/profile"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-2 p-2 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"
+                        >
+                          <User className="w-3.5 h-3.5 text-indigo-400" />
+                          <span>My Profile & Skills</span>
+                        </Link>
+
+                        <Link
+                          href="/onboarding"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-2 p-2 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Profile Setup Wizard</span>
+                        </Link>
+
+                        <Link
+                          href="/settings"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-2 p-2 rounded-lg text-slate-300 hover:bg-slate-800 transition-colors"
+                        >
+                          <Database className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Settings & Storage</span>
+                        </Link>
+                      </>
+                    )}
 
                     <div className="pt-1 border-t border-slate-800">
                       <button

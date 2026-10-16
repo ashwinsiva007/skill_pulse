@@ -38,8 +38,17 @@ import {
   Globe,
   MapPin,
 } from "lucide-react";
+import { useAuth } from "@/lib/firebase/auth-context";
+import { AdminOpportunitiesView } from "./admin-opportunities-view";
 
 export const OpportunitiesView: React.FC = () => {
+  const { user, isAdmin } = useAuth();
+  const isMasterAdmin = isAdmin || user?.email === "admin@gmail.com";
+
+  if (isMasterAdmin) {
+    return <AdminOpportunitiesView />;
+  }
+
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
   const [skills, setSkills] = useState<Skill[]>([]);

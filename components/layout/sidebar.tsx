@@ -86,6 +86,27 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
+const ADMIN_NAV_ITEMS: NavItem[] = [
+  {
+    label: "Dashboard & User DB",
+    href: "/",
+    icon: LayoutDashboard,
+    badge: "Users DB",
+  },
+  {
+    label: "Job Openings Monitor",
+    href: "/opportunities",
+    icon: Briefcase,
+    badge: "Live QA",
+  },
+  {
+    label: "Settings & Storage",
+    href: "/settings",
+    icon: Settings,
+    badge: "Firebase",
+  },
+];
+
 import { useAuth } from "@/lib/firebase/auth-context";
 
 export interface SidebarProps {
@@ -114,6 +135,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }, [authProfile]);
 
   const isMasterAdmin = isAdmin || user?.email === "admin@gmail.com";
+  const navItemsToDisplay = isMasterAdmin ? ADMIN_NAV_ITEMS : NAV_ITEMS;
   const displayName = isMasterAdmin ? "Administrator" : (profile?.name?.trim() || user?.displayName || "My Workspace");
   const initials = isMasterAdmin ? "AD" : (displayName
     .split(" ")
@@ -180,10 +202,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Navigation List */}
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
           <div className={cn("px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500", isCollapsed && "text-center")}>
-            {isCollapsed ? "•••" : "Platform Navigation"}
+            {isCollapsed ? "•••" : isMasterAdmin ? "Master Admin Console" : "Platform Navigation"}
           </div>
 
-          {NAV_ITEMS.map((item) => {
+          {navItemsToDisplay.map((item) => {
             const isActive =
               item.href === "/"
                 ? pathname === "/" || pathname === "/dashboard"

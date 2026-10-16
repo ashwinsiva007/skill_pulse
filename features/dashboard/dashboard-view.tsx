@@ -43,8 +43,16 @@ import {
   Kanban,
 } from "lucide-react";
 
+import { AdminDashboardView } from "./admin-dashboard-view";
+
 export const DashboardView: React.FC = () => {
-  const { user, profile: authProfile } = useAuth();
+  const { user, profile: authProfile, isAdmin } = useAuth();
+  const isMasterAdmin = isAdmin || user?.email === "admin@gmail.com";
+
+  if (isMasterAdmin) {
+    return <AdminDashboardView />;
+  }
+
   const [profile, setProfile] = useState<CandidateProfile>(authProfile || DEMO_PROFILE);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [resumes, setResumes] = useState<ResumeDraft[]>([]);

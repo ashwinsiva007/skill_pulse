@@ -19,6 +19,8 @@ import { CandidateProfile } from "@/types/profile";
 import { Skill } from "@/types/skill";
 import { ResumeDraft, ResumeTemplate } from "@/types/resume";
 import { DEMO_PROFILE } from "@/lib/demo/seed-data";
+import { useAuth } from "@/lib/firebase/auth-context";
+import { AdminRestrictedNotice } from "@/components/admin/admin-restricted-notice";
 import {
   ArrowLeft,
   Eye,
@@ -32,6 +34,12 @@ type PageViewMode = "dashboard" | "wizard" | "editor" | "preview";
 
 function ResumePageContent() {
   const searchParams = useSearchParams();
+  const { user, isAdmin } = useAuth();
+  const isMasterAdmin = isAdmin || user?.email === "admin@gmail.com";
+
+  if (isMasterAdmin) {
+    return <AdminRestrictedNotice featureName="ATS Resume Builder" />;
+  }
 
   const [resumes, setResumes] = useState<ResumeDraft[]>([]);
   const [profile, setProfile] = useState<CandidateProfile>(DEMO_PROFILE);
