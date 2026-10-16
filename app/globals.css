@@ -25,6 +25,10 @@
   --theme-font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --theme-card-bg: #0f1626;
   --theme-input-bg: #090d16;
+  --hero-gradient: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #090d16 100%);
+  --hero-border: #1e293b;
+  --hero-glow: rgba(99, 102, 241, 0.15);
+  --text-gradient: linear-gradient(90deg, #818cf8, #38bdf8, #34d399);
 }
 
 /* 2. Midnight Pine (Dark) - Luminous cyber-forest */
@@ -46,6 +50,10 @@
   --theme-font: 'Outfit', sans-serif;
   --theme-card-bg: #0a2117;
   --theme-input-bg: #05140d;
+  --hero-gradient: linear-gradient(135deg, #05140d 0%, #0a261a 50%, #05140d 100%);
+  --hero-border: rgba(16, 185, 129, 0.3);
+  --hero-glow: rgba(16, 185, 129, 0.15);
+  --text-gradient: linear-gradient(90deg, #34d399, #2dd4bf, #a7f3d0);
 }
 
 /* 3. Cyberpunk Amethyst (Dark) - Deep cosmic velvet violet */
@@ -67,6 +75,10 @@
   --theme-font: 'Space Grotesk', sans-serif;
   --theme-card-bg: #150f28;
   --theme-input-bg: #0c0817;
+  --hero-gradient: linear-gradient(135deg, #0c0817 0%, #1a1032 50%, #0c0817 100%);
+  --hero-border: rgba(168, 85, 247, 0.3);
+  --hero-glow: rgba(168, 85, 247, 0.15);
+  --text-gradient: linear-gradient(90deg, #c084fc, #e879f9, #38bdf8);
 }
 
 /* 4. Nordic Frost (Light) - Crisp Scandinavian slate */
@@ -80,14 +92,18 @@
   --foreground-subtle: #64748b;
   --border: #cbd5e1;
   --border-subtle: #e2e8f0;
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
   --accent-cyan: #0284c7;
   --accent-emerald: #059669;
   --accent-amber: #d97706;
   --theme-font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --theme-card-bg: #ffffff;
   --theme-input-bg: #f8fafc;
+  --hero-gradient: linear-gradient(135deg, #ffffff 0%, #f0f7ff 55%, #e0effe 100%);
+  --hero-border: #bfdbfe;
+  --hero-glow: rgba(59, 130, 246, 0.1);
+  --text-gradient: linear-gradient(90deg, #1d4ed8, #0284c7, #059669);
 }
 
 /* 5. Emerald Sage (Light) - Fresh botanical sage */
@@ -109,6 +125,10 @@
   --theme-font: 'Plus Jakarta Sans', sans-serif;
   --theme-card-bg: #ffffff;
   --theme-input-bg: #f4f9f5;
+  --hero-gradient: linear-gradient(135deg, #ffffff 0%, #f0fdf4 55%, #dcfce7 100%);
+  --hero-border: #bbf7d0;
+  --hero-glow: rgba(16, 185, 129, 0.1);
+  --text-gradient: linear-gradient(90deg, #047857, #0d9488, #2563eb);
 }
 
 /* 6. Executive Pearl (Light) - Warm ivory with gold-bronze */
@@ -130,6 +150,10 @@
   --theme-font: 'Manrope', sans-serif;
   --theme-card-bg: #ffffff;
   --theme-input-bg: #faf7f2;
+  --hero-gradient: linear-gradient(135deg, #ffffff 0%, #fffdfa 55%, #fef3c7 100%);
+  --hero-border: #fde68a;
+  --hero-glow: rgba(217, 119, 6, 0.1);
+  --text-gradient: linear-gradient(90deg, #b45309, #d97706, #059669);
 }
 
 body {
@@ -181,10 +205,34 @@ html[data-mode="light"] .bg-slate-800\/20 {
   border-color: var(--border-subtle) !important;
 }
 
-/* 2. Text Visibility in Light Mode - No Invisible or Washed Out Text! */
-html[data-mode="light"] .text-white,
-html[data-mode="light"] .text-slate-100,
-html[data-mode="light"] .text-slate-200 {
+/* 2. CONVERT DARK GRADIENT BANNERS & CARDS TO LUMINOUS LIGHT SURFACES IN LIGHT THEMES */
+html[data-mode="light"] div[class*="from-slate-900"]:not([class*="bg-clip-text"]),
+html[data-mode="light"] div[class*="from-[#0c1222]"]:not([class*="bg-clip-text"]),
+html[data-mode="light"] div[class*="from-[#0b1220]"]:not([class*="bg-clip-text"]),
+html[data-mode="light"] div[class*="from-[#0c1427]"]:not([class*="bg-clip-text"]),
+html[data-mode="light"] div[class*="from-[#0d1527]"]:not([class*="bg-clip-text"]),
+html[data-mode="light"] div[class*="from-indigo-950"]:not([class*="bg-clip-text"]),
+html[data-mode="light"] div[class*="from-slate-950"]:not([class*="bg-clip-text"]),
+html[data-mode="light"] .hero-banner,
+html[data-mode="light"] .hero-welcome-card {
+  background-image: var(--hero-gradient) !important;
+  background-color: var(--surface) !important;
+  border-color: var(--hero-border) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* 3. Text Visibility in Light Mode - No Invisible or Washed Out Text! */
+html[data-mode="light"] h1:not([class*="bg-clip-text"]),
+html[data-mode="light"] h2:not([class*="bg-clip-text"]),
+html[data-mode="light"] h3:not([class*="bg-clip-text"]),
+html[data-mode="light"] h4:not([class*="bg-clip-text"]) {
+  color: var(--foreground) !important;
+}
+
+/* General text-white and text-slate overrides excluding solid buttons, chips, and avatars */
+html[data-mode="light"] :not(button):not(a[class*="bg-"]):not([class*="bg-indigo-"]):not([class*="bg-emerald-"]):not([class*="bg-cyan-"]):not([class*="bg-blue-"]):not([class*="bg-rose-"]):not([class*="bg-amber-600"]):not([class*="rounded-full"][class*="from-"]):not([class*="rounded-2xl"][class*="from-"]).text-white,
+html[data-mode="light"] :not(button):not(a[class*="bg-"]):not([class*="bg-indigo-"]):not([class*="bg-emerald-"]):not([class*="bg-cyan-"]):not([class*="bg-blue-"]):not([class*="bg-rose-"]):not([class*="bg-amber-600"]):not([class*="rounded-full"][class*="from-"]):not([class*="rounded-2xl"][class*="from-"]).text-slate-100,
+html[data-mode="light"] :not(button):not(a[class*="bg-"]):not([class*="bg-indigo-"]):not([class*="bg-emerald-"]):not([class*="bg-cyan-"]):not([class*="bg-blue-"]):not([class*="bg-rose-"]):not([class*="bg-amber-600"]):not([class*="rounded-full"][class*="from-"]):not([class*="rounded-2xl"][class*="from-"]).text-slate-200 {
   color: var(--foreground) !important;
 }
 
@@ -198,7 +246,73 @@ html[data-mode="light"] .text-slate-600 {
   color: var(--foreground-subtle) !important;
 }
 
-/* 3. Borders in Light Mode */
+/* 4. SOLID BUTTONS & AVATAR BADGES: GUARANTEE CRISP PURE WHITE TEXT */
+html[data-mode="light"] button.bg-indigo-600,
+html[data-mode="light"] button.bg-emerald-600,
+html[data-mode="light"] button.bg-cyan-600,
+html[data-mode="light"] button.bg-blue-600,
+html[data-mode="light"] button.bg-rose-600,
+html[data-mode="light"] button.bg-amber-600,
+html[data-mode="light"] button[class*="bg-indigo-600"],
+html[data-mode="light"] button[class*="bg-emerald-600"],
+html[data-mode="light"] a[class*="bg-indigo-600"],
+html[data-mode="light"] a[class*="bg-emerald-600"],
+html[data-mode="light"] a[class*="bg-cyan-600"],
+html[data-mode="light"] .btn-primary,
+html[data-mode="light"] [class*="rounded-full"][class*="from-indigo-"],
+html[data-mode="light"] [class*="rounded-2xl"][class*="from-indigo-"] {
+  color: #ffffff !important;
+}
+
+html[data-mode="light"] button.bg-indigo-600 *,
+html[data-mode="light"] button.bg-emerald-600 *,
+html[data-mode="light"] button.bg-cyan-600 *,
+html[data-mode="light"] button.bg-blue-600 *,
+html[data-mode="light"] button.bg-rose-600 *,
+html[data-mode="light"] button.bg-amber-600 *,
+html[data-mode="light"] a[class*="bg-indigo-600"] *,
+html[data-mode="light"] a[class*="bg-emerald-600"] *,
+html[data-mode="light"] a[class*="bg-cyan-600"] *,
+html[data-mode="light"] [class*="rounded-full"][class*="from-indigo-"] *,
+html[data-mode="light"] [class*="rounded-2xl"][class*="from-indigo-"] * {
+  color: #ffffff !important;
+}
+
+/* 5. OUTLINE BUTTONS IN LIGHT MODE: CLEAN WHITE SURFACE WITH CRISP CONTRAST */
+html[data-mode="light"] button[class*="border-indigo-"]:not([class*="bg-indigo-600"]),
+html[data-mode="light"] a[class*="border-indigo-"]:not([class*="bg-indigo-600"]) {
+  background-color: #ffffff !important;
+  color: #3730a3 !important;
+  border-color: #a5b4fc !important;
+}
+html[data-mode="light"] button[class*="border-indigo-"]:not([class*="bg-indigo-600"]):hover,
+html[data-mode="light"] a[class*="border-indigo-"]:not([class*="bg-indigo-600"]):hover {
+  background-color: #eef2ff !important;
+  border-color: #818cf8 !important;
+  color: #312e81 !important;
+}
+
+html[data-mode="light"] button[class*="border-slate-"]:not([class*="bg-indigo-"]):not([class*="bg-emerald-"]):not([class*="bg-cyan-"]):not([class*="bg-rose-"]),
+html[data-mode="light"] a[class*="border-slate-"]:not([class*="bg-indigo-"]):not([class*="bg-emerald-"]):not([class*="bg-cyan-"]):not([class*="bg-rose-"]) {
+  background-color: #ffffff !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+}
+html[data-mode="light"] button[class*="border-slate-"]:hover,
+html[data-mode="light"] a[class*="border-slate-"]:hover {
+  background-color: var(--surface-raised) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
+}
+
+/* 6. GRADIENT TEXT IN LIGHT MODE: VIBRANT HIGH-CONTRAST ACCENT GRADIENT */
+html[data-mode="light"] .bg-clip-text {
+  background-image: var(--text-gradient) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* 7. Borders in Light Mode */
 html[data-mode="light"] .border-slate-800,
 html[data-mode="light"] .border-slate-800\/80,
 html[data-mode="light"] .border-slate-800\/70,
@@ -211,7 +325,7 @@ html[data-mode="light"] .border-slate-700\/50 {
   border-color: var(--border) !important;
 }
 
-/* 4. Form Inputs in Light Mode */
+/* 8. Form Inputs in Light Mode */
 html[data-mode="light"] input:not([type="checkbox"]):not([type="radio"]),
 html[data-mode="light"] textarea,
 html[data-mode="light"] select {
@@ -226,33 +340,51 @@ html[data-mode="light"] textarea::placeholder {
   opacity: 0.85 !important;
 }
 
-/* 5. Badges & Status Chips in Light Mode */
+/* 9. Badges & Status Chips in Light Mode */
 html[data-mode="light"] .bg-emerald-950\/60,
 html[data-mode="light"] .bg-emerald-950\/70,
 html[data-mode="light"] .bg-emerald-950\/40,
 html[data-mode="light"] .bg-emerald-950\/20,
-html[data-mode="light"] .bg-emerald-950 {
+html[data-mode="light"] .bg-emerald-950,
+html[data-mode="light"] [class*="bg-emerald-500/15"],
+html[data-mode="light"] [class*="bg-emerald-500/20"] {
   background-color: #dcfce7 !important;
   color: #15803d !important;
   border-color: #86efac !important;
+}
+html[data-mode="light"] [class*="bg-emerald-500/15"] *,
+html[data-mode="light"] [class*="bg-emerald-500/20"] * {
+  color: #15803d !important;
 }
 
 html[data-mode="light"] .bg-indigo-950\/60,
 html[data-mode="light"] .bg-indigo-950\/70,
 html[data-mode="light"] .bg-indigo-950\/40,
-html[data-mode="light"] .bg-indigo-950 {
+html[data-mode="light"] .bg-indigo-950,
+html[data-mode="light"] [class*="bg-indigo-500/15"],
+html[data-mode="light"] [class*="bg-indigo-500/20"] {
   background-color: #e0e7ff !important;
-  color: #4338ca !important;
+  color: #3730a3 !important;
   border-color: #a5b4fc !important;
+}
+html[data-mode="light"] [class*="bg-indigo-500/15"] *,
+html[data-mode="light"] [class*="bg-indigo-500/20"] * {
+  color: #3730a3 !important;
 }
 
 html[data-mode="light"] .bg-cyan-950\/60,
 html[data-mode="light"] .bg-cyan-950\/70,
 html[data-mode="light"] .bg-cyan-950\/40,
-html[data-mode="light"] .bg-cyan-950 {
+html[data-mode="light"] .bg-cyan-950,
+html[data-mode="light"] [class*="bg-cyan-500/15"],
+html[data-mode="light"] [class*="bg-cyan-500/20"] {
   background-color: #cffafe !important;
-  color: #0e7490 !important;
+  color: #0369a1 !important;
   border-color: #67e8f9 !important;
+}
+html[data-mode="light"] [class*="bg-cyan-500/15"] *,
+html[data-mode="light"] [class*="bg-cyan-500/20"] * {
+  color: #0369a1 !important;
 }
 
 html[data-mode="light"] .bg-amber-950\/60,
@@ -271,6 +403,28 @@ html[data-mode="light"] .bg-rose-950 {
   background-color: #ffe4e6 !important;
   color: #be123c !important;
   border-color: #fda4af !important;
+}
+
+/* 10. Accent Text Colors in Light Mode */
+html[data-mode="light"] .text-indigo-200,
+html[data-mode="light"] .text-indigo-300 {
+  color: #3730a3 !important;
+}
+html[data-mode="light"] .text-cyan-200,
+html[data-mode="light"] .text-cyan-300 {
+  color: #0369a1 !important;
+}
+html[data-mode="light"] .text-emerald-200,
+html[data-mode="light"] .text-emerald-300 {
+  color: #15803d !important;
+}
+html[data-mode="light"] .text-amber-200,
+html[data-mode="light"] .text-amber-300 {
+  color: #b45309 !important;
+}
+html[data-mode="light"] .text-rose-200,
+html[data-mode="light"] .text-rose-300 {
+  color: #be123c !important;
 }
 
 /* 6. Header & Sidebar in Light Mode */

@@ -27,6 +27,7 @@ import {
   Sun,
   Moon,
   Check,
+  User,
 } from "lucide-react";
 import { useTheme } from "@/lib/theme/theme-context";
 
@@ -156,135 +157,209 @@ export default function SettingsPage() {
         </div>
 
         {/* Cloud Database & Authentication Card */}
-        <Card className="border-indigo-500/20 bg-gradient-to-r from-slate-900/90 via-[#0f172a] to-slate-900">
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Database className="w-4 h-4 text-indigo-400" />
-                  Firebase Cloud Firestore & Authentication
-                </CardTitle>
-                <CardDescription>
-                  Enterprise-grade cloud database with automatic session persistence across device restarts
-                </CardDescription>
+        {isMasterAdmin || isAdminUnlocked ? (
+          <Card className="border-indigo-500/20 bg-gradient-to-r from-slate-900/90 via-[#0f172a] to-slate-900">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Database className="w-4 h-4 text-indigo-400" />
+                    Firebase Cloud Firestore & Authentication
+                  </CardTitle>
+                  <CardDescription>
+                    Enterprise-grade cloud database with automatic session persistence across device restarts
+                  </CardDescription>
+                </div>
+                <Badge variant={user ? "emerald" : isFirebaseReady ? "indigo" : "amber"} size="sm">
+                  {user ? "● User Authenticated" : isFirebaseReady ? "● Configured" : "● Local Mode"}
+                </Badge>
               </div>
-              <Badge variant={user ? "emerald" : isFirebaseReady ? "indigo" : "amber"} size="sm">
-                {user ? "● User Authenticated" : isFirebaseReady ? "● Configured" : "● Local Mode"}
-              </Badge>
-            </div>
-          </CardHeader>
+            </CardHeader>
 
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-              <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
-                <span className="text-slate-400 block text-[11px]">Database Provider</span>
-                <span className="font-semibold text-white flex items-center gap-1.5 text-sm">
-                  <Database className="w-4 h-4 text-amber-400" />
-                  Google Cloud Firestore
-                </span>
-                <span className="text-[10px] text-slate-400 block">
-                  Project: {fbConfig?.projectId || "Default / Local Cache"}
-                </span>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+                  <span className="text-slate-400 block text-[11px]">Database Provider</span>
+                  <span className="font-semibold text-white flex items-center gap-1.5 text-sm">
+                    <Database className="w-4 h-4 text-amber-400" />
+                    Google Cloud Firestore
+                  </span>
+                  <span className="text-[10px] text-slate-400 block">
+                    Project: {fbConfig?.projectId || "Default / Local Cache"}
+                  </span>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+                  <span className="text-slate-400 block text-[11px]">Authentication Session</span>
+                  <span className="font-semibold text-white flex items-center gap-1.5 text-sm">
+                    {user ? (
+                      <>
+                        <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                        Persistent Device Active
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="w-4 h-4 text-slate-400" />
+                        Guest / Demo Session
+                      </>
+                    )}
+                  </span>
+                  <span className="text-[10px] text-slate-400 block truncate">
+                    {user ? user.email : "Sign in to activate cloud sync"}
+                  </span>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+                  <span className="text-slate-400 block text-[11px]">Data Loss Prevention</span>
+                  <span className="font-semibold text-emerald-400 flex items-center gap-1.5 text-sm">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    Zero-Data-Loss Architecture
+                  </span>
+                  <span className="text-[10px] text-slate-400 block">
+                    Atomic Firestore merge + Local replica
+                  </span>
+                </div>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
-                <span className="text-slate-400 block text-[11px]">Authentication Session</span>
-                <span className="font-semibold text-white flex items-center gap-1.5 text-sm">
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800/80">
+                <div className="flex flex-wrap items-center gap-2">
                   {user ? (
-                    <>
-                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                      Persistent Device Active
-                    </>
-                  ) : (
-                    <>
-                      <Lock className="w-4 h-4 text-slate-400" />
-                      Guest / Demo Session
-                    </>
-                  )}
-                </span>
-                <span className="text-[10px] text-slate-400 block truncate">
-                  {user ? user.email : "Sign in to activate cloud sync"}
-                </span>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
-                <span className="text-slate-400 block text-[11px]">Data Loss Prevention</span>
-                <span className="font-semibold text-emerald-400 flex items-center gap-1.5 text-sm">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  Zero-Data-Loss Architecture
-                </span>
-                <span className="text-[10px] text-slate-400 block">
-                  Atomic Firestore merge + Local replica
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800/80">
-              <div className="flex flex-wrap items-center gap-2">
-                {user ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => signOut()}
-                    className="text-xs text-rose-300 border-rose-900/50 hover:bg-rose-950/40"
-                  >
-                    <LogOut className="w-3.5 h-3.5 mr-1 text-rose-400" />
-                    Log Out of Device
-                  </Button>
-                ) : (
-                  <>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => openAuthWithTab("signin")}
-                      className="text-xs"
-                    >
-                      <Lock className="w-3.5 h-3.5 mr-1" />
-                      Sign In
-                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => openAuthWithTab("signup")}
-                      className="text-xs border-indigo-500/40 text-indigo-300"
+                      onClick={() => signOut()}
+                      className="text-xs text-rose-300 border-rose-900/50 hover:bg-rose-950/40"
                     >
-                      <Sparkles className="w-3.5 h-3.5 mr-1 text-indigo-400" />
-                      Create Account
+                      <LogOut className="w-3.5 h-3.5 mr-1 text-rose-400" />
+                      Log Out of Device
                     </Button>
-                  </>
-                )}
+                  ) : (
+                    <>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => openAuthWithTab("signin")}
+                        className="text-xs"
+                      >
+                        <Lock className="w-3.5 h-3.5 mr-1" />
+                        Sign In
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openAuthWithTab("signup")}
+                        className="text-xs border-indigo-500/40 text-indigo-300"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 mr-1 text-indigo-400" />
+                        Create Account
+                      </Button>
+                    </>
+                  )}
 
-                <Button
-                  variant={isMasterAdmin ? "primary" : "outline"}
-                  size="sm"
-                  onClick={() => {
-                    if (isMasterAdmin || isAdminUnlocked) {
-                      openAuthWithTab("firebase");
-                    } else {
-                      setShowAdminPinModal(true);
-                    }
-                  }}
-                  className={`text-xs ${
-                    isMasterAdmin
-                      ? "bg-amber-600 hover:bg-amber-500 text-white font-bold shadow-md shadow-amber-950"
-                      : "text-slate-400 hover:text-slate-200 border-slate-700"
-                  }`}
-                >
-                  <Lock className="w-3.5 h-3.5 mr-1" />
-                  {isMasterAdmin
-                    ? "Open Firebase Credentials Console"
-                    : isAdminUnlocked
-                    ? "Admin Firebase Console"
-                    : "Admin Credentials Access"}
-                </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => openAuthWithTab("firebase")}
+                    className="text-xs bg-amber-600 hover:bg-amber-500 text-white font-bold shadow-md shadow-amber-950"
+                  >
+                    <Lock className="w-3.5 h-3.5 mr-1" />
+                    Open Firebase Credentials Console
+                  </Button>
+                </div>
+
+                <div className="text-[11px] text-slate-400">
+                  Data is isolated and securely synced. Credentials access is restricted to Administrators.
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="border-indigo-500/20 bg-gradient-to-r from-slate-900/90 via-[#0f172a] to-slate-900">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-indigo-400" />
+                    Account & Workspace Session
+                  </CardTitle>
+                  <CardDescription>
+                    Your active session and profile synchronization status
+                  </CardDescription>
+                </div>
+                <Badge variant={user ? "emerald" : "indigo"} size="sm">
+                  {user ? "● Cloud Synced" : "● Local Workspace"}
+                </Badge>
+              </div>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+                  <span className="text-slate-400 block text-[11px]">Active User</span>
+                  <span className="font-semibold text-white flex items-center gap-1.5 text-sm">
+                    <User className="w-4 h-4 text-indigo-400" />
+                    {user ? user.email : "Guest User (Local Workspace)"}
+                  </span>
+                  <span className="text-[10px] text-slate-400 block">
+                    {user ? "Session persistent on this device" : "Edits are stored in browser local storage"}
+                  </span>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1">
+                  <span className="text-slate-400 block text-[11px]">Sync Status</span>
+                  <span className="font-semibold text-emerald-400 flex items-center gap-1.5 text-sm">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    {user ? "Cloud Synchronized" : "Local Mode"}
+                  </span>
+                  <span className="text-[10px] text-slate-400 block">
+                    Zero-Data-Loss Architecture Active
+                  </span>
+                </div>
               </div>
 
-              <div className="text-[11px] text-slate-400">
-                Data is isolated and securely synced. Credentials access is restricted to Administrators.
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800/80">
+                <div className="flex flex-wrap items-center gap-2">
+                  {user ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => signOut()}
+                      className="text-xs text-rose-300 border-rose-900/50 hover:bg-rose-950/40"
+                    >
+                      <LogOut className="w-3.5 h-3.5 mr-1 text-rose-400" />
+                      Sign Out
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => openAuthWithTab("signin")}
+                        className="text-xs"
+                      >
+                        <Lock className="w-3.5 h-3.5 mr-1" />
+                        Sign In
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openAuthWithTab("signup")}
+                        className="text-xs border-indigo-500/40 text-indigo-300"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 mr-1 text-indigo-400" />
+                        Create Account
+                      </Button>
+                    </>
+                  )}
+                </div>
+
+                <div className="text-[11px] text-slate-400">
+                  Candidate profiles are private and isolated.
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Visual Appearance & Theme Options (6 Themes: 3 Light + 3 Dark) */}
         <Card>
