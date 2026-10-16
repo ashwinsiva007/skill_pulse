@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AppLayout } from "@/components/layout/app-layout";
@@ -9,13 +9,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Modal } from "@/components/ui/modal";
-import { profileRepo, skillRepo } from "@/lib/repositories";
+import { profileRepo, skillRepo, opportunityRepo } from "@/lib/repositories";
 import { useAuth } from "@/lib/firebase/auth-context";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { CandidateProfile, CareerLevel } from "@/types/profile";
 import { Skill, SkillCategory, ProficiencyLevel } from "@/types/skill";
 import { ProjectStatus } from "@/types/project";
 import { ExperienceEntry } from "@/types/experience";
+import { Opportunity } from "@/types/opportunity";
+import { evaluateAllOpportunities } from "@/lib/opportunities/matching-engine";
 import { calculateProfileCompletion } from "@/lib/profile-completion";
 import { CompletionBreakdownModal } from "@/components/profile/completion-breakdown-modal";
 import { QuickProfileSetupModal } from "@/components/profile/quick-profile-setup-modal";
@@ -38,6 +40,10 @@ import {
   ShieldCheck,
   CloudUpload,
   RefreshCw,
+  Radio,
+  FileCheck,
+  ArrowRight,
+  Send,
 } from "lucide-react";
 import { AdminRestrictedNotice } from "@/components/admin/admin-restricted-notice";
 
@@ -52,6 +58,7 @@ function ProfileContent() {
 
   const [profile, setProfile] = useState<CandidateProfile>(DEMO_PROFILE);
   const [skills, setSkills] = useState<Skill[]>([]);
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [isBreakdownOpen, setIsBreakdownOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isQuickSetupOpen, setIsQuickSetupOpen] = useState(false);
@@ -102,11 +109,25 @@ function ProfileContent() {
   const [expResp, setExpResp] = useState("");
 
   const loadData = async () => {
-    const [prof, skls] = await Promise.all([profileRepo.getProfile(), skillRepo.getSkills()]);
+    const [prof, skls, opps] = await Promise.all([
+      profileRepo.getProfile(),
+      skillRepo.getSkills(),
+      opportunityRepo.getOpportunities(),
+    ]);
     setProfile(prof);
     setPersonalForm(prof);
     setSkills(skls);
+    setOpportunities(opps);
   };
+
+  // Real-time evaluation of opportunities against candidate skills & project technologies
+  const matchedOpportunities = useMemo(() => {
+    const evaluated = evaluateAllOpportunities(opportunities, profile, skills);
+    // Focus strictly on matching skills as requested: only list opportunities with matching skills
+    return evaluated
+      .filter((opp) => opp.matchedSkills && opp.matchedSkills.length > 0)
+      .sort((a, b) => b.matchScore - a.matchScore);
+  }, [opportunities, profile, skills]);
 
   useEffect(() => {
     loadData();
@@ -793,6 +814,162 @@ function ProfileContent() {
               ))
             ) : (
               <p className="text-xs text-slate-500 italic py-2">No work or internship entries added yet.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Section: Verified Opportunities Matched to Your Skills & Profile */}
+        <Card className="border-indigo-500/30 bg-gradient-to-r from-slate-900/90 via-[#0d1424] to-slate-900">
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Briefcase className="w-4 h-4 text-cyan-400" />
+                  Target Opportunities Matched to Your Skills ({matchedOpportunities.length})
+                </CardTitle>
+                <CardDescription>
+                  Verified Indian tech vacancies, hackathons, and internships aligned with your recorded skills and project technologies. Direct precise applying links are verified.
+                </CardDescription>
+              </div>
+
+              <Link href="/opportunities">
+                <Button variant="outline" size="sm" className="text-xs border-indigo-500/40 text-indigo-300 hover:bg-indigo-950/40">
+                  <span>Explore All Live Openings ({opportunities.length})</span>
+                  <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                </Button>
+              </Link>
+            </div>
+          </CardHeader>
+
+          <CardContent className="space-y-3.5">
+            {matchedOpportunities.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                {matchedOpportunities.slice(0, 6).map((opp) => {
+                  const applyUrl = opp.applicationUrl || opp.sourceUrl || "https://careers.google.com";
+                  return (
+                    <div
+                      key={opp.id}
+                      className="p-4 rounded-xl bg-slate-950/70 border border-slate-800/90 hover:border-indigo-500/40 transition-all flex flex-col justify-between gap-3"
+                    >
+                      <div className="space-y-2">
+                        {/* Header: Company, Type, Match Score */}
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span className="text-xs font-bold text-slate-200">
+                            {opp.organization}
+                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <Badge
+                              variant={
+                                opp.type === "Hackathon"
+                                  ? "cyan"
+                                  : opp.type === "Internship"
+                                  ? "emerald"
+                                  : "indigo"
+                              }
+                              size="sm"
+                              className="text-[10px]"
+                            >
+                              {opp.type}
+                            </Badge>
+                            <Badge
+                              variant={
+                                opp.matchScore >= 70
+                                  ? "emerald"
+                                  : opp.matchScore >= 45
+                                  ? "indigo"
+                                  : "amber"
+                              }
+                              size="sm"
+                              className="font-bold text-[10px]"
+                            >
+                              {opp.matchScore}% Match
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* Title */}
+                        <h4 className="text-sm font-bold text-white tracking-tight">
+                          {opp.title}
+                        </h4>
+
+                        {/* Location, Salary */}
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-400">
+                          <span className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3 text-slate-400" />
+                            {opp.location} ({opp.workMode})
+                          </span>
+                          {opp.salaryRange && (
+                            <span className="text-emerald-400 font-semibold">
+                              {opp.salaryRange}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* ONLY Matching Skills Listed - As Explicitly Requested */}
+                        <div className="pt-1.5 border-t border-slate-800/80 space-y-1">
+                          <span className="text-[10px] uppercase font-bold text-emerald-400 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                            Your Matching Skills ({opp.matchedSkills?.length || 0}):
+                          </span>
+                          <div className="flex flex-wrap gap-1 pt-0.5">
+                            {(opp.matchedSkills || []).map((s) => (
+                              <span
+                                key={s}
+                                className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 flex items-center gap-1 shadow-xs"
+                              >
+                                <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" />
+                                {s}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Direct Apply Button */}
+                      <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                        <span className="text-[10px] text-slate-400">
+                          Verified Direct Opening
+                        </span>
+                        <a
+                          href={applyUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex"
+                        >
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            className="text-xs h-7.5 px-3 bg-indigo-600 hover:bg-indigo-500 font-semibold"
+                            title="Directly open the official application form in a new tab"
+                          >
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            Apply on Official Portal ↗
+                          </Button>
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-center space-y-2">
+                <Sparkles className="w-6 h-6 text-amber-400 mx-auto opacity-80" />
+                <p className="text-xs font-semibold text-white">
+                  No matching opportunities recorded yet
+                </p>
+                <p className="text-[11px] text-slate-400 max-w-md mx-auto leading-relaxed">
+                  Add more skills (like React, Python, Java, SQL, TypeScript) or project technologies above to unlock automated match recommendations.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsAddSkillOpen(true)}
+                  className="text-xs mt-1"
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  Add New Skill
+                </Button>
+              </div>
             )}
           </CardContent>
         </Card>

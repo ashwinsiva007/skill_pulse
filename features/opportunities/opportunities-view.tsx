@@ -82,6 +82,7 @@ export const OpportunitiesView: React.FC = () => {
   const [selectedType, setSelectedType] = useState<string>("All");
   const [selectedWorkMode, setSelectedWorkMode] = useState<string>("All");
   const [selectedLocation, setSelectedLocation] = useState<string>("All India");
+  const [onlyMatchingSkills, setOnlyMatchingSkills] = useState(false);
   const [sortBy, setSortBy] = useState<"match" | "newest" | "title">("match");
 
   // Modals state
@@ -241,6 +242,11 @@ export const OpportunitiesView: React.FC = () => {
           }
         }
 
+        // 6. Only Matching Skills Filter
+        if (onlyMatchingSkills && opp.matchedSkills.length === 0) {
+          return false;
+        }
+
         return true;
       })
       .sort((a, b) => {
@@ -259,6 +265,7 @@ export const OpportunitiesView: React.FC = () => {
     selectedType,
     selectedWorkMode,
     selectedLocation,
+    onlyMatchingSkills,
     sortBy,
   ]);
 
@@ -649,6 +656,20 @@ export const OpportunitiesView: React.FC = () => {
                     <option value="Hybrid">Hybrid</option>
                     <option value="On-site">On-site</option>
                   </select>
+
+                  {/* Matching Skills Toggle */}
+                  <button
+                    onClick={() => setOnlyMatchingSkills(!onlyMatchingSkills)}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border ${
+                      onlyMatchingSkills
+                        ? "bg-emerald-600 text-white border-emerald-500 shadow-xs"
+                        : "bg-slate-950 text-emerald-400 hover:text-emerald-300 border-emerald-900/60 hover:bg-emerald-950/40"
+                    }`}
+                    title="Filter opportunities to only those that share verified matching skills with your profile"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>{onlyMatchingSkills ? "Showing Matched Skills Only" : "Filter: Only My Matching Skills"}</span>
+                  </button>
                 </div>
 
                 {/* Sort Order */}

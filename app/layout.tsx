@@ -14,8 +14,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark h-full antialiased">
-      <body className="min-h-full flex flex-col bg-[#090d16] text-slate-100 font-sans">
+    <html lang="en" suppressHydrationWarning className="dark h-full antialiased" data-theme="obsidian-dark" data-mode="dark">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function() {
+              try {
+                var saved = localStorage.getItem('skillpulse_active_theme') || 'obsidian-dark';
+                var isDark = saved.indexOf('-dark') !== -1;
+                document.documentElement.setAttribute('data-theme', saved);
+                document.documentElement.setAttribute('data-mode', isDark ? 'dark' : 'light');
+                if (isDark) {
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.classList.remove('light');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                  document.documentElement.classList.add('light');
+                }
+              } catch(e) {}
+            })();`,
+          }}
+        />
+      </head>
+      <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]">
         <RootProviders>{children}</RootProviders>
       </body>
     </html>
