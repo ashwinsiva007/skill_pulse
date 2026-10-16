@@ -37,8 +37,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   defaultTab = "signin",
   showAdminCredentials = false,
 }) => {
-  const { user, signIn, signUp, isFirebaseReady } = useAuth();
-  const [tab, setTab] = useState<"signin" | "signup" | "firebase">(defaultTab);
+  const { user, signIn, signUp, isFirebaseReady, isAdmin } = useAuth();
+  const isMasterAdmin = isAdmin || user?.email === "admin@gmail.com";
+  const canAccessCredentials = Boolean(showAdminCredentials && isMasterAdmin);
+
+  const [tab, setTab] = useState<"signin" | "signup" | "firebase">("signin");
   const [rememberMe, setRememberMe] = useState(true);
 
   // Sign In Form State
@@ -67,10 +70,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    setTab(defaultTab);
-  }, [defaultTab, isOpen]);
+    if (defaultTab === "firebase" && !canAccessCredentials) {
+      setTab("signin");
+    } else {
+      setTab(defaultTab);
+    }
+  }, [defaultTab, isOpen, canAccessCredentials]);
 
   useEffect(() => {
+    if (!canAccessCredentials) return;
     const activeConfig = getFirebaseConfig();
     if (activeConfig) {
       setFbApiKey(activeConfig.apiKey || "");
@@ -80,7 +88,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setFbSenderId(activeConfig.messagingSenderId || "");
       setFbAppId(activeConfig.appId || "");
     }
-  }, [isOpen]);
+  }, [isOpen, canAccessCredentials]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -233,7 +241,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             Create Account
           </button>
 
-          {showAdminCredentials && (
+          {canAccessCredentials && (
             <button
               onClick={() => {
                 setTab("firebase");
@@ -490,7 +498,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         )}
 
         {/* TAB 3: FIREBASE CONSOLE CONFIG */}
-        {tab === "firebase" && (
+        {tab === "firebase" && canAccessCredentials && (
           <div className="space-y-4 pt-1">
             {/* Connection Banner */}
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">

@@ -168,7 +168,7 @@ export const AdminDashboardView: React.FC = () => {
     <AppLayout>
       <div className="space-y-8 max-w-7xl mx-auto pb-16">
         {/* Admin Master Header Banner */}
-        <div className="relative p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#0c1222] via-[#0f172a] to-slate-900 border border-indigo-500/30 shadow-2xl overflow-hidden">
+        <div className="hero-welcome-card relative p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#0c1222] via-[#0f172a] to-slate-900 border border-indigo-500/30 shadow-2xl overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">

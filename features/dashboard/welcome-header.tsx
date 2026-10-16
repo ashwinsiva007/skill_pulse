@@ -21,7 +21,7 @@ export const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ profile }) => {
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-[#10172b] to-indigo-950/40 border border-slate-800 p-6 sm:p-8 shadow-sm">
+      <div className="hero-welcome-card relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-[#10172b] to-indigo-950/40 border border-slate-800 p-6 sm:p-8 shadow-sm">
         {/* Subtle decorative radial light */}
         <div className="absolute -top-24 -right-24 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 

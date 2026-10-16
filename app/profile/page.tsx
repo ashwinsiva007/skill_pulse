@@ -44,6 +44,7 @@ import {
   FileCheck,
   ArrowRight,
   Send,
+  Lock,
 } from "lucide-react";
 import { AdminRestrictedNotice } from "@/components/admin/admin-restricted-notice";
 
@@ -346,10 +347,10 @@ function ProfileContent() {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsAuthModalOpen(true)}
-                className="text-xs border-amber-500/40 text-amber-300 hover:bg-amber-950/40"
+                className="text-xs border-indigo-500/40 text-indigo-300 hover:bg-indigo-950/40"
               >
-                <Database className="w-3.5 h-3.5 mr-1 text-amber-400" />
-                Connect Cloud DB
+                <Lock className="w-3.5 h-3.5 mr-1 text-indigo-400" />
+                Sign In / Save
               </Button>
             )}
 
@@ -419,40 +420,7 @@ function ProfileContent() {
           </div>
         )}
 
-        {/* Cloud Database Status Card */}
-        <div className={`p-4 rounded-xl border text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-          user
-            ? "bg-emerald-950/20 border-emerald-800/40 text-emerald-200"
-            : "bg-slate-900/60 border-slate-800 text-slate-300"
-        }`}>
-          <div className="flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-              user ? "bg-emerald-500/20 text-emerald-400" : "bg-indigo-500/20 text-indigo-400"
-            }`}>
-              {user ? <ShieldCheck className="w-4 h-4" /> : <Database className="w-4 h-4" />}
-            </div>
-            <div>
-              <p className="font-semibold text-white">
-                {user ? "Firebase Cloud Database Active" : "Local Workspace Mode (Cloud DB Optional)"}
-              </p>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                {user
-                  ? `Authenticated as ${user.email} (UID: ${user.uid.slice(0, 8)}...). Device remains signed in until manual logout.`
-                  : "All profile edits are saved locally. Connect your Firebase Console or sign in with Email & Password for cloud synchronization across devices."}
-              </p>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => setIsAuthModalOpen(true)}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-white transition-colors flex items-center gap-1.5"
-            >
-              <Database className="w-3 h-3 text-indigo-400" />
-              {user ? "Cloud Settings" : "Sign In / Setup DB"}
-            </button>
-          </div>
-        </div>
 
         {/* Success Alert */}
         {successMessage && (
@@ -1389,7 +1357,8 @@ function ProfileContent() {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
-        defaultTab={user ? "firebase" : "signin"}
+        defaultTab="signin"
+        showAdminCredentials={false}
       />
     </AppLayout>
   );

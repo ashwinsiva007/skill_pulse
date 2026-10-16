@@ -123,7 +123,7 @@ export const DashboardView: React.FC = () => {
     <AppLayout>
       <div className="space-y-8 max-w-6xl mx-auto pb-16">
         {/* Minimal Hero Welcome Header */}
-        <div className="relative p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-slate-900 via-[#0f172a] to-slate-900 border border-slate-800 shadow-xl overflow-hidden">
+        <div className="hero-welcome-card relative p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-slate-900 via-[#0f172a] to-slate-900 border border-slate-800 shadow-xl overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 space-y-4 max-w-3xl">
@@ -147,7 +147,7 @@ export const DashboardView: React.FC = () => {
 
             <div className="space-y-2">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
-                Welcome, {candidateFirstName}. <br />
+                <span className="block mb-1 text-slate-100">Welcome, {candidateFirstName}.</span>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-emerald-400">
                   Build Your Tech Career With Confidence.
                 </span>
@@ -160,14 +160,14 @@ export const DashboardView: React.FC = () => {
             {/* Quick Hero Call-to-Actions */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Link href="/resume">
-                <Button variant="primary" size="md" className="text-xs font-bold shadow-md shadow-indigo-950">
+                <Button variant="primary" size="md" className="text-xs font-bold text-white shadow-md shadow-indigo-950">
                   <FileText className="w-4 h-4 mr-2" />
                   Create ATS Resume from Scratch
                 </Button>
               </Link>
 
               <Link href="/opportunities">
-                <Button variant="outline" size="md" className="text-xs border-indigo-500/40 text-indigo-200 hover:bg-indigo-950/40">
+                <Button variant="outline" size="md" className="text-xs border-indigo-500/40 text-indigo-300 hover:bg-indigo-950/40">
                   <Briefcase className="w-4 h-4 mr-2 text-cyan-400" />
                   Explore Real Live Opportunities ({opportunities.length})
                 </Button>
@@ -178,7 +178,7 @@ export const DashboardView: React.FC = () => {
                   variant="primary"
                   size="md"
                   onClick={() => setIsQuickSetupOpen(true)}
-                  className="text-xs font-bold bg-emerald-600 hover:bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-950"
+                  className="text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 border-emerald-500 shadow-md shadow-emerald-950"
                 >
                   <Sparkles className="w-4 h-4 mr-2" />
                   Personalize Profile (3 Quick Steps)
