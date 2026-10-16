@@ -63,7 +63,7 @@ export async function GET(request: Request) {
     count: filtered.length,
     opportunities: filtered,
     meta: {
-      sources: ["Naukri Verified", "LinkedIn India Verified", "Indeed India Verified", "Unstop Official", "Devpost India"],
+      sources: ["Official Careers Portals", "Unstop Official", "Government of India (SIH)", "Direct Tech Hiring"],
       country: "India",
       currency: "INR",
       lastUpdated: new Date().toISOString(),

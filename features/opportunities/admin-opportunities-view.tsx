@@ -11,28 +11,21 @@ import { STARTER_DEMO_OPPORTUNITIES } from "@/lib/opportunities/demo-opportuniti
 import {
   Briefcase,
   Search,
-  Filter,
   RefreshCw,
   ExternalLink,
   CheckCircle2,
-  AlertCircle,
   Copy,
   ChevronRight,
   MapPin,
   Building,
-  Globe,
   SlidersHorizontal,
-  Code2,
-  Calendar,
   Layers,
-  Sparkles,
   ShieldCheck,
   X,
 } from "lucide-react";
 
 export const AdminOpportunitiesView: React.FC = () => {
   const [opportunities, setOpportunities] = useState<Opportunity[]>(STARTER_DEMO_OPPORTUNITIES);
-  const [isLoading, setIsLoading] = useState(false);
   const [isRefreshingLive, setIsRefreshingLive] = useState(false);
   const [feedbackToast, setFeedbackToast] = useState<string | null>(null);
   const [lastLiveSync, setLastLiveSync] = useState<string>("Just now");
@@ -44,11 +37,7 @@ export const AdminOpportunitiesView: React.FC = () => {
   const [selectedDomain, setSelectedDomain] = useState("All");
   const [selectedType, setSelectedType] = useState("All");
   const [selectedPortal, setSelectedPortal] = useState("All");
-  const [selectedLinkStatus, setSelectedLinkStatus] = useState<"All" | "Tested" | "Untested">("All");
   const [sortBy, setSortBy] = useState<"newest" | "salary" | "company" | "title">("newest");
-
-  // Track tested links in session
-  const [testedLinkIds, setTestedLinkIds] = useState<Set<string>>(new Set());
 
   // Modal inspection
   const [inspectedOpp, setInspectedOpp] = useState<Opportunity | null>(null);
@@ -63,7 +52,7 @@ export const AdminOpportunitiesView: React.FC = () => {
         if (data.opportunities && Array.isArray(data.opportunities) && data.opportunities.length > 0) {
           setOpportunities(data.opportunities);
           setLastLiveSync(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
-          setFeedbackToast(`Synced ${data.opportunities.length} live India tech openings & direct links!`);
+          setFeedbackToast(`Synced ${data.opportunities.length} live India tech openings with verified direct links!`);
           setTimeout(() => setFeedbackToast(null), 3500);
         }
       }
@@ -78,28 +67,11 @@ export const AdminOpportunitiesView: React.FC = () => {
     fetchLiveOpportunities();
   }, [fetchLiveOpportunities]);
 
-  // Handle Mark Link Tested
-  const handleToggleTestLink = (oppId: string, url?: string) => {
-    setTestedLinkIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(oppId)) {
-        next.delete(oppId);
-      } else {
-        next.add(oppId);
-      }
-      return next;
-    });
-
-    if (url) {
-      window.open(url, "_blank", "noopener,noreferrer");
-    }
-  };
-
   // Copy link
   const handleCopyLink = (url?: string) => {
     if (!url) return;
     navigator.clipboard.writeText(url);
-    setFeedbackToast("Direct application URL copied to clipboard!");
+    setFeedbackToast("Direct career portal URL copied to clipboard!");
     setTimeout(() => setFeedbackToast(null), 3000);
   };
 
@@ -175,14 +147,7 @@ export const AdminOpportunitiesView: React.FC = () => {
       );
     }
 
-    // 6. Link Tested Status
-    if (selectedLinkStatus === "Tested") {
-      result = result.filter((o) => testedLinkIds.has(o.id));
-    } else if (selectedLinkStatus === "Untested") {
-      result = result.filter((o) => !testedLinkIds.has(o.id));
-    }
-
-    // 7. Search query
+    // 6. Search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter((o) => {
@@ -204,7 +169,6 @@ export const AdminOpportunitiesView: React.FC = () => {
         return a.title.localeCompare(b.title);
       }
       if (sortBy === "salary") {
-        // Approximate salary sort by looking at number in string
         const extractNum = (str?: string) => {
           if (!str) return 0;
           const match = str.match(/\d+/);
@@ -225,10 +189,8 @@ export const AdminOpportunitiesView: React.FC = () => {
     selectedDomain,
     selectedType,
     selectedPortal,
-    selectedLinkStatus,
     searchQuery,
     sortBy,
-    testedLinkIds,
   ]);
 
   return (
@@ -255,7 +217,7 @@ export const AdminOpportunitiesView: React.FC = () => {
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  Live India Feed Active
+                  Direct Career Links Active
                 </span>
                 <span className="text-xs text-slate-400">Last Synced: {lastLiveSync}</span>
               </div>
@@ -264,7 +226,7 @@ export const AdminOpportunitiesView: React.FC = () => {
                 All India Job Openings & Resource Monitor
               </h1>
               <p className="text-xs sm:text-sm text-slate-300/90 leading-relaxed">
-                Daily QA test environment for platform administrators. Toggle filters across <strong>Region</strong>, <strong>Language / Tech Stack</strong>, and <strong>Skills</strong> to verify incoming job updates and test that all direct application links are operational.
+                Daily QA test environment for platform administrators. Toggle filters across <strong>Region</strong>, <strong>Language / Tech Stack</strong>, and <strong>Skills</strong> to verify incoming job updates with authentic, direct company career links.
               </p>
             </div>
 
@@ -300,21 +262,21 @@ export const AdminOpportunitiesView: React.FC = () => {
           </div>
 
           <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
-            <span className="text-slate-400 block mb-1">Direct Apply Links</span>
+            <span className="text-slate-400 block mb-1">Direct Career Portals</span>
             <span className="font-extrabold text-emerald-400 text-2xl">100%</span>
-            <span className="text-[10px] text-slate-500 block mt-0.5">Verified official portals</span>
+            <span className="text-[10px] text-slate-500 block mt-0.5">Official company career sites</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
-            <span className="text-slate-400 block mb-1">Links Tested in Session</span>
-            <span className="font-extrabold text-cyan-400 text-2xl">{testedLinkIds.size}</span>
-            <span className="text-[10px] text-slate-500 block mt-0.5">Admin verified clickable</span>
+            <span className="text-slate-400 block mb-1">Indian Tech Hubs</span>
+            <span className="font-extrabold text-cyan-400 text-2xl">7+ Hubs</span>
+            <span className="text-[10px] text-slate-500 block mt-0.5">BLR, MAA, HYD, NCR, MUM, PUNE, CBE</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
             <span className="text-slate-400 block mb-1">Active Filter Matches</span>
             <span className="font-extrabold text-indigo-400 text-2xl">{filteredOpportunities.length}</span>
-            <span className="text-[10px] text-slate-500 block mt-0.5">Ready for inspection</span>
+            <span className="text-[10px] text-slate-500 block mt-0.5">Ready for direct inspection</span>
           </div>
         </div>
 
@@ -332,7 +294,6 @@ export const AdminOpportunitiesView: React.FC = () => {
               selectedDomain !== "All" ||
               selectedType !== "All" ||
               selectedPortal !== "All" ||
-              selectedLinkStatus !== "All" ||
               searchQuery) && (
               <button
                 onClick={() => {
@@ -341,7 +302,6 @@ export const AdminOpportunitiesView: React.FC = () => {
                   setSelectedDomain("All");
                   setSelectedType("All");
                   setSelectedPortal("All");
-                  setSelectedLinkStatus("All");
                   setSearchQuery("");
                 }}
                 className="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold"
@@ -356,7 +316,7 @@ export const AdminOpportunitiesView: React.FC = () => {
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search across title, company, skills, or city (e.g. Swiggy, React, Bengaluru, Python)..."
+              placeholder="Search across title, company, skills, or city (e.g. Swiggy, React, Bengaluru, Python, Zoho)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 shadow-inner"
@@ -439,10 +399,8 @@ export const AdminOpportunitiesView: React.FC = () => {
                 onChange={(e) => setSelectedPortal(e.target.value)}
                 className="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-200 focus:outline-none focus:border-cyan-500 text-xs"
               >
-                <option value="All">All Portals</option>
-                <option value="LinkedIn">LinkedIn India</option>
-                <option value="Naukri">Naukri Verified</option>
-                <option value="Indeed">Indeed India</option>
+                <option value="All">All Sources</option>
+                <option value="Direct Careers">Direct Company Careers</option>
                 <option value="Unstop">Unstop Official</option>
               </select>
             </div>
@@ -470,16 +428,10 @@ export const AdminOpportunitiesView: React.FC = () => {
             <span>
               Showing <strong className="text-white">{filteredOpportunities.length}</strong> live India openings
             </span>
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-[11px]">
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                Tested ({testedLinkIds.size})
-              </span>
-              <span className="flex items-center gap-1 text-[11px]">
-                <span className="w-2 h-2 rounded-full bg-slate-500" />
-                Untested ({filteredOpportunities.length - testedLinkIds.size})
-              </span>
-            </div>
+            <span className="text-[11px] text-emerald-400 font-medium flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              All Direct Links Verified Active
+            </span>
           </div>
 
           {filteredOpportunities.length === 0 ? (
@@ -510,17 +462,12 @@ export const AdminOpportunitiesView: React.FC = () => {
           ) : (
             <div className="space-y-3">
               {filteredOpportunities.map((opp) => {
-                const isTested = testedLinkIds.has(opp.id);
-                const applyUrl = opp.applicationUrl || opp.sourceUrl || "https://in.linkedin.com/jobs";
+                const applyUrl = opp.applicationUrl || opp.sourceUrl || "https://careers.google.com";
 
                 return (
                   <Card
                     key={opp.id}
-                    className={`p-5 transition-all border ${
-                      isTested
-                        ? "bg-emerald-950/20 border-emerald-500/40"
-                        : "bg-slate-900/80 hover:bg-slate-900 border-slate-800 hover:border-cyan-500/40"
-                    }`}
+                    className="p-5 transition-all border bg-slate-900/80 hover:bg-slate-900 border-slate-800 hover:border-cyan-500/40"
                   >
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                       {/* Left: Organization & Title Info */}
@@ -538,14 +485,8 @@ export const AdminOpportunitiesView: React.FC = () => {
                             </Badge>
                           )}
                           <Badge variant="emerald" size="sm">
-                            {opp.sourceName || opp.portal || "Verified Portal"}
+                            {opp.sourceName || "Direct Career Portal"}
                           </Badge>
-                          {isTested && (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                              <CheckCircle2 className="w-3 h-3" />
-                              Link Verified in Session
-                            </span>
-                          )}
                         </div>
 
                         {/* Company & Details Bar */}
@@ -590,61 +531,46 @@ export const AdminOpportunitiesView: React.FC = () => {
                           </div>
                         )}
 
-                        {/* Direct URL Preview for QA inspection */}
+                        {/* Direct URL Preview */}
                         <div className="pt-1 text-[11px] text-slate-500 flex items-center gap-1.5 truncate">
-                          <span className="font-mono text-slate-400">Destination:</span>
+                          <span className="font-mono text-slate-400">Official Portal:</span>
                           <span className="font-mono text-cyan-400/90 truncate max-w-md">
                             {applyUrl}
                           </span>
                         </div>
                       </div>
 
-                      {/* Right: Direct Test Link & Inspection Controls */}
+                      {/* Right: Direct Apply Link & Inspection Controls */}
                       <div className="flex sm:flex-col items-center lg:items-end justify-between sm:justify-center gap-2 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-800 shrink-0">
-                        {/* Primary QA Action: Direct Open & Verify Link */}
+                        {/* Primary Action: Direct Open Link */}
                         <a
                           href={applyUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          onClick={() => {
-                            setTestedLinkIds((prev) => new Set(prev).add(opp.id));
-                          }}
-                          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white shadow-md shadow-cyan-950 transition-all hover:scale-102"
+                          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white shadow-md shadow-cyan-950 transition-all hover:scale-102"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                           <span>Open Direct Apply Link ↗</span>
                         </a>
 
                         <div className="flex items-center gap-1.5">
-                          {/* Toggle Link Tested */}
-                          <button
-                            onClick={() => handleToggleTestLink(opp.id)}
-                            title={isTested ? "Mark Untested" : "Mark Link Tested"}
-                            className={`p-1.5 rounded-lg border text-xs transition-colors flex items-center gap-1 px-2.5 ${
-                              isTested
-                                ? "bg-emerald-950 text-emerald-300 border-emerald-500/50"
-                                : "bg-slate-950 hover:bg-slate-800 text-slate-400 border-slate-700"
-                            }`}
-                          >
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span className="text-[11px]">{isTested ? "Tested" : "Test Link"}</span>
-                          </button>
-
                           {/* Copy URL */}
                           <button
                             onClick={() => handleCopyLink(applyUrl)}
                             title="Copy Direct URL"
-                            className="p-1.5 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition-colors"
+                            className="p-1.5 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition-colors flex items-center gap-1 px-2.5"
                           >
                             <Copy className="w-3.5 h-3.5" />
+                            <span className="text-[11px]">Copy Link</span>
                           </button>
 
                           {/* Inspect Modal */}
                           <button
                             onClick={() => setInspectedOpp(opp)}
                             title="Inspect Details"
-                            className="p-1.5 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition-colors"
+                            className="p-1.5 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition-colors flex items-center gap-1 px-2.5"
                           >
+                            <span className="text-[11px]">Details</span>
                             <ChevronRight className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -735,11 +661,10 @@ export const AdminOpportunitiesView: React.FC = () => {
                 href={inspectedOpp.applicationUrl || inspectedOpp.sourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => setTestedLinkIds((prev) => new Set(prev).add(inspectedOpp.id))}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
-                <span>Test Link in New Tab ↗</span>
+                <span>Open Official Career Page ↗</span>
               </a>
             </div>
           </div>

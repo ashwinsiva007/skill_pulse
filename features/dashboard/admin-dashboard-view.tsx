@@ -17,7 +17,6 @@ import {
   Briefcase,
   Search,
   Filter,
-  Download,
   RefreshCw,
   ExternalLink,
   ChevronRight,
@@ -154,18 +153,6 @@ export const AdminDashboardView: React.FC = () => {
     });
   }, [usersList, selectedRoleFilter, selectedSyncFilter, searchQuery]);
 
-  // Export Users Database as JSON
-  const handleExportUsers = () => {
-    const dataStr = JSON.stringify(usersList, null, 2);
-    const blob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `skillpulse-users-db-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   const handleInspect = (userRec: AdminUserRecord) => {
     setInspectedCandidate(userRec);
     setIsModalOpen(true);
@@ -219,16 +206,6 @@ export const AdminDashboardView: React.FC = () => {
                 Sync Database
               </Button>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportUsers}
-                className="text-xs border-indigo-500/40 text-indigo-300 hover:bg-indigo-950/40"
-              >
-                <Download className="w-3.5 h-3.5 mr-1.5" />
-                Export Users DB
-              </Button>
-
               <Link href="/opportunities">
                 <Button variant="primary" size="sm" className="text-xs font-bold shadow-md shadow-indigo-950">
                   <Briefcase className="w-3.5 h-3.5 mr-1.5" />
@@ -266,7 +243,13 @@ export const AdminDashboardView: React.FC = () => {
             <div className="mt-3">
               <span className="text-3xl font-extrabold text-white tracking-tight">{roleDistribution.length}</span>
               <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
-                Leading: <span className="text-cyan-400 font-semibold">{roleDistribution[0]?.role || "Engineering"}</span>
+                {roleDistribution.length > 0 ? (
+                  <>
+                    Leading: <span className="text-cyan-400 font-semibold">{roleDistribution[0]?.role}</span>
+                  </>
+                ) : (
+                  <span className="text-slate-500">Awaiting candidate track choices</span>
+                )}
               </p>
             </div>
           </Card>
@@ -326,42 +309,48 @@ export const AdminDashboardView: React.FC = () => {
             </div>
 
             {/* Visual Bar Graph */}
-            <div className="space-y-4">
-              {roleDistribution.map((item, idx) => {
-                // Gradient colors for visual hierarchy
-                const colors = [
-                  "from-indigo-500 to-cyan-400",
-                  "from-cyan-500 to-teal-400",
-                  "from-emerald-500 to-green-400",
-                  "from-violet-500 to-purple-400",
-                  "from-amber-500 to-orange-400",
-                  "from-rose-500 to-pink-400",
-                  "from-blue-500 to-indigo-400",
-                ];
-                const barColor = colors[idx % colors.length];
+            {roleDistribution.length === 0 ? (
+              <div className="py-12 text-center text-slate-500 text-xs">
+                No candidate role records found. Only authentic candidate profiles registered in SkillPulse will display here.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {roleDistribution.map((item, idx) => {
+                  // Gradient colors for visual hierarchy
+                  const colors = [
+                    "from-indigo-500 to-cyan-400",
+                    "from-cyan-500 to-teal-400",
+                    "from-emerald-500 to-green-400",
+                    "from-violet-500 to-purple-400",
+                    "from-amber-500 to-orange-400",
+                    "from-rose-500 to-pink-400",
+                    "from-blue-500 to-indigo-400",
+                  ];
+                  const barColor = colors[idx % colors.length];
 
-                return (
-                  <div key={item.role} className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-200">{item.role}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-slate-400 text-[11px]">{item.count} candidate{item.count > 1 ? "s" : ""}</span>
-                        <span className="font-bold text-indigo-300 text-xs px-1.5 py-0.5 rounded bg-slate-800">
-                          {item.percentage}%
-                        </span>
+                  return (
+                    <div key={item.role} className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-slate-200">{item.role}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-400 text-[11px]">{item.count} candidate{item.count > 1 ? "s" : ""}</span>
+                          <span className="font-bold text-indigo-300 text-xs px-1.5 py-0.5 rounded bg-slate-800">
+                            {item.percentage}%
+                          </span>
+                        </div>
+                      </div>
+                      {/* Bar track */}
+                      <div className="h-2.5 w-full rounded-full bg-slate-950 overflow-hidden border border-slate-800">
+                        <div
+                          className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-700`}
+                          style={{ width: `${Math.max(item.percentage, 8)}%` }}
+                        />
                       </div>
                     </div>
-                    {/* Bar track */}
-                    <div className="h-2.5 w-full rounded-full bg-slate-950 overflow-hidden border border-slate-800">
-                      <div
-                        className={`h-full rounded-full bg-gradient-to-r ${barColor} transition-all duration-700`}
-                        style={{ width: `${Math.max(item.percentage, 8)}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </Card>
 
           {/* Chart 2: Experience & Top Skills Analytics (1 column on lg) */}
@@ -376,22 +365,28 @@ export const AdminDashboardView: React.FC = () => {
                 <p className="text-xs text-slate-400 mt-0.5">Demographics by career seniority</p>
               </div>
 
-              <div className="space-y-3">
-                {experienceDistribution.map((tier) => (
-                  <div key={tier.level} className="space-y-1 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-300 font-medium">{tier.level}</span>
-                      <span className="font-bold text-emerald-400">{tier.count} ({tier.percentage}%)</span>
+              {usersList.length === 0 ? (
+                <div className="py-6 text-center text-slate-500 text-xs">
+                  0 candidate profiles recorded in database.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {experienceDistribution.map((tier) => (
+                    <div key={tier.level} className="space-y-1 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-300 font-medium">{tier.level}</span>
+                        <span className="font-bold text-emerald-400">{tier.count} ({tier.percentage}%)</span>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-slate-950 overflow-hidden border border-slate-800">
+                        <div
+                          className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                          style={{ width: `${Math.max(tier.percentage, 6)}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-2 w-full rounded-full bg-slate-950 overflow-hidden border border-slate-800">
-                      <div
-                        className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-                        style={{ width: `${Math.max(tier.percentage, 6)}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </Card>
 
             {/* Top Recorded Skills in Database */}
@@ -404,19 +399,25 @@ export const AdminDashboardView: React.FC = () => {
                 <p className="text-xs text-slate-400 mt-0.5">Most frequent skills listed by candidates</p>
               </div>
 
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {topSkills.map((s) => (
-                  <span
-                    key={s.name}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-slate-950 border border-slate-800 text-indigo-200"
-                  >
-                    <span>{s.name}</span>
-                    <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-indigo-950 text-indigo-300 border border-indigo-800">
-                      {s.count}
+              {topSkills.length === 0 ? (
+                <div className="py-4 text-center text-slate-500 text-xs">
+                  No candidate skills indexed yet.
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {topSkills.map((s) => (
+                    <span
+                      key={s.name}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-slate-950 border border-slate-800 text-indigo-200"
+                    >
+                      <span>{s.name}</span>
+                      <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-indigo-950 text-indigo-300 border border-indigo-800">
+                        {s.count}
+                      </span>
                     </span>
-                  </span>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </Card>
           </div>
         </div>
@@ -430,7 +431,7 @@ export const AdminDashboardView: React.FC = () => {
                 Live Candidate User Database ({filteredUsers.length} of {usersList.length})
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
-                Inspect candidate profiles, education, target tracks, and cloud synchronization status.
+                Click any candidate row or name to inspect their full database schema across all sections & columns in the website.
               </p>
             </div>
 
@@ -507,7 +508,9 @@ export const AdminDashboardView: React.FC = () => {
                     return (
                       <tr
                         key={u.uid}
-                        className="hover:bg-slate-900/50 transition-colors group"
+                        onClick={() => handleInspect(u)}
+                        className="hover:bg-slate-900/60 cursor-pointer transition-colors group"
+                        title="Click to view full candidate database record"
                       >
                         {/* Candidate */}
                         <td className="py-3.5 px-4">
@@ -516,8 +519,11 @@ export const AdminDashboardView: React.FC = () => {
                               {initials}
                             </div>
                             <div className="leading-tight">
-                              <p className="font-semibold text-white group-hover:text-indigo-300 transition-colors">
-                                {u.name}
+                              <p className="font-semibold text-white group-hover:text-indigo-300 group-hover:underline transition-colors flex items-center gap-1.5">
+                                <span>{u.name}</span>
+                                <span className="text-[10px] text-cyan-400 font-normal opacity-0 group-hover:opacity-100 transition-opacity">
+                                  ↗ View DB
+                                </span>
                               </p>
                               <p className="text-[11px] text-slate-400 mt-0.5">{u.email}</p>
                             </div>
@@ -571,10 +577,14 @@ export const AdminDashboardView: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleInspect(u)}
-                            className="text-xs h-7 px-2.5 border-slate-700 hover:border-indigo-500/50 hover:bg-indigo-950/40 text-slate-300 hover:text-white"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleInspect(u);
+                            }}
+                            className="text-xs h-7 px-2.5 border-indigo-500/40 hover:bg-indigo-950/60 text-indigo-300 hover:text-white inline-flex items-center gap-1 font-medium"
                           >
-                            Inspect Profile
+                            <Database className="w-3 h-3" />
+                            <span>View DB</span>
                           </Button>
                         </td>
                       </tr>
