@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   MapPin,
-  DollarSign,
   Bookmark,
   BookmarkCheck,
   Send,
@@ -20,6 +19,9 @@ import {
   ChevronDown,
   Building,
   ShieldCheck,
+  Clock,
+  Radio,
+  FileCheck,
 } from "lucide-react";
 
 export interface OpportunityCardProps {
@@ -67,62 +69,63 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
   const matchedRequired = matchResult ? matchResult.matchedRequiredSkills : opportunity.matchedSkills;
   const missingRequired = matchResult ? matchResult.missingRequiredSkills : opportunity.missingSkills;
 
-  // Generate dynamic recommendation note
-  const getRecommendationSummary = () => {
-    if (opportunity.type === "Hackathon") {
-      return `Recommended Hackathon: Build rapid portfolio evidence, collaborate with international teams, and showcase your development skills. Prizes & recognition awarded by ${opportunity.organization}.`;
-    }
-    if (opportunity.type === "Internship") {
-      return `Recommended Internship: Direct practical mentorship with structured compensation. Ideal for early-career developers looking to gain production experience.`;
-    }
-    if (matchedRequired.length > 0) {
-      return `Recommended Role: Direct match for your ${matchedRequired.slice(0, 3).join(", ")} skills. Review the requirements on the official portal and tailor your ATS resume before applying.`;
-    }
-    return `Verified active vacancy at ${opportunity.organization}. Cross-check technical requirements and apply on the official portal.`;
-  };
+  // Source badge styling
+  const isLive = opportunity.sourceMode === "LIVE";
+  const isCurated = opportunity.sourceMode === "CURATED_CATALOG";
 
-  const applyUrl = opportunity.applicationUrl || opportunity.sourceUrl || "https://devpost.com";
+  const applyUrl = opportunity.applicationUrl || opportunity.sourceUrl || "https://careers.google.com";
 
   return (
     <Card className="p-5 hover:border-slate-700/80 transition-all duration-150 space-y-4 bg-slate-900/80">
-      {/* Top Header Row */}
+      {/* Top Header Row with Provenance & Match Score */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
             <Building className="w-3.5 h-3.5 text-slate-400" />
             {opportunity.organization}
           </span>
+
           <Badge variant={getTypeVariant(opportunity.type)} size="sm">
             {opportunity.type}
           </Badge>
-          <span className="text-[10px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800 font-medium">
-            {opportunity.domain}
-          </span>
+
+          {/* Source Provenance Badge */}
+          {isLive ? (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+              <Radio className="w-3 h-3 text-emerald-400 animate-pulse" />
+              Live Ingested ({opportunity.portal || "ATS"})
+            </span>
+          ) : isCurated ? (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+              <FileCheck className="w-3 h-3 text-cyan-400" />
+              Verified Catalog
+            </span>
+          ) : null}
+
+          {/* Freshness Badge */}
+          {opportunity.freshnessLabel === "RECENTLY_POSTED" && (
+            <span className="text-[10px] text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/60 font-semibold flex items-center gap-1">
+              <Clock className="w-3 h-3 text-amber-400" />
+              Recently Posted
+            </span>
+          )}
+
           {opportunity.region && (
-            <span className="text-[10px] text-cyan-300 bg-cyan-950/70 px-2 py-0.5 rounded border border-cyan-800/60 font-semibold">
+            <span className="text-[10px] text-slate-300 bg-slate-950 px-2 py-0.5 rounded border border-slate-800 font-medium">
               📍 {opportunity.region}
             </span>
           )}
-          {opportunity.portal && (
-            <span className="text-[10px] text-indigo-300 bg-indigo-950/70 px-2 py-0.5 rounded border border-indigo-800/60 font-semibold">
-              via {opportunity.portal}
-            </span>
-          )}
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
-            <ShieldCheck className="w-3 h-3 text-emerald-400" />
-            Verified Live
-          </span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Badge variant={getScoreVariant(matchScore)} size="sm">
-            {matchScore}% Match
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Badge variant={getScoreVariant(matchScore)} size="sm" className="font-bold">
+            {matchScore}% Profile Alignment
           </Badge>
           <span className="text-[11px] text-slate-400">· {opportunity.postedDate}</span>
         </div>
       </div>
 
-      {/* Main Title */}
+      {/* Main Title & Key Specs */}
       <div>
         <h3
           onClick={() => onViewDetails(opportunity)}
@@ -140,7 +143,6 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
 
           {opportunity.salaryRange && (
             <span className="flex items-center gap-1 text-emerald-400 font-semibold bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-800/50">
-              <span className="font-bold text-xs">₹</span>
               {opportunity.salaryRange}
             </span>
           )}
@@ -162,7 +164,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
         {opportunity.description}
       </p>
 
-      {/* AI Recommendation & Match Note */}
+      {/* Transparent Match Reason */}
       <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-1.5 text-xs">
         <div
           onClick={() => setIsWhyMatchesExpanded(!isWhyMatchesExpanded)}
@@ -170,7 +172,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
         >
           <span className="flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-            SkillPulse Recommendation Note:
+            Match Alignment Reasoning:
           </span>
           <ChevronDown
             className={`w-3.5 h-3.5 transition-transform ${isWhyMatchesExpanded ? "rotate-180" : ""}`}
@@ -178,14 +180,15 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
         </div>
 
         <p className="text-slate-300 leading-relaxed text-[11px]">
-          {matchResult?.whyThisMatches?.[0] || getRecommendationSummary()}
+          {matchResult?.whyThisMatches?.[0] ||
+            `Candidate alignment: targets ${opportunity.domain} competencies matching ${opportunity.organization}.`}
         </p>
 
         {isWhyMatchesExpanded && matchResult && matchResult.whyThisMatches.length > 1 && (
           <ul className="pt-1.5 space-y-1 text-[11px] text-slate-400 border-t border-slate-800 animate-in fade-in">
             {matchResult.whyThisMatches.slice(1).map((point, idx) => (
               <li key={idx} className="flex items-start gap-1.5">
-                <span className="text-indigo-400">•</span>
+                <span className="text-indigo-400 font-bold">•</span>
                 <span>{point}</span>
               </li>
             ))}
@@ -207,16 +210,22 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
             </span>
           ))}
 
-          {missingRequired.map((s) => (
+          {missingRequired.slice(0, 4).map((s) => (
             <span
               key={s}
               className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800/80 text-slate-300 border border-slate-700/60 flex items-center gap-1"
-              title="Opportunity required skill"
+              title="Job required skill"
             >
               <AlertCircle className="w-3 h-3 text-slate-400" />
               {s}
             </span>
           ))}
+
+          {missingRequired.length > 4 && (
+            <span className="text-[10px] text-slate-500 font-mono">
+              +{missingRequired.length - 4} more
+            </span>
+          )}
         </div>
       </div>
 
@@ -249,12 +258,12 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
             className="text-xs h-8 text-slate-300 hover:text-white"
           >
             <Eye className="w-3.5 h-3.5 mr-1" />
-            Details
+            Details & Score
           </Button>
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Direct External Link to Apply or Register */}
+          {/* Direct External Link to Apply on genuine source */}
           <a
             href={applyUrl}
             target="_blank"
@@ -264,21 +273,11 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
             <Button
               variant="outline"
               size="sm"
-              className="text-xs h-8 border-indigo-500/40 text-indigo-300 hover:bg-indigo-950/50 hover:text-white font-medium"
+              className="text-xs h-8 border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/50 hover:text-white font-medium"
               title="Open official listing and registration in a new tab"
             >
               <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-              {opportunity.portal === "Naukri"
-                ? "Apply on Naukri ↗"
-                : opportunity.portal === "LinkedIn"
-                ? "Apply on LinkedIn ↗"
-                : opportunity.portal === "Indeed"
-                ? "Apply on Indeed ↗"
-                : opportunity.portal === "Unstop"
-                ? "Apply on Unstop ↗"
-                : opportunity.portal === "Devpost"
-                ? "Register on Devpost ↗"
-                : "Apply on Portal ↗"}
+              Apply on Official Portal ↗
             </Button>
           </a>
 
@@ -287,7 +286,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
             variant="primary"
             size="sm"
             onClick={() => onTrackApplication(opportunity)}
-            className="text-xs h-8 font-semibold"
+            className="text-xs h-8 font-semibold shadow-xs"
           >
             <Send className="w-3.5 h-3.5 mr-1" />
             Track in Pipeline
