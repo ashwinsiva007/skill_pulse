@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { ResetConfirmModal } from "./reset-confirm-modal";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { useAuth } from "@/lib/firebase/auth-context";
+import { ThemeSelector } from "./theme-selector";
 
 export interface TopBarProps {
   onOpenMobileSidebar: () => void;
@@ -129,6 +130,9 @@ export const TopBar: React.FC<TopBarProps> = ({
               </span>
             </Link>
           )}
+
+          {/* Theme Selector (6 Themes: 3 Light + 3 Dark) */}
+          <ThemeSelector />
 
           {/* User Profile dropdown menu OR Sign In button */}
           {user ? (

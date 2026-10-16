@@ -1,28 +1,323 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
-:root {
+/* ==========================================================================
+   THEME DEFINITIONS: 3 LIGHT THEMES + 3 DARK THEMES (6 TOTAL)
+   ========================================================================== */
+
+/* 1. Default fallback: Obsidian Night (Dark) */
+:root,
+[data-theme="obsidian-dark"] {
   --background: #090d16;
   --surface: #0f1626;
   --surface-raised: #141d33;
   --surface-elevated: #1a2542;
-  --foreground: #f1f5f9;
+  --foreground: #f8fafc;
   --foreground-muted: #94a3b8;
-  --border: rgba(255, 255, 255, 0.08);
+  --foreground-subtle: #64748b;
+  --border: rgba(255, 255, 255, 0.09);
   --border-subtle: rgba(255, 255, 255, 0.05);
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
   --accent-cyan: #06b6d4;
   --accent-emerald: #10b981;
   --accent-amber: #f59e0b;
+  --theme-font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --theme-card-bg: #0f1626;
+  --theme-input-bg: #090d16;
+}
+
+/* 2. Midnight Pine (Dark) - Luminous cyber-forest */
+[data-theme="emerald-dark"] {
+  --background: #05140d;
+  --surface: #0a2117;
+  --surface-raised: #0f2e21;
+  --surface-elevated: #153c2c;
+  --foreground: #f0fdf4;
+  --foreground-muted: #86efac;
+  --foreground-subtle: #4ade80;
+  --border: rgba(16, 185, 129, 0.22);
+  --border-subtle: rgba(16, 185, 129, 0.12);
+  --primary: #10b981;
+  --primary-hover: #059669;
+  --accent-cyan: #14b8a6;
+  --accent-emerald: #34d399;
+  --accent-amber: #facc15;
+  --theme-font: 'Outfit', sans-serif;
+  --theme-card-bg: #0a2117;
+  --theme-input-bg: #05140d;
+}
+
+/* 3. Cyberpunk Amethyst (Dark) - Deep cosmic velvet violet */
+[data-theme="amethyst-dark"] {
+  --background: #0c0817;
+  --surface: #150f28;
+  --surface-raised: #1f163b;
+  --surface-elevated: #2b1f50;
+  --foreground: #fdf4ff;
+  --foreground-muted: #d8b4fe;
+  --foreground-subtle: #a855f7;
+  --border: rgba(168, 85, 247, 0.26);
+  --border-subtle: rgba(168, 85, 247, 0.14);
+  --primary: #a855f7;
+  --primary-hover: #9333ea;
+  --accent-cyan: #38bdf8;
+  --accent-emerald: #34d399;
+  --accent-amber: #f472b6;
+  --theme-font: 'Space Grotesk', sans-serif;
+  --theme-card-bg: #150f28;
+  --theme-input-bg: #0c0817;
+}
+
+/* 4. Nordic Frost (Light) - Crisp Scandinavian slate */
+[data-theme="nordic-light"] {
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --surface-raised: #f1f5f9;
+  --surface-elevated: #e2e8f0;
+  --foreground: #0f172a;
+  --foreground-muted: #334155;
+  --foreground-subtle: #64748b;
+  --border: #cbd5e1;
+  --border-subtle: #e2e8f0;
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --accent-cyan: #0284c7;
+  --accent-emerald: #059669;
+  --accent-amber: #d97706;
+  --theme-font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --theme-card-bg: #ffffff;
+  --theme-input-bg: #f8fafc;
+}
+
+/* 5. Emerald Sage (Light) - Fresh botanical sage */
+[data-theme="emerald-light"] {
+  --background: #f2f8f4;
+  --surface: #ffffff;
+  --surface-raised: #e6f3eb;
+  --surface-elevated: #d2ebd9;
+  --foreground: #0c2417;
+  --foreground-muted: #1e4530;
+  --foreground-subtle: #3a6b50;
+  --border: #bce0cc;
+  --border-subtle: #d7ecdf;
+  --primary: #059669;
+  --primary-hover: #047857;
+  --accent-cyan: #0d9488;
+  --accent-emerald: #10b981;
+  --accent-amber: #d97706;
+  --theme-font: 'Plus Jakarta Sans', sans-serif;
+  --theme-card-bg: #ffffff;
+  --theme-input-bg: #f4f9f5;
+}
+
+/* 6. Executive Pearl (Light) - Warm ivory with gold-bronze */
+[data-theme="amber-light"] {
+  --background: #fcfaf7;
+  --surface: #ffffff;
+  --surface-raised: #f5efe6;
+  --surface-elevated: #ede2d3;
+  --foreground: #261e16;
+  --foreground-muted: #534233;
+  --foreground-subtle: #7a6552;
+  --border: #e3d7c8;
+  --border-subtle: #f0e7db;
+  --primary: #d97706;
+  --primary-hover: #b45309;
+  --accent-cyan: #0284c7;
+  --accent-emerald: #059669;
+  --accent-amber: #b45309;
+  --theme-font: 'Manrope', sans-serif;
+  --theme-card-bg: #ffffff;
+  --theme-input-bg: #faf7f2;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--theme-font, 'Inter', -apple-system, BlinkMacSystemFont, sans-serif);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ==========================================================================
+   LIGHT MODE UNIVERSAL VISIBILITY & CONTRAST REINFORCEMENTS
+   Guarantees that all fonts, badges, cards, inputs, and modals are 100% visible
+   ========================================================================== */
+html[data-mode="light"] {
+  color-scheme: light;
+}
+
+html[data-mode="light"] body {
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+}
+
+/* 1. Surfaces, Cards, and Container Overrides in Light Mode */
+html[data-mode="light"] .bg-\[\#090d16\],
+html[data-mode="light"] .bg-\[\#0b101c\],
+html[data-mode="light"] .bg-\[\#0b101c\]\/90,
+html[data-mode="light"] .bg-\[\#0f1626\],
+html[data-mode="light"] .bg-slate-950,
+html[data-mode="light"] .bg-slate-950\/80,
+html[data-mode="light"] .bg-slate-950\/60,
+html[data-mode="light"] .bg-slate-900,
+html[data-mode="light"] .bg-slate-900\/90,
+html[data-mode="light"] .bg-slate-900\/80,
+html[data-mode="light"] .bg-slate-900\/60,
+html[data-mode="light"] .bg-slate-900\/40 {
+  background-color: var(--surface) !important;
+  border-color: var(--border) !important;
+}
+
+html[data-mode="light"] .bg-slate-800,
+html[data-mode="light"] .bg-slate-800\/80,
+html[data-mode="light"] .bg-slate-800\/60,
+html[data-mode="light"] .bg-slate-800\/40,
+html[data-mode="light"] .bg-slate-800\/20 {
+  background-color: var(--surface-raised) !important;
+  border-color: var(--border-subtle) !important;
+}
+
+/* 2. Text Visibility in Light Mode - No Invisible or Washed Out Text! */
+html[data-mode="light"] .text-white,
+html[data-mode="light"] .text-slate-100,
+html[data-mode="light"] .text-slate-200 {
+  color: var(--foreground) !important;
+}
+
+html[data-mode="light"] .text-slate-300,
+html[data-mode="light"] .text-slate-400 {
+  color: var(--foreground-muted) !important;
+}
+
+html[data-mode="light"] .text-slate-500,
+html[data-mode="light"] .text-slate-600 {
+  color: var(--foreground-subtle) !important;
+}
+
+/* 3. Borders in Light Mode */
+html[data-mode="light"] .border-slate-800,
+html[data-mode="light"] .border-slate-800\/80,
+html[data-mode="light"] .border-slate-800\/70,
+html[data-mode="light"] .border-slate-800\/60,
+html[data-mode="light"] .border-slate-800\/40,
+html[data-mode="light"] .border-slate-700,
+html[data-mode="light"] .border-slate-700\/80,
+html[data-mode="light"] .border-slate-700\/60,
+html[data-mode="light"] .border-slate-700\/50 {
+  border-color: var(--border) !important;
+}
+
+/* 4. Form Inputs in Light Mode */
+html[data-mode="light"] input:not([type="checkbox"]):not([type="radio"]),
+html[data-mode="light"] textarea,
+html[data-mode="light"] select {
+  background-color: var(--theme-input-bg, #ffffff) !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+}
+
+html[data-mode="light"] input::placeholder,
+html[data-mode="light"] textarea::placeholder {
+  color: var(--foreground-subtle) !important;
+  opacity: 0.85 !important;
+}
+
+/* 5. Badges & Status Chips in Light Mode */
+html[data-mode="light"] .bg-emerald-950\/60,
+html[data-mode="light"] .bg-emerald-950\/70,
+html[data-mode="light"] .bg-emerald-950\/40,
+html[data-mode="light"] .bg-emerald-950\/20,
+html[data-mode="light"] .bg-emerald-950 {
+  background-color: #dcfce7 !important;
+  color: #15803d !important;
+  border-color: #86efac !important;
+}
+
+html[data-mode="light"] .bg-indigo-950\/60,
+html[data-mode="light"] .bg-indigo-950\/70,
+html[data-mode="light"] .bg-indigo-950\/40,
+html[data-mode="light"] .bg-indigo-950 {
+  background-color: #e0e7ff !important;
+  color: #4338ca !important;
+  border-color: #a5b4fc !important;
+}
+
+html[data-mode="light"] .bg-cyan-950\/60,
+html[data-mode="light"] .bg-cyan-950\/70,
+html[data-mode="light"] .bg-cyan-950\/40,
+html[data-mode="light"] .bg-cyan-950 {
+  background-color: #cffafe !important;
+  color: #0e7490 !important;
+  border-color: #67e8f9 !important;
+}
+
+html[data-mode="light"] .bg-amber-950\/60,
+html[data-mode="light"] .bg-amber-950\/70,
+html[data-mode="light"] .bg-amber-950\/40,
+html[data-mode="light"] .bg-amber-950 {
+  background-color: #fef3c7 !important;
+  color: #b45309 !important;
+  border-color: #fcd34d !important;
+}
+
+html[data-mode="light"] .bg-rose-950\/60,
+html[data-mode="light"] .bg-rose-950\/70,
+html[data-mode="light"] .bg-rose-950\/40,
+html[data-mode="light"] .bg-rose-950 {
+  background-color: #ffe4e6 !important;
+  color: #be123c !important;
+  border-color: #fda4af !important;
+}
+
+/* 6. Header & Sidebar in Light Mode */
+html[data-mode="light"] header {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: var(--border) !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+html[data-mode="light"] aside {
+  background-color: var(--surface) !important;
+  border-right-color: var(--border) !important;
+}
+
+html[data-mode="light"] .hover\:bg-slate-800:hover,
+html[data-mode="light"] .hover\:bg-slate-800\/80:hover,
+html[data-mode="light"] .hover\:bg-slate-800\/60:hover {
+  background-color: var(--surface-raised) !important;
+}
+
+/* 7. Dropdown Menus and Popovers in Light Mode */
+html[data-mode="light"] .shadow-xl,
+html[data-mode="light"] .shadow-2xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* ==========================================================================
+   DARK THEMES SPECIFIC ACCENT STYLING
+   ========================================================================== */
+html[data-theme="emerald-dark"] aside {
+  background-color: #071911 !important;
+  border-right-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+html[data-theme="emerald-dark"] header {
+  background-color: rgba(7, 25, 17, 0.92) !important;
+  border-bottom-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+html[data-theme="amethyst-dark"] aside {
+  background-color: #0f0a20 !important;
+  border-right-color: rgba(168, 85, 247, 0.22) !important;
+}
+
+html[data-theme="amethyst-dark"] header {
+  background-color: rgba(15, 10, 32, 0.92) !important;
+  border-bottom-color: rgba(168, 85, 247, 0.22) !important;
 }
 
 /* Custom subtle scrollbar */
@@ -32,21 +327,21 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #090d16;
+  background: var(--background);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1f293d;
+  background: var(--surface-raised);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #2e3d5b;
+  background: var(--border);
 }
 
 /* Accessible focus ring */
 *:focus-visible {
-  outline: 2px solid #6366f1;
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 

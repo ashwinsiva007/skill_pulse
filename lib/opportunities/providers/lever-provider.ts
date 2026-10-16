@@ -157,7 +157,7 @@ export class LeverProviderAdapter implements IJobProviderAdapter {
             workplaceType: workMode,
             region,
             portal: "Lever",
-            applicationUrl: post.hostedUrl || post.applyUrl,
+            applicationUrl: post.applyUrl || (post.hostedUrl ? `${post.hostedUrl}/apply` : post.hostedUrl),
             sourceName: `${board.name} (Official Careers via Lever)`,
             sourceUrl: post.hostedUrl,
             publicationDate: isoDate,

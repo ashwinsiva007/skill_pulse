@@ -158,7 +158,7 @@ export class GreenhouseProviderAdapter implements IJobProviderAdapter {
             workplaceType: workMode,
             region,
             portal: "Greenhouse",
-            applicationUrl: job.absolute_url,
+            applicationUrl: job.absolute_url.includes("#app") ? job.absolute_url : `${job.absolute_url}#app`,
             sourceName: `${board.name} (Official Careers via Greenhouse)`,
             sourceUrl: job.absolute_url,
             publicationDate: job.updated_at,
