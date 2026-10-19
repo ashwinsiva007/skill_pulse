@@ -152,7 +152,7 @@ export const DashboardView: React.FC = () => {
                   Build Your Tech Career With Confidence.
                 </span>
               </h1>
-              <p className="text-xs sm:text-sm text-slate-300/90 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                 SkillPulse gives beginners and jobseekers everything needed to succeed: build recruiter-approved ATS resumes from scratch, bridge skill gaps with open-source roadmaps, and match with verified live jobs, hackathons, and internships.
               </p>
             </div>

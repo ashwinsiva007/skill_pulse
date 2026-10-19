@@ -23,12 +23,16 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Read saved theme from localStorage on initial client mount
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY) as ThemeId | null;
+      const saved = localStorage.getItem(STORAGE_KEY) as string | null;
       if (saved && THEMES_LIST.some((t) => t.id === saved)) {
-        setActiveThemeState(saved);
-        applyThemeToDOM(saved);
+        setActiveThemeState(saved as ThemeId);
+        applyThemeToDOM(saved as ThemeId);
       } else {
-        applyThemeToDOM(DEFAULT_THEME);
+        const migrated: ThemeId =
+          saved === "amber-light" ? "emerald-light" :
+          saved === "emerald-dark" ? "obsidian-dark" : DEFAULT_THEME;
+        setActiveThemeState(migrated);
+        applyThemeToDOM(migrated);
       }
     } catch {
       applyThemeToDOM(DEFAULT_THEME);
@@ -37,7 +41,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const applyThemeToDOM = (themeId: ThemeId) => {
-    const config = THEMES_LIST.find((t) => t.id === themeId) || THEMES_LIST[3];
+    const config = THEMES_LIST.find((t) => t.id === themeId) || THEMES_LIST[2];
     const root = document.documentElement;
 
     root.setAttribute("data-theme", config.id);
@@ -63,7 +67,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const currentConfig = THEMES_LIST.find((t) => t.id === theme) || THEMES_LIST[3];
+  const currentConfig = THEMES_LIST.find((t) => t.id === theme) || THEMES_LIST[2];
 
   return (
     <ThemeContext.Provider

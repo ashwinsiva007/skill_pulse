@@ -361,17 +361,17 @@ export default function SettingsPage() {
           </Card>
         )}
 
-        {/* Visual Appearance & Theme Options (6 Themes: 3 Light + 3 Dark) */}
+        {/* Visual Appearance & Theme Options (4 Themes: 2 Light + 2 Dark) */}
         <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Palette className="w-4 h-4 text-indigo-400" />
-                  Appearance & Themes (6 Distinct Styles)
+                  Appearance & Themes (4 Distinct Styles)
                 </CardTitle>
                 <CardDescription>
-                  Switch between 3 light themes and 3 dark themes. Each theme features tailored contrast, distinct colors, and customized typography.
+                  Switch between 2 light themes and 2 dark themes. Each theme features tailored contrast, distinct colors, and customized typography.
                 </CardDescription>
               </div>
               <Badge variant="indigo" size="sm">
@@ -381,13 +381,13 @@ export default function SettingsPage() {
           </CardHeader>
 
           <CardContent className="space-y-5">
-            {/* 3 Light Themes Group */}
+            {/* 2 Light Themes Group */}
             <div>
               <div className="flex items-center gap-1.5 text-xs font-bold text-amber-500 mb-2.5">
                 <Sun className="w-3.5 h-3.5" />
-                <span>Light Themes (3 Modes)</span>
+                <span>Light Themes (2 Modes)</span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {themes
                   .filter((t) => t.mode === "light")
                   .map((t) => {
@@ -456,13 +456,13 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* 3 Dark Themes Group */}
+            {/* 2 Dark Themes Group */}
             <div className="pt-2 border-t border-slate-800">
               <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-400 mb-2.5">
                 <Moon className="w-3.5 h-3.5" />
-                <span>Dark Themes (3 Modes)</span>
+                <span>Dark Themes (2 Modes)</span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {themes
                   .filter((t) => t.mode === "dark")
                   .map((t) => {

@@ -21,9 +21,20 @@ export default function RootLayout({
             __html: `(function() {
               try {
                 var saved = localStorage.getItem('skillpulse_active_theme') || 'obsidian-dark';
+                if (saved === 'amber-light') saved = 'emerald-light';
+                if (saved === 'emerald-dark') saved = 'obsidian-dark';
+                var validThemes = ['nordic-light', 'emerald-light', 'obsidian-dark', 'amethyst-dark'];
+                if (validThemes.indexOf(saved) === -1) saved = 'obsidian-dark';
+                
                 var isDark = saved.indexOf('-dark') !== -1;
                 document.documentElement.setAttribute('data-theme', saved);
                 document.documentElement.setAttribute('data-mode', isDark ? 'dark' : 'light');
+                
+                var font = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+                if (saved === 'emerald-light') font = "'Plus Jakarta Sans', sans-serif";
+                if (saved === 'amethyst-dark') font = "'Space Grotesk', sans-serif";
+                document.documentElement.style.setProperty('--theme-font', font);
+
                 if (isDark) {
                   document.documentElement.classList.add('dark');
                   document.documentElement.classList.remove('light');

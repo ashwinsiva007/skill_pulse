@@ -83,19 +83,19 @@ export const ThemeSelector: React.FC<{ compact?: boolean; className?: string }> 
             <div className="flex items-center gap-1.5">
               <Palette className="w-4 h-4 text-indigo-400" />
               <span className="text-xs font-bold uppercase tracking-wider">
-                Theme & Typography (6 Themes)
+                Theme & Typography (4 Themes)
               </span>
             </div>
             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 font-semibold border border-indigo-500/20">
-              3 Light · 3 Dark
+              2 Light · 2 Dark
             </span>
           </div>
 
-          {/* Section: 3 Light Themes */}
+          {/* Section: 2 Light Themes */}
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5 px-1 text-[11px] font-bold text-amber-500">
               <Sun className="w-3 h-3" />
-              <span>Light Modes (3 Themes)</span>
+              <span>Light Modes (2 Themes)</span>
             </div>
             <div className="space-y-1">
               {lightThemes.map((t) => (
@@ -109,11 +109,11 @@ export const ThemeSelector: React.FC<{ compact?: boolean; className?: string }> 
             </div>
           </div>
 
-          {/* Section: 3 Dark Themes */}
+          {/* Section: 2 Dark Themes */}
           <div className="space-y-1.5 pt-2 border-t border-inherit/20">
             <div className="flex items-center gap-1.5 px-1 text-[11px] font-bold text-indigo-400">
               <Moon className="w-3 h-3" />
-              <span>Dark Modes (3 Themes)</span>
+              <span>Dark Modes (2 Themes)</span>
             </div>
             <div className="space-y-1">
               {darkThemes.map((t) => (

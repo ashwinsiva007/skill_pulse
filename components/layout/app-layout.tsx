@@ -20,7 +20,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col font-sans selection:bg-indigo-600/40 selection:text-indigo-200">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex flex-col font-sans selection:bg-indigo-600/40 selection:text-indigo-200">
       <div className="flex-1 flex w-full relative">
         {/* Navigation Sidebar */}
         <Sidebar

@@ -3,9 +3,7 @@ export type ThemeMode = "light" | "dark";
 export type ThemeId =
   | "nordic-light"
   | "emerald-light"
-  | "amber-light"
   | "obsidian-dark"
-  | "emerald-dark"
   | "amethyst-dark";
 
 export interface ThemeConfig {
@@ -25,11 +23,11 @@ export interface ThemeConfig {
 
 export const THEMES_LIST: ThemeConfig[] = [
   // ==========================
-  // 3 LIGHT THEMES
+  // 2 LIGHT THEMES
   // ==========================
   {
     id: "nordic-light",
-    name: "Nordic Frost",
+    name: "Nordic Slate",
     mode: "light",
     fontName: "Inter",
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
@@ -37,7 +35,7 @@ export const THEMES_LIST: ThemeConfig[] = [
     preview: {
       bg: "#f8fafc",
       card: "#ffffff",
-      accent: "#4f46e5",
+      accent: "#2563eb",
       text: "#0f172a",
     },
   },
@@ -52,26 +50,12 @@ export const THEMES_LIST: ThemeConfig[] = [
       bg: "#f2f8f4",
       card: "#ffffff",
       accent: "#059669",
-      text: "#0c2417",
-    },
-  },
-  {
-    id: "amber-light",
-    name: "Executive Pearl",
-    mode: "light",
-    fontName: "Manrope",
-    fontFamily: "'Manrope', sans-serif",
-    description: "Warm ivory pearl with gold-bronze tones and sophisticated executive typography.",
-    preview: {
-      bg: "#fcfaf7",
-      card: "#ffffff",
-      accent: "#d97706",
-      text: "#271e16",
+      text: "#062817",
     },
   },
 
   // ==========================
-  // 3 DARK THEMES
+  // 2 DARK THEMES
   // ==========================
   {
     id: "obsidian-dark",
@@ -88,20 +72,6 @@ export const THEMES_LIST: ThemeConfig[] = [
     },
   },
   {
-    id: "emerald-dark",
-    name: "Midnight Pine",
-    mode: "dark",
-    fontName: "Outfit",
-    fontFamily: "'Outfit', sans-serif",
-    description: "Deep cyber-forest obsidian with luminous mint emerald accents and sleek curves.",
-    preview: {
-      bg: "#05140d",
-      card: "#092217",
-      accent: "#10b981",
-      text: "#f0fdf4",
-    },
-  },
-  {
     id: "amethyst-dark",
     name: "Cyberpunk Amethyst",
     mode: "dark",
@@ -110,9 +80,10 @@ export const THEMES_LIST: ThemeConfig[] = [
     description: "Velvety cosmic violet with neon purple accents and futuristic tech typography.",
     preview: {
       bg: "#0c0817",
-      card: "#160f29",
+      card: "#150f28",
       accent: "#a855f7",
       text: "#fdf4ff",
     },
   },
 ];
+
