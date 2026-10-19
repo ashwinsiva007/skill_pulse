@@ -99,6 +99,9 @@ export interface Opportunity {
   salaryRange?: string; // Compensation / stipend range when reliably available
   department?: string;
   isDemo: boolean; // Explicit flag identifying illustrative demo listings
+  teamSize?: string; // e.g. "1 - 4 Members"
+  prizeAmountNumeric?: number; // e.g. 500000 (INR) for numeric range filtering
+  unstopDirectUrl?: string; // Direct unstop.com/hackathons/... URL
   
   // Dynamic matching properties (calculated per user)
   matchScore: number; // 0 - 100%

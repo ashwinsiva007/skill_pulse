@@ -18,6 +18,7 @@ import {
   PlusCircle,
   X,
   Keyboard,
+  Trophy,
 } from "lucide-react";
 
 interface PaletteItem {
@@ -63,6 +64,15 @@ const COMMAND_ITEMS: PaletteItem[] = [
     route: "/opportunities",
     icon: Briefcase,
     badge: "Live",
+  },
+  {
+    id: "nav-hackathons",
+    category: "Navigation",
+    title: "Unstop Hackathons Hub",
+    description: "Browse 27+ verified campus & corporate hackathons with direct Unstop links",
+    route: "/opportunities?type=Hackathon",
+    icon: Trophy,
+    badge: "Unstop",
   },
   {
     id: "nav-saved",

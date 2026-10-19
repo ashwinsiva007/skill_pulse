@@ -20,6 +20,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Compass,
+  Trophy,
 } from "lucide-react";
 
 interface NavItem {
@@ -52,6 +53,12 @@ const NAV_ITEMS: NavItem[] = [
     href: "/opportunities",
     icon: Briefcase,
     badge: "Live Feed",
+  },
+  {
+    label: "Hackathon Hub",
+    href: "/opportunities?type=Hackathon",
+    icon: Trophy,
+    badge: "Unstop Live",
   },
   {
     label: "Saved Opportunities",

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,9 @@ import {
   AlertTriangle,
   Layers,
   Sparkles,
+  Users,
+  Flame,
+  RotateCcw,
 } from "lucide-react";
 import { useAuth } from "@/lib/firebase/auth-context";
 import { AdminOpportunitiesView } from "./admin-opportunities-view";
@@ -79,6 +83,7 @@ export const OpportunitiesView: React.FC = () => {
   const [lastLiveFetch, setLastLiveFetch] = useState<string | null>(null);
 
   // Tabs & Filter states
+  const searchParams = useSearchParams();
   const [sourceModeTab, setSourceModeTab] = useState<"ALL" | "LIVE" | "CURATED" | "SHORTCUTS">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string>("All");
@@ -89,6 +94,43 @@ export const OpportunitiesView: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 12;
 
+  // Dedicated Unstop Hackathons Multi-Filter States (Non-mandatory, default to "All")
+  const [hackathonMode, setHackathonMode] = useState<string>("All"); // All | Remote | On-site | Hybrid
+  const [hackathonEligibility, setHackathonEligibility] = useState<string>("All"); // All | 2nd-3rd-year | beginners | all-students | open-all
+  const [hackathonRegion, setHackathonRegion] = useState<string>("All"); // All | South India | Tamil Nadu | North India | West India | Pan-India Remote
+  const [hackathonPrizeRange, setHackathonPrizeRange] = useState<string>("All"); // All | 10L+ | 5L-10L | 1L-5L | under-1L
+  const [hackathonDomain, setHackathonDomain] = useState<string>("All"); // All | AI & ML | Cloud | Cybersecurity | Web3 | Open Innovation | FinTech
+
+  // Sync initial type from URL search parameters (e.g. /opportunities?type=Hackathon)
+  useEffect(() => {
+    const typeParam = searchParams.get("type");
+    if (typeParam) {
+      if (typeParam.toLowerCase() === "hackathon") {
+        setSelectedType("Hackathon");
+      } else if (typeParam.toLowerCase() === "job") {
+        setSelectedType("Job");
+      } else if (typeParam.toLowerCase() === "internship") {
+        setSelectedType("Internship");
+      }
+    }
+  }, [searchParams]);
+
+  const isHackathonFilterActive =
+    hackathonMode !== "All" ||
+    hackathonEligibility !== "All" ||
+    hackathonRegion !== "All" ||
+    hackathonPrizeRange !== "All" ||
+    hackathonDomain !== "All";
+
+  const handleResetHackathonFilters = () => {
+    setHackathonMode("All");
+    setHackathonEligibility("All");
+    setHackathonRegion("All");
+    setHackathonPrizeRange("All");
+    setHackathonDomain("All");
+    setSearchQuery("");
+  };
+
   // Modals state
   const [selectedDetailOpp, setSelectedDetailOpp] = useState<Opportunity | null>(null);
   const [selectedTrackOpp, setSelectedTrackOpp] = useState<Opportunity | null>(null);
@@ -98,7 +140,20 @@ export const OpportunitiesView: React.FC = () => {
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [sourceModeTab, searchQuery, selectedType, selectedWorkMode, selectedLocation, onlyMatchingSkills, sortBy]);
+  }, [
+    sourceModeTab,
+    searchQuery,
+    selectedType,
+    selectedWorkMode,
+    selectedLocation,
+    onlyMatchingSkills,
+    sortBy,
+    hackathonMode,
+    hackathonEligibility,
+    hackathonRegion,
+    hackathonPrizeRange,
+    hackathonDomain,
+  ]);
 
   // Fetch opportunities from server-side ingestion endpoint
   const fetchLiveOpportunities = useCallback(async (forceRefresh = false) => {
@@ -216,13 +271,122 @@ export const OpportunitiesView: React.FC = () => {
           return false;
         }
 
-        // 4. Work Mode Filter
-        if (selectedWorkMode !== "All" && opp.workMode !== selectedWorkMode) {
+        // Dedicated Unstop Hackathons Filters (Active when viewing Hackathons)
+        if (selectedType === "Hackathon") {
+          // A. Hackathon Format / Mode Filter
+          if (hackathonMode !== "All") {
+            if (hackathonMode === "Remote" && opp.workMode !== "Remote") return false;
+            if (hackathonMode === "On-site" && opp.workMode !== "On-site") return false;
+            if (hackathonMode === "Hybrid" && opp.workMode !== "Hybrid") return false;
+          }
+
+          // B. Student Eligibility Filter
+          if (hackathonEligibility !== "All") {
+            const eligCombined = `${opp.experienceLevel} ${opp.eligibilityRequirements}`.toLowerCase();
+            if (hackathonEligibility === "2nd-3rd-year") {
+              const matches2nd3rd =
+                eligCombined.includes("2nd") ||
+                eligCombined.includes("3rd") ||
+                eligCombined.includes("undergrad") ||
+                eligCombined.includes("all college");
+              if (!matches2nd3rd) return false;
+            } else if (hackathonEligibility === "beginners") {
+              const matchesBeg =
+                eligCombined.includes("1st") ||
+                eligCombined.includes("beginner") ||
+                eligCombined.includes("all college");
+              if (!matchesBeg) return false;
+            } else if (hackathonEligibility === "all-students") {
+              const matchesCollege =
+                eligCombined.includes("college") ||
+                eligCombined.includes("student") ||
+                eligCombined.includes("university");
+              if (!matchesCollege) return false;
+            } else if (hackathonEligibility === "open-all") {
+              const matchesOpen =
+                eligCombined.includes("open") ||
+                eligCombined.includes("professional") ||
+                eligCombined.includes("all");
+              if (!matchesOpen) return false;
+            }
+          }
+
+          // C. Region / Location Filter
+          if (hackathonRegion !== "All") {
+            const locCombined = `${opp.location} ${opp.region || ""} ${opp.city || ""} ${opp.state || ""}`.toLowerCase();
+            if (hackathonRegion === "Tamil Nadu") {
+              const isTN =
+                locCombined.includes("tamil nadu") ||
+                locCombined.includes("chennai") ||
+                locCombined.includes("coimbatore") ||
+                locCombined.includes("trichy") ||
+                locCombined.includes("vellore") ||
+                locCombined.includes("madurai");
+              if (!isTN) return false;
+            } else if (hackathonRegion === "South India") {
+              const isSouth =
+                opp.region === "South India" ||
+                locCombined.includes("tamil nadu") ||
+                locCombined.includes("chennai") ||
+                locCombined.includes("coimbatore") ||
+                locCombined.includes("trichy") ||
+                locCombined.includes("vellore") ||
+                locCombined.includes("bengaluru") ||
+                locCombined.includes("bangalore") ||
+                locCombined.includes("karnataka") ||
+                locCombined.includes("hyderabad") ||
+                locCombined.includes("telangana") ||
+                locCombined.includes("kerala");
+              if (!isSouth) return false;
+            } else if (hackathonRegion === "Pan-India Remote") {
+              const isPanIndia =
+                opp.region === "Pan-India Remote" ||
+                opp.workMode === "Remote" ||
+                locCombined.includes("remote") ||
+                locCombined.includes("virtual");
+              if (!isPanIndia) return false;
+            } else if (hackathonRegion === "North India") {
+              const isNorth =
+                opp.region === "North India" ||
+                locCombined.includes("delhi") ||
+                locCombined.includes("noida") ||
+                locCombined.includes("gurugram");
+              if (!isNorth) return false;
+            } else if (hackathonRegion === "West India") {
+              const isWest =
+                opp.region === "West India" ||
+                locCombined.includes("mumbai") ||
+                locCombined.includes("pune") ||
+                locCombined.includes("maharashtra");
+              if (!isWest) return false;
+            }
+          }
+
+          // D. Cash Prize Amount Filter
+          if (hackathonPrizeRange !== "All") {
+            const prize = opp.prizeAmountNumeric || 0;
+            if (hackathonPrizeRange === "10L+" && prize < 1000000) return false;
+            if (hackathonPrizeRange === "5L-10L" && (prize < 500000 || prize >= 1000000)) return false;
+            if (hackathonPrizeRange === "1L-5L" && (prize < 100000 || prize >= 500000)) return false;
+            if (hackathonPrizeRange === "under-1L" && (prize <= 0 || prize >= 100000)) return false;
+          }
+
+          // E. Domain / Category Filter
+          if (hackathonDomain !== "All") {
+            const domainCombined = `${opp.domain} ${opp.title} ${(opp.requiredSkills || []).join(" ")}`.toLowerCase();
+            if (!domainCombined.includes(hackathonDomain.toLowerCase())) {
+              return false;
+            }
+          }
+        }
+
+        // 4. Work Mode Filter (When not Hackathons or generic)
+        if (selectedType !== "Hackathon" && selectedWorkMode !== "All" && opp.workMode !== selectedWorkMode) {
           return false;
         }
 
-        // 5. Location Filter (Tamil Nadu priority & Pan-India)
-        if (selectedLocation !== "All India") {
+        // 5. Location Filter (When not Hackathons or generic)
+        if (selectedType !== "Hackathon" && selectedLocation !== "All India") {
           const locLower = opp.location.toLowerCase();
           const selLower = selectedLocation.toLowerCase();
 
@@ -276,6 +440,11 @@ export const OpportunitiesView: React.FC = () => {
     selectedLocation,
     onlyMatchingSkills,
     sortBy,
+    hackathonMode,
+    hackathonEligibility,
+    hackathonRegion,
+    hackathonPrizeRange,
+    hackathonDomain,
   ]);
 
   // Sliced paginated view (12 opportunities per page)
@@ -586,6 +755,62 @@ export const OpportunitiesView: React.FC = () => {
           </div>
         ) : (
           <>
+            {/* Dedicated Unstop Hackathons Hub Hero Banner */}
+            {selectedType === "Hackathon" && (
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-indigo-950/80 via-slate-900 to-cyan-950/80 border border-cyan-500/30 shadow-lg space-y-3.5 mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+                        <Trophy className="w-4 h-4 text-cyan-400" />
+                      </span>
+                      <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                        Unstop & Campus Hackathon Gateway
+                        <Badge variant="cyan" size="sm" className="font-semibold text-[10px]">
+                          {hackathonsCount}+ Verified National Challenges
+                        </Badge>
+                      </h2>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
+                      Tailored for <strong>1st, 2nd, and 3rd-year college coders</strong>. Discover flagship corporate challenges (Flipkart GRiD, Amazon HackOn, Walmart) and premier South India on-campus hackathons (IIT Madras, NIT Trichy, Anna University) with <strong>1-click direct Unstop registration links</strong>.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <a
+                      href="https://unstop.com/hackathons"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-400/40 text-xs font-semibold transition-all shadow-xs"
+                    >
+                      <span>Explore Unstop Portal</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                </div>
+
+                {/* Quick Stats Pills */}
+                <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800/80 text-[11px]">
+                  <span className="px-2.5 py-1 rounded-lg bg-slate-950/70 border border-slate-800 text-slate-300 flex items-center gap-1.5">
+                    <Flame className="w-3.5 h-3.5 text-amber-400" />
+                    <span><strong>2nd & 3rd Year</strong> Friendly</span>
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-slate-950/70 border border-slate-800 text-slate-300 flex items-center gap-1.5">
+                    <Trophy className="w-3.5 h-3.5 text-emerald-400" />
+                    <span><strong>₹2.5+ Crore</strong> Cash Prize Pools + PPIs</span>
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-slate-950/70 border border-slate-800 text-slate-300 flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-indigo-400" />
+                    <span><strong>South India & Pan-India</strong> Virtual Tracks</span>
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-slate-950/70 border border-slate-800 text-slate-300 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                    <span><strong>Direct Unstop URLs</strong> (Zero Wasted Time)</span>
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Filter Controls: Tamil Nadu & India Locations, Work Mode, Types, Search */}
             <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3">
               {/* Row 1: Search & Type Quick Pills */}
@@ -597,7 +822,11 @@ export const OpportunitiesView: React.FC = () => {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search role, skills (e.g. React, Python), or company..."
+                    placeholder={
+                      selectedType === "Hackathon"
+                        ? "Search hackathon name, tech stack, IIT/NIT college, or company..."
+                        : "Search role, skills (e.g. React, Python), or company..."
+                    }
                     className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-xs"
                   />
                 </div>
@@ -613,7 +842,7 @@ export const OpportunitiesView: React.FC = () => {
                     <button
                       key={t.id}
                       onClick={() => setSelectedType(t.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                         selectedType === t.id
                           ? "bg-indigo-600 text-white shadow-xs"
                           : "bg-slate-950 text-slate-400 hover:text-white border border-slate-800"
@@ -625,98 +854,255 @@ export const OpportunitiesView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Row 2: Location Filter Dropdown with Tamil Nadu Focus, Work Mode, Sort */}
-              <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-slate-800/80 text-xs">
-                <div className="flex flex-wrap items-center gap-2">
-                  {/* Location Selector */}
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-indigo-400" />
-                    <select
-                      value={selectedLocation}
-                      onChange={(e) => setSelectedLocation(e.target.value)}
-                      className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
-                    >
-                      <option value="All India">🇮🇳 All India</option>
-                      <optgroup label="Tamil Nadu Tech Hubs">
-                        <option value="Tamil Nadu (All)">Tamil Nadu (All Cities)</option>
-                        <option value="Chennai">Chennai, Tamil Nadu</option>
-                        <option value="Coimbatore">Coimbatore, Tamil Nadu</option>
-                        <option value="Madurai">Madurai, Tamil Nadu</option>
-                        <option value="Tiruchirappalli">Tiruchirappalli (Trichy), Tamil Nadu</option>
-                        <option value="Salem">Salem, Tamil Nadu</option>
-                        <option value="Hosur">Hosur, Tamil Nadu</option>
-                        <option value="Tiruppur">Tiruppur, Tamil Nadu</option>
-                        <option value="Erode">Erode, Tamil Nadu</option>
-                      </optgroup>
-                      <optgroup label="Major Indian Tech Metros">
-                        <option value="Bengaluru">Bengaluru, Karnataka</option>
-                        <option value="Hyderabad">Hyderabad, Telangana</option>
-                        <option value="Pune">Pune, Maharashtra</option>
-                        <option value="Mumbai">Mumbai, Maharashtra</option>
-                        <option value="Delhi">Delhi NCR (Gurugram / Noida)</option>
-                      </optgroup>
-                      <optgroup label="Remote">
-                        <option value="Pan-India Remote">Pan-India Remote</option>
-                      </optgroup>
-                    </select>
+              {/* Row 2: Specialized Filters depending on selected type */}
+              {selectedType === "Hackathon" ? (
+                <div className="space-y-3 pt-2 border-t border-slate-800/80 text-xs">
+                  {/* Dedicated 4-Column Multi-Filter Bar as requested */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                    {/* Filter 1: Format / Mode (Online, Offline, Hybrid) */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                        <Globe className="w-3 h-3 text-cyan-400" />
+                        1. Format / Mode
+                      </label>
+                      <select
+                        value={hackathonMode}
+                        onChange={(e) => setHackathonMode(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-200 text-xs focus:outline-none focus:border-cyan-500 cursor-pointer"
+                      >
+                        <option value="All">🌐 All Formats</option>
+                        <option value="Remote">💻 Online (Virtual Only)</option>
+                        <option value="On-site">🏛️ In-Person (On-Campus)</option>
+                        <option value="Hybrid">🔄 Hybrid (Online + Finals)</option>
+                      </select>
+                    </div>
+
+                    {/* Filter 2: Student Eligibility */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                        <GraduationCap className="w-3 h-3 text-indigo-400" />
+                        2. Student Eligibility
+                      </label>
+                      <select
+                        value={hackathonEligibility}
+                        onChange={(e) => setHackathonEligibility(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-200 text-xs focus:outline-none focus:border-indigo-500 cursor-pointer"
+                      >
+                        <option value="All">🎓 All Eligibility</option>
+                        <option value="2nd-3rd-year">🚀 2nd & 3rd Year Undergrads</option>
+                        <option value="beginners">🌱 1st & 2nd Year Beginners</option>
+                        <option value="all-students">🏫 All College Students (UG/PG)</option>
+                        <option value="open-all">💼 Open to All / Early Careers</option>
+                      </select>
+                    </div>
+
+                    {/* Filter 3: Region / Campus Hub (South India & Tamil Nadu focus) */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-emerald-400" />
+                        3. Region & Location
+                      </label>
+                      <select
+                        value={hackathonRegion}
+                        onChange={(e) => setHackathonRegion(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-200 text-xs focus:outline-none focus:border-emerald-500 cursor-pointer"
+                      >
+                        <option value="All">📍 All Regions</option>
+                        <option value="South India">🌴 South India (TN, KA, TS, KL)</option>
+                        <option value="Tamil Nadu">🏛️ Tamil Nadu (Chennai, CBE, Trichy)</option>
+                        <option value="Pan-India Remote">🏙️ Pan-India Remote / Virtual</option>
+                        <option value="North India">🏛️ North India (Delhi NCR)</option>
+                        <option value="West India">🏛️ West India (Mumbai / Pune)</option>
+                      </select>
+                    </div>
+
+                    {/* Filter 4: Cash Prize Pool */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                        <Trophy className="w-3 h-3 text-amber-400" />
+                        4. Prize Pool
+                      </label>
+                      <select
+                        value={hackathonPrizeRange}
+                        onChange={(e) => setHackathonPrizeRange(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-200 text-xs focus:outline-none focus:border-amber-500 cursor-pointer"
+                      >
+                        <option value="All">🏆 All Prize Pools</option>
+                        <option value="10L+">💎 ₹10 Lakhs+ Mega Prizes</option>
+                        <option value="5L-10L">🥇 ₹5L - ₹10L High Prizes</option>
+                        <option value="1L-5L">🥈 ₹1L - ₹5L Mid Prizes</option>
+                        <option value="under-1L">🥉 Up to ₹1L / Swags & Grants</option>
+                      </select>
+                    </div>
                   </div>
 
-                  {/* Work Mode */}
-                  <select
-                    value={selectedWorkMode}
-                    onChange={(e) => setSelectedWorkMode(e.target.value)}
-                    className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-300 text-xs focus:outline-none"
-                  >
-                    <option value="All">All Work Modes</option>
-                    <option value="Remote">Remote Only</option>
-                    <option value="Hybrid">Hybrid</option>
-                    <option value="On-site">On-site</option>
-                  </select>
+                  {/* Filter 5: Domain Pills & Reset Action */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/60">
+                    <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
+                      <span className="text-[11px] font-semibold text-slate-400 mr-1 shrink-0">
+                        Domain:
+                      </span>
+                      {[
+                        { id: "All", label: "All Domains" },
+                        { id: "AI & ML", label: "AI & GenAI" },
+                        { id: "Software Engineering", label: "Full Stack & Cloud" },
+                        { id: "Cybersecurity", label: "Cybersecurity & CTF" },
+                        { id: "Web3", label: "Web3 & Blockchain" },
+                        { id: "National Innovation", label: "Smart India (SIH)" },
+                        { id: "FinTech", label: "FinTech & Payments" },
+                      ].map((d) => (
+                        <button
+                          key={d.id}
+                          onClick={() => setHackathonDomain(d.id)}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer shrink-0 ${
+                            hackathonDomain === d.id
+                              ? "bg-cyan-500 text-slate-950 font-bold shadow-xs"
+                              : "bg-slate-950 text-slate-400 hover:text-white border border-slate-800"
+                          }`}
+                        >
+                          {d.label}
+                        </button>
+                      ))}
+                    </div>
 
-                  {/* Matching Skills Toggle */}
-                  <button
-                    onClick={() => setOnlyMatchingSkills(!onlyMatchingSkills)}
-                    className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border ${
-                      onlyMatchingSkills
-                        ? "bg-emerald-600 text-white border-emerald-500 shadow-xs"
-                        : "bg-slate-950 text-emerald-400 hover:text-emerald-300 border-emerald-900/60 hover:bg-emerald-950/40"
-                    }`}
-                    title="Filter opportunities to only those that share verified matching skills with your profile"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>{onlyMatchingSkills ? "Showing Matched Skills Only" : "Filter: Only My Matching Skills"}</span>
-                  </button>
-                </div>
+                    <div className="flex items-center gap-2">
+                      {isHackathonFilterActive && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleResetHackathonFilters}
+                          className="h-7 text-xs text-amber-400 hover:text-amber-300 hover:bg-amber-950/30 cursor-pointer"
+                        >
+                          <RotateCcw className="w-3 h-3 mr-1" />
+                          Reset Hackathon Filters
+                        </Button>
+                      )}
 
-                {/* Sort Order */}
-                <div className="flex items-center gap-1.5">
-                  <span className="text-slate-400 text-[11px]">Sort:</span>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as "match" | "newest" | "title")}
-                    className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-200 text-xs focus:outline-none"
-                  >
-                    <option value="match">Best Profile Match %</option>
-                    <option value="newest">Newest Publication</option>
-                    <option value="title">Role Title (A-Z)</option>
-                  </select>
+                      {/* Sort Order */}
+                      <div className="flex items-center gap-1.5 pl-2 border-l border-slate-800">
+                        <span className="text-slate-400 text-[11px]">Sort:</span>
+                        <select
+                          value={sortBy}
+                          onChange={(e) => setSortBy(e.target.value as "match" | "newest" | "title")}
+                          className="px-2 py-1 rounded-lg bg-slate-950 border border-slate-700 text-slate-200 text-xs focus:outline-none cursor-pointer"
+                        >
+                          <option value="match">Best Profile Match %</option>
+                          <option value="newest">Newest Publication</option>
+                          <option value="title">Challenge Title (A-Z)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-slate-800/80 text-xs">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Location Selector */}
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5 text-indigo-400" />
+                      <select
+                        value={selectedLocation}
+                        onChange={(e) => setSelectedLocation(e.target.value)}
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
+                      >
+                        <option value="All India">🇮🇳 All India</option>
+                        <optgroup label="Tamil Nadu Tech Hubs">
+                          <option value="Tamil Nadu (All)">Tamil Nadu (All Cities)</option>
+                          <option value="Chennai">Chennai, Tamil Nadu</option>
+                          <option value="Coimbatore">Coimbatore, Tamil Nadu</option>
+                          <option value="Madurai">Madurai, Tamil Nadu</option>
+                          <option value="Tiruchirappalli">Tiruchirappalli (Trichy), Tamil Nadu</option>
+                          <option value="Salem">Salem, Tamil Nadu</option>
+                          <option value="Hosur">Hosur, Tamil Nadu</option>
+                          <option value="Tiruppur">Tiruppur, Tamil Nadu</option>
+                          <option value="Erode">Erode, Tamil Nadu</option>
+                        </optgroup>
+                        <optgroup label="Major Indian Tech Metros">
+                          <option value="Bengaluru">Bengaluru, Karnataka</option>
+                          <option value="Hyderabad">Hyderabad, Telangana</option>
+                          <option value="Pune">Pune, Maharashtra</option>
+                          <option value="Mumbai">Mumbai, Maharashtra</option>
+                          <option value="Delhi">Delhi NCR (Gurugram / Noida)</option>
+                        </optgroup>
+                        <optgroup label="Remote">
+                          <option value="Pan-India Remote">Pan-India Remote</option>
+                        </optgroup>
+                      </select>
+                    </div>
+
+                    {/* Work Mode */}
+                    <select
+                      value={selectedWorkMode}
+                      onChange={(e) => setSelectedWorkMode(e.target.value)}
+                      className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-300 text-xs focus:outline-none"
+                    >
+                      <option value="All">All Work Modes</option>
+                      <option value="Remote">Remote Only</option>
+                      <option value="Hybrid">Hybrid</option>
+                      <option value="On-site">On-site</option>
+                    </select>
+
+                    {/* Matching Skills Toggle */}
+                    <button
+                      onClick={() => setOnlyMatchingSkills(!onlyMatchingSkills)}
+                      className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border ${
+                        onlyMatchingSkills
+                          ? "bg-emerald-600 text-white border-emerald-500 shadow-xs"
+                          : "bg-slate-950 text-emerald-400 hover:text-emerald-300 border-emerald-900/60 hover:bg-emerald-950/40"
+                      }`}
+                      title="Filter opportunities to only those that share verified matching skills with your profile"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>{onlyMatchingSkills ? "Showing Matched Skills Only" : "Filter: Only My Matching Skills"}</span>
+                    </button>
+                  </div>
+
+                  {/* Sort Order */}
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-400 text-[11px]">Sort:</span>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as "match" | "newest" | "title")}
+                      className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-200 text-xs focus:outline-none"
+                    >
+                      <option value="match">Best Profile Match %</option>
+                      <option value="newest">Newest Publication</option>
+                      <option value="title">Role Title (A-Z)</option>
+                    </select>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Opportunities List Grid */}
             {filteredOpportunities.length === 0 ? (
               <EmptyState
-                icon={Briefcase}
-                title="No Opportunities Match Selected Filter Criteria"
-                description="Try switching location, clearing search keywords, or clicking 'Sync Live Sources' to query Greenhouse, Lever, and Adzuna."
-                actionLabel="Reset Location & Filters"
+                icon={selectedType === "Hackathon" ? Trophy : Briefcase}
+                title={
+                  selectedType === "Hackathon"
+                    ? "No Hackathons Match Selected Filter Criteria"
+                    : "No Opportunities Match Selected Filter Criteria"
+                }
+                description={
+                  selectedType === "Hackathon"
+                    ? "Try adjusting the format, eligibility, region, or prize filters, or reset filters to view all 27+ live Unstop hackathons."
+                    : "Try switching location, clearing search keywords, or clicking 'Sync Live Sources' to query Greenhouse, Lever, and Adzuna."
+                }
+                actionLabel={
+                  selectedType === "Hackathon"
+                    ? "Reset Hackathon Filters"
+                    : "Reset Location & Filters"
+                }
                 onAction={() => {
-                  setSearchQuery("");
-                  setSelectedType("All");
-                  setSelectedWorkMode("All");
-                  setSelectedLocation("All India");
-                  setSourceModeTab("ALL");
+                  if (selectedType === "Hackathon") {
+                    handleResetHackathonFilters();
+                  } else {
+                    setSearchQuery("");
+                    setSelectedType("All");
+                    setSelectedWorkMode("All");
+                    setSelectedLocation("All India");
+                    setSourceModeTab("ALL");
+                  }
                 }}
               />
             ) : (

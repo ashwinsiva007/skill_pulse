@@ -55,6 +55,8 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
 
   const isLive = opportunity.sourceMode === "LIVE";
   const isCurated = opportunity.sourceMode === "CURATED_CATALOG";
+  const isHackathon = opportunity.type === "Hackathon";
+  const directDestinationUrl = opportunity.unstopDirectUrl || opportunity.applicationUrl || opportunity.sourceUrl || "https://unstop.com/hackathons";
 
   return (
     <Modal
@@ -75,9 +77,9 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
             )}
             <div className="space-y-0.5">
               <span className="font-semibold text-white flex items-center gap-1.5 flex-wrap">
-                {isLive ? "Live Ingested Feed" : isCurated ? "Verified India Catalog" : "External Search"}
-                <Badge variant={isLive ? "emerald" : "cyan"} size="sm">
-                  {opportunity.portal || opportunity.sourceName || "Official Portal"}
+                {isHackathon ? "Verified Unstop Student Hackathon" : isLive ? "Live Ingested Feed" : isCurated ? "Verified India Catalog" : "External Search"}
+                <Badge variant={isHackathon ? "cyan" : isLive ? "emerald" : "cyan"} size="sm">
+                  {isHackathon ? "Unstop Official" : opportunity.portal || opportunity.sourceName || "Official Portal"}
                 </Badge>
                 {opportunity.freshnessLabel && (
                   <Badge variant="indigo" size="sm">
@@ -86,20 +88,28 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
                 )}
               </span>
               <p className="text-[11px] text-slate-400">
-                {opportunity.providerAttribution || `Verified vacancy aggregated from ${opportunity.sourceName}.`}
+                {isHackathon
+                  ? "Direct link verified to official Unstop hackathon page. Open for 1st, 2nd, 3rd, and 4th year college coders."
+                  : opportunity.providerAttribution || `Verified vacancy aggregated from ${opportunity.sourceName}.`}
               </p>
             </div>
           </div>
 
           <a
-            href={applyUrl}
+            href={directDestinationUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="shrink-0"
           >
-            <Button variant="primary" size="sm" className="text-xs font-semibold h-8 shadow-xs">
+            <Button
+              variant="primary"
+              size="sm"
+              className={`text-xs font-semibold h-8 shadow-xs ${
+                isHackathon ? "bg-gradient-to-r from-cyan-600 to-indigo-600 text-white" : ""
+              }`}
+            >
               <ExternalLink className="w-3 h-3 mr-1" />
-              Direct Apply ↗
+              {isHackathon ? "Register on Unstop (Direct) ↗" : "Direct Apply ↗"}
             </Button>
           </a>
         </div>
@@ -412,7 +422,7 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <a
-              href={applyUrl}
+              href={directDestinationUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto"
@@ -420,10 +430,14 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full sm:w-auto text-xs border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/40 font-medium"
+                className={`w-full sm:w-auto text-xs font-semibold ${
+                  isHackathon
+                    ? "bg-gradient-to-r from-cyan-950/90 to-indigo-950/90 border-cyan-400/60 text-cyan-200 hover:text-white"
+                    : "border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/40 font-medium"
+                }`}
               >
                 <ExternalLink className="w-3.5 h-3.5 mr-1" />
-                Apply on Official Portal ↗
+                {isHackathon ? "Register on Unstop (Direct) ↗" : "Apply on Official Portal ↗"}
               </Button>
             </a>
 

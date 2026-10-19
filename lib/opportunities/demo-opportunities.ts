@@ -1,5 +1,6 @@
 import { Opportunity } from "@/types/opportunity";
 import { IOpportunityProvider } from "./opportunity-provider";
+import { VERIFIED_UNSTOP_HACKATHONS } from "./hackathons-catalog";
 
 /**
  * Verified Real-World India-First Opportunities Catalogue
@@ -506,70 +507,8 @@ export const STARTER_DEMO_OPPORTUNITIES: Opportunity[] = [
   },
 
   // ==========================================
-  // VERIFIED INDIAN INTERNSHIPS & HACKATHONS
+  // VERIFIED INDIAN TECH INTERNSHIPS
   // ==========================================
-  {
-    id: "hack-unstop-tata",
-    title: "Tata Crucible & Tech Challenge 2026",
-    organization: "Tata Group & Unstop",
-    company: "Tata Group",
-    type: "Hackathon",
-    domain: "AI, Sustainability & Digital Innovation",
-    description: "India's premier inter-college tech competition. Build innovative solutions in AI/ML, CleanTech, and Web3. Top teams earn direct Pre-Placement Interviews (PPI) and cash prizes.",
-    requiredSkills: ["Problem Solving", "Python", "JavaScript", "Git & GitHub"],
-    preferredSkills: ["React", "FastAPI", "Machine Learning", "System Design"],
-    eligibilityRequirements: "Open to engineering, science, and MBA students across all Indian universities.",
-    experienceLevel: "All College Students (1st to 4th Year)",
-    location: "Pan-India / Virtual",
-    workMode: "Remote",
-    workplaceType: "Remote",
-    region: "Pan-India Remote",
-    portal: "Unstop",
-    postedDate: "Open Submissions",
-    deadline: "Active Registration",
-    applicationUrl: "https://unstop.com/hackathons/tata-crucible-campus-hackathon-2026-tata-group-1189421",
-    sourceName: "Unstop Official Hackathons",
-    sourceUrl: "https://unstop.com/hackathons/tata-crucible-campus-hackathon-2026-tata-group-1189421",
-    verificationStatus: "official_verified",
-    listingStatus: "open",
-    salaryRange: "₹5,00,000 Cash Prizes + Direct PPO Interviews",
-    department: "Innovation & Talent Discovery",
-    isDemo: false,
-    matchScore: 0,
-    matchedSkills: [],
-    missingSkills: [],
-  },
-  {
-    id: "hack-sih-india",
-    title: "Smart India Hackathon (SIH 2026) Student Challenge",
-    organization: "Ministry of Education & AICTE",
-    company: "Government of India",
-    type: "Hackathon",
-    domain: "National Innovation & Digital Governance",
-    description: "The world's largest open innovation hackathon. Solve real-world problem statements submitted by 50+ Indian ministries and tech enterprises.",
-    requiredSkills: ["Python", "Web Development", "Database Systems", "Team Collaboration"],
-    preferredSkills: ["AI/ML", "Mobile App Dev", "Cloud Computing", "Docker"],
-    eligibilityRequirements: "Registered Indian university student teams of 6 members (at least 1 female coder).",
-    experienceLevel: "Undergraduate & Graduate Indian Students",
-    location: "Pan-India / Multiple Nodal Centers",
-    workMode: "Hybrid",
-    workplaceType: "Hybrid",
-    region: "Pan-India Remote",
-    portal: "Direct Careers",
-    postedDate: "National Program",
-    deadline: "Upcoming Phase",
-    applicationUrl: "https://www.sih.gov.in/studentRegistration",
-    sourceName: "Smart India Hackathon Official",
-    sourceUrl: "https://www.sih.gov.in/studentRegistration",
-    verificationStatus: "official_verified",
-    listingStatus: "open",
-    salaryRange: "₹1,00,000 per Problem Statement + Govt Incubation",
-    department: "Innovation Cell",
-    isDemo: false,
-    matchScore: 0,
-    matchedSkills: [],
-    missingSkills: [],
-  },
   {
     id: "intern-google-india",
     title: "Software Engineering Intern — Summer 2026",
@@ -660,37 +599,10 @@ export const STARTER_DEMO_OPPORTUNITIES: Opportunity[] = [
     matchedSkills: [],
     missingSkills: [],
   },
-  {
-    id: "hack-tcs-codevita",
-    title: "TCS CodeVita Season 13 Global Coding Contest",
-    organization: "Tata Consultancy Services",
-    company: "TCS",
-    type: "Hackathon",
-    domain: "Competitive Programming & Problem Solving",
-    description: "Guinness World Record holder for the largest computer programming contest. Compete with top student coders, earn direct hiring into digital and prime engineering roles.",
-    requiredSkills: ["Data Structures", "Algorithms", "C++", "Java", "Python"],
-    preferredSkills: ["Problem Solving", "Competitive Programming", "Git & GitHub"],
-    eligibilityRequirements: "Students graduating in 2025, 2026, 2027 from accredited universities.",
-    experienceLevel: "Undergraduate & Graduate Students",
-    location: "Pan-India / Virtual",
-    workMode: "Remote",
-    workplaceType: "Remote",
-    region: "Pan-India Remote",
-    portal: "Direct Careers",
-    postedDate: "Annual Season",
-    deadline: "Upcoming Contest",
-    applicationUrl: "https://codevita.tcsapps.com/registration",
-    sourceName: "TCS Official CodeVita",
-    sourceUrl: "https://codevita.tcsapps.com/registration",
-    verificationStatus: "official_verified",
-    listingStatus: "open",
-    salaryRange: "USD $20,000 Global Prize Pool + Direct TCS Digital Offers",
-    department: "Campus Hiring & Talent Acquisition",
-    isDemo: false,
-    matchScore: 0,
-    matchedSkills: [],
-    missingSkills: [],
-  },
+  // ==========================================
+  // VERIFIED INDIAN CAMPUS & ENTERPRISE HACKATHONS (Unstop, IITs, NITs, Tech Giants)
+  // ==========================================
+  ...VERIFIED_UNSTOP_HACKATHONS,
 ];
 
 export class DemoOpportunityProvider implements IOpportunityProvider {

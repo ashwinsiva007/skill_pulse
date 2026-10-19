@@ -22,6 +22,8 @@ import {
   Clock,
   Radio,
   FileCheck,
+  Trophy,
+  Users,
 } from "lucide-react";
 
 export interface OpportunityCardProps {
@@ -72,11 +74,14 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
   // Source badge styling
   const isLive = opportunity.sourceMode === "LIVE";
   const isCurated = opportunity.sourceMode === "CURATED_CATALOG";
+  const isHackathon = opportunity.type === "Hackathon";
 
-  const applyUrl = opportunity.applicationUrl || opportunity.sourceUrl || "https://careers.google.com";
+  const directDestinationUrl = opportunity.unstopDirectUrl || opportunity.applicationUrl || opportunity.sourceUrl || "https://unstop.com/hackathons";
 
   return (
-    <Card className="p-5 hover:border-slate-700/80 transition-all duration-150 space-y-4 bg-slate-900/80">
+    <Card className={`p-5 transition-all duration-150 space-y-4 bg-slate-900/80 hover:border-slate-700/80 ${
+      isHackathon ? "border-cyan-500/30 hover:border-cyan-500/60 shadow-xs" : ""
+    }`}>
       {/* Top Header Row with Provenance & Match Score */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
         <div className="flex flex-wrap items-center gap-2">
@@ -89,13 +94,21 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
             {opportunity.type}
           </Badge>
 
+          {/* Hackathon Specific: Unstop Partner Badge */}
+          {isHackathon && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 shadow-xs">
+              <Trophy className="w-3 h-3 text-cyan-400" />
+              Unstop Verified
+            </span>
+          )}
+
           {/* Source Provenance Badge */}
-          {isLive ? (
+          {!isHackathon && isLive ? (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
               <Radio className="w-3 h-3 text-emerald-400 animate-pulse" />
               Live Ingested ({opportunity.portal || "ATS"})
             </span>
-          ) : isCurated ? (
+          ) : !isHackathon && isCurated ? (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
               <FileCheck className="w-3 h-3 text-cyan-400" />
               Verified Catalog
@@ -134,21 +147,33 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
           {opportunity.title}
         </h3>
 
-        {/* Location, Mode, Comp, Exp */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-400 pt-1.5">
-          <span className="flex items-center gap-1">
-            <MapPin className="w-3.5 h-3.5 text-slate-400" />
+        {/* Location, Mode, Comp, Exp, Team Size */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-400 pt-1.5">
+          <span className="flex items-center gap-1 font-medium text-slate-300">
+            <MapPin className="w-3.5 h-3.5 text-indigo-400" />
             {opportunity.location} ({opportunity.workMode})
           </span>
 
           {opportunity.salaryRange && (
-            <span className="flex items-center gap-1 text-emerald-400 font-semibold bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-800/50">
+            <span className={`flex items-center gap-1 px-2 py-0.5 rounded border font-semibold ${
+              isHackathon
+                ? "bg-emerald-950/70 text-emerald-300 border-emerald-600/70 shadow-xs"
+                : "text-emerald-400 bg-emerald-950/40 border-emerald-800/50"
+            }`}>
+              {isHackathon && <Trophy className="w-3 h-3 text-amber-400 shrink-0" />}
               {opportunity.salaryRange}
             </span>
           )}
 
+          {isHackathon && (
+            <span className="flex items-center gap-1 text-cyan-300 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-800/50 text-[11px] font-medium">
+              <Users className="w-3 h-3 text-cyan-400" />
+              {opportunity.teamSize || "2 - 4 Members"}
+            </span>
+          )}
+
           <span className="text-slate-400">
-            Level: <strong className="text-slate-300 font-medium">{opportunity.experienceLevel}</strong>
+            Eligibility: <strong className="text-slate-300 font-medium">{opportunity.experienceLevel}</strong>
           </span>
 
           {opportunity.deadline && (
@@ -257,7 +282,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
         <div className="flex items-center gap-2">
           {/* Direct External Link to Apply on genuine source */}
           <a
-            href={applyUrl}
+            href={directDestinationUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex"
@@ -265,11 +290,19 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
             <Button
               variant="outline"
               size="sm"
-              className="text-xs h-8 border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/50 hover:text-white font-medium"
-              title="Open official listing and registration in a new tab"
+              className={`text-xs h-8 font-semibold shadow-xs transition-all ${
+                isHackathon
+                  ? "bg-gradient-to-r from-cyan-950/90 to-indigo-950/90 border-cyan-400/60 text-cyan-200 hover:text-white hover:border-cyan-300 hover:from-cyan-900 hover:to-indigo-900"
+                  : "border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/50 hover:text-white"
+              }`}
+              title={
+                isHackathon
+                  ? `Open verified direct Unstop hackathon registration page for ${opportunity.title}`
+                  : "Open official listing and registration in a new tab"
+              }
             >
-              <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-              Apply on Official Portal ↗
+              <ExternalLink className="w-3.5 h-3.5 mr-1.5 text-cyan-400" />
+              {isHackathon ? "Register on Unstop (Direct) ↗" : "Apply on Official Portal ↗"}
             </Button>
           </a>
 
