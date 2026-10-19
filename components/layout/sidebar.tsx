@@ -165,24 +165,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
       >
         {/* Brand Header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800/70">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-200 dark:border-slate-800/70">
           <Link
             href="/"
             className="flex items-center gap-3 overflow-hidden group focus-visible:outline-none"
             onClick={onCloseMobile}
           >
-            <div className="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 group-hover:scale-105 transition-transform shrink-0 shadow-sm shadow-indigo-950">
-              <Compass className="w-5 h-5 text-indigo-400" />
+            <div className="w-10 h-10 rounded-xl bg-indigo-600/10 border border-indigo-500/30 dark:bg-indigo-600/20 dark:border-indigo-500/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-105 transition-transform shrink-0 shadow-sm shadow-indigo-950/20">
+              <Compass className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             </div>
             {!isCollapsed && (
               <div className="flex flex-col truncate">
-                <span className="font-bold text-sm tracking-tight text-white flex items-center gap-1.5">
+                <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white flex items-center gap-1.5">
                   SkillPulse
-                  <span className="text-[10px] uppercase font-semibold tracking-wider px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  <span className="text-[10px] uppercase font-semibold tracking-wider px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/20 dark:text-indigo-300 dark:border-indigo-500/30">
                     Pro
                   </span>
                 </span>
-                <span className="text-[11px] text-slate-400 truncate">
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                   AI Career & Skill Platform
                 </span>
               </div>
@@ -193,7 +193,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={onToggleCollapse}
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            className="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800 transition-colors"
           >
             {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </button>
@@ -201,7 +201,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Navigation List */}
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          <div className={cn("px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500", isCollapsed && "text-center")}>
+          <div className={cn("px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400", isCollapsed && "text-center")}>
             {isCollapsed ? "•••" : isMasterAdmin ? "Master Admin Console" : "Platform Navigation"}
           </div>
 
@@ -220,24 +220,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={onCloseMobile}
                 title={isCollapsed ? item.label : undefined}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group relative",
+                  "sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all group relative border",
                   isActive
-                    ? "bg-indigo-600/15 text-indigo-300 border border-indigo-500/30 shadow-xs"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
+                    ? "sidebar-link-active bg-indigo-50 border-indigo-200 text-indigo-950 shadow-xs dark:bg-indigo-600/15 dark:border-indigo-500/30 dark:text-indigo-300"
+                    : "border-transparent text-slate-700 hover:text-slate-950 hover:bg-slate-100/90 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/60"
                 )}
               >
                 <Icon
                   className={cn(
                     "w-4 h-4 shrink-0 transition-colors",
-                    isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-300"
+                    isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-500 group-hover:text-slate-800 dark:text-slate-400 dark:group-hover:text-slate-300"
                   )}
                 />
 
                 {!isCollapsed && (
                   <div className="flex items-center justify-between w-full truncate">
-                    <span className="truncate">{item.label}</span>
+                    <span className={cn("truncate font-semibold", isActive ? "text-indigo-950 dark:text-white" : "text-slate-800 dark:text-slate-300")}>
+                      {item.label}
+                    </span>
                     {item.badge && (
-                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700/50">
+                      <span className={cn(
+                        "sidebar-badge text-[10px] font-medium px-1.5 py-0.5 rounded-full border transition-colors",
+                        isActive
+                          ? "bg-indigo-100/90 text-indigo-900 border-indigo-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700/50"
+                          : "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700/50"
+                      )}>
                         {item.badge}
                       </span>
                     )}
@@ -246,7 +253,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 {/* Collapsed active indicator bar */}
                 {isCollapsed && isActive && (
-                  <span className="absolute left-0 top-2 bottom-2 w-1 bg-indigo-500 rounded-r" />
+                  <span className="absolute left-0 top-2 bottom-2 w-1 bg-indigo-600 rounded-r" />
                 )}
               </Link>
             );
@@ -255,22 +262,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Dynamic Candidate Footer Badge */}
         {!isCollapsed ? (
-          <div className="p-3 m-3 rounded-xl bg-slate-900/80 border border-slate-800 text-xs">
+          <div className="p-3 m-3 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-900/80 dark:border-slate-800 text-xs">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-sm">
                 {initials}
               </div>
               <div className="overflow-hidden leading-tight">
-                <p className="font-semibold text-slate-200 truncate">{displayName}</p>
-                <p className="text-[11px] text-slate-400 truncate">
+                <p className="font-semibold text-slate-900 dark:text-slate-200 truncate">{displayName}</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
                   {isMasterAdmin ? "Administrator Portal" : "Candidate Workspace"}
                 </p>
               </div>
             </div>
-            <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+            <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
               <span className="truncate">{displayRole}</span>
-              <span className={cn("font-medium flex items-center gap-1", isMasterAdmin ? "text-amber-400" : "text-emerald-400")}>
-                <span className={cn("w-1.5 h-1.5 rounded-full", isMasterAdmin ? "bg-amber-400" : "bg-emerald-400")} />
+              <span className={cn("font-medium flex items-center gap-1", isMasterAdmin ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400")}>
+                <span className={cn("w-1.5 h-1.5 rounded-full", isMasterAdmin ? "bg-amber-500 dark:bg-amber-400" : "bg-emerald-600 dark:bg-emerald-400")} />
                 {isMasterAdmin ? "Master Admin" : user ? "Cloud Synced" : "Local Mode"}
               </span>
             </div>

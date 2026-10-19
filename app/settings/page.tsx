@@ -361,17 +361,17 @@ export default function SettingsPage() {
           </Card>
         )}
 
-        {/* Visual Appearance & Theme Options (4 Themes: 2 Light + 2 Dark) */}
+        {/* Visual Appearance & Theme Options (2 Themes: Light Mode + Dark Mode) */}
         <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Palette className="w-4 h-4 text-indigo-400" />
-                  Appearance & Themes (4 Distinct Styles)
+                  Appearance & Theme
                 </CardTitle>
                 <CardDescription>
-                  Switch between 2 light themes and 2 dark themes. Each theme features tailored contrast, distinct colors, and customized typography.
+                  Switch between high-contrast Light Mode and obsidian Dark Mode.
                 </CardDescription>
               </div>
               <Badge variant="indigo" size="sm">
@@ -380,155 +380,81 @@ export default function SettingsPage() {
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-5">
-            {/* 2 Light Themes Group */}
-            <div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-500 mb-2.5">
-                <Sun className="w-3.5 h-3.5" />
-                <span>Light Themes (2 Modes)</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                {themes
-                  .filter((t) => t.mode === "light")
-                  .map((t) => {
-                    const isSelected = theme === t.id;
-                    return (
-                      <button
-                        key={t.id}
-                        onClick={() => setTheme(t.id)}
-                        className={`p-3.5 rounded-xl border text-left transition-all relative group flex flex-col justify-between gap-3 ${
-                          isSelected
-                            ? "border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/30 shadow-md"
-                            : "border-slate-800 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900"
-                        }`}
-                      >
-                        <div className="space-y-1.5 w-full">
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-xs text-white group-hover:text-amber-300 transition-colors">
-                              {t.name}
-                            </span>
-                            <span
-                              className="text-[10px] px-1.5 py-0.5 rounded font-mono font-semibold"
-                              style={{ backgroundColor: t.preview.accent + "25", color: t.preview.accent }}
-                            >
-                              {t.fontName}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-slate-400 leading-relaxed">
-                            {t.description}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 w-full text-xs">
-                          {/* Color Swatches */}
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className="w-4 h-4 rounded-full ring-1 ring-white/20"
-                              style={{ backgroundColor: t.preview.bg }}
-                              title="Background color"
-                            />
-                            <span
-                              className="w-4 h-4 rounded-full ring-1 ring-white/20"
-                              style={{ backgroundColor: t.preview.card }}
-                              title="Card surface"
-                            />
-                            <span
-                              className="w-4 h-4 rounded-full ring-1 ring-white/20"
-                              style={{ backgroundColor: t.preview.accent }}
-                              title="Accent color"
-                            />
-                          </div>
-
-                          {isSelected ? (
-                            <span className="flex items-center gap-1 text-[11px] font-bold text-amber-400">
-                              <Check className="w-3.5 h-3.5" />
-                              Active
-                            </span>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {themes.map((t) => {
+                const isSelected = theme === t.id;
+                const isLight = t.mode === "light";
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => setTheme(t.id)}
+                    className={`p-4 rounded-xl border text-left transition-all relative group flex flex-col justify-between gap-3 ${
+                      isSelected
+                        ? isLight
+                          ? "border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/30 shadow-md"
+                          : "border-indigo-500 bg-indigo-500/15 ring-2 ring-indigo-500/30 shadow-md"
+                        : "border-slate-800 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900"
+                    }`}
+                  >
+                    <div className="space-y-1.5 w-full">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {isLight ? (
+                            <Sun className="w-4 h-4 text-amber-500" />
                           ) : (
-                            <span className="text-[11px] text-slate-400 group-hover:text-slate-200">
-                              Apply
-                            </span>
+                            <Moon className="w-4 h-4 text-indigo-400" />
                           )}
+                          <span className={`font-bold text-sm ${isSelected ? (isLight ? "text-amber-500 dark:text-amber-300" : "text-indigo-600 dark:text-indigo-300") : "text-slate-800 dark:text-white"}`}>
+                            {t.name}
+                          </span>
                         </div>
-                      </button>
-                    );
-                  })}
-              </div>
-            </div>
+                        <span
+                          className="text-[10px] px-1.5 py-0.5 rounded font-mono font-semibold"
+                          style={{ backgroundColor: t.preview.accent + "25", color: t.preview.accent }}
+                        >
+                          {t.fontName}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                        {t.description}
+                      </p>
+                    </div>
 
-            {/* 2 Dark Themes Group */}
-            <div className="pt-2 border-t border-slate-800">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-400 mb-2.5">
-                <Moon className="w-3.5 h-3.5" />
-                <span>Dark Themes (2 Modes)</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                {themes
-                  .filter((t) => t.mode === "dark")
-                  .map((t) => {
-                    const isSelected = theme === t.id;
-                    return (
-                      <button
-                        key={t.id}
-                        onClick={() => setTheme(t.id)}
-                        className={`p-3.5 rounded-xl border text-left transition-all relative group flex flex-col justify-between gap-3 ${
-                          isSelected
-                            ? "border-indigo-500 bg-indigo-500/15 ring-2 ring-indigo-500/30 shadow-md"
-                            : "border-slate-800 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900"
-                        }`}
-                      >
-                        <div className="space-y-1.5 w-full">
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-xs text-white group-hover:text-indigo-300 transition-colors">
-                              {t.name}
-                            </span>
-                            <span
-                              className="text-[10px] px-1.5 py-0.5 rounded font-mono font-semibold"
-                              style={{ backgroundColor: t.preview.accent + "25", color: t.preview.accent }}
-                            >
-                              {t.fontName}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-slate-400 leading-relaxed">
-                            {t.description}
-                          </p>
-                        </div>
+                    <div className="flex items-center justify-between pt-2.5 border-t border-slate-200 dark:border-slate-800/80 w-full text-xs">
+                      {/* Color Swatches */}
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className="w-4 h-4 rounded-full ring-1 ring-black/20"
+                          style={{ backgroundColor: t.preview.bg }}
+                          title="Background color"
+                        />
+                        <span
+                          className="w-4 h-4 rounded-full ring-1 ring-black/20"
+                          style={{ backgroundColor: t.preview.card }}
+                          title="Card surface"
+                        />
+                        <span
+                          className="w-4 h-4 rounded-full ring-1 ring-black/20"
+                          style={{ backgroundColor: t.preview.accent }}
+                          title="Accent color"
+                        />
+                      </div>
 
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 w-full text-xs">
-                          {/* Color Swatches */}
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className="w-4 h-4 rounded-full ring-1 ring-white/20"
-                              style={{ backgroundColor: t.preview.bg }}
-                              title="Background color"
-                            />
-                            <span
-                              className="w-4 h-4 rounded-full ring-1 ring-white/20"
-                              style={{ backgroundColor: t.preview.card }}
-                              title="Card surface"
-                            />
-                            <span
-                              className="w-4 h-4 rounded-full ring-1 ring-white/20"
-                              style={{ backgroundColor: t.preview.accent }}
-                              title="Accent color"
-                            />
-                          </div>
-
-                          {isSelected ? (
-                            <span className="flex items-center gap-1 text-[11px] font-bold text-indigo-400">
-                              <Check className="w-3.5 h-3.5" />
-                              Active
-                            </span>
-                          ) : (
-                            <span className="text-[11px] text-slate-400 group-hover:text-slate-200">
-                              Apply
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-              </div>
+                      {isSelected ? (
+                        <span className={`flex items-center gap-1 text-xs font-bold ${isLight ? "text-amber-600 dark:text-amber-400" : "text-indigo-600 dark:text-indigo-400"}`}>
+                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                          Active
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-500 group-hover:text-slate-800 dark:text-slate-400 dark:group-hover:text-slate-200">
+                          Apply Theme
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </CardContent>
         </Card>

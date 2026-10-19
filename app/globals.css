@@ -2,11 +2,13 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   4 TAILORED THEMES: 2 LIGHT THEMES + 2 DARK THEMES (4 TOTAL)
+   2 TAILORED THEMES: 1 LIGHT THEME + 1 DARK THEME (2 TOTAL)
    ========================================================================== */
 
-/* 1. Default fallback: Obsidian Night (Dark) */
+/* 1. Default: Dark Mode */
 :root,
+[data-theme="dark"],
+[data-mode="dark"],
 [data-theme="obsidian-dark"] {
   --background: #090d16;
   --surface: #0f1626;
@@ -31,33 +33,11 @@
   --text-gradient: linear-gradient(90deg, #818cf8, #38bdf8, #34d399);
 }
 
-/* 2. Cyberpunk Amethyst (Dark) - Deep cosmic velvet violet */
-[data-theme="amethyst-dark"] {
-  --background: #0c0817;
-  --surface: #150f28;
-  --surface-raised: #1f163b;
-  --surface-elevated: #2b1f50;
-  --foreground: #fdf4ff;
-  --foreground-muted: #d8b4fe;
-  --foreground-subtle: #a855f7;
-  --border: rgba(168, 85, 247, 0.26);
-  --border-subtle: rgba(168, 85, 247, 0.14);
-  --primary: #a855f7;
-  --primary-hover: #9333ea;
-  --accent-cyan: #38bdf8;
-  --accent-emerald: #34d399;
-  --accent-amber: #f472b6;
-  --theme-font: 'Space Grotesk', sans-serif;
-  --theme-card-bg: #150f28;
-  --theme-input-bg: #0c0817;
-  --hero-gradient: linear-gradient(135deg, #0c0817 0%, #1a1032 50%, #0c0817 100%);
-  --hero-border: rgba(168, 85, 247, 0.3);
-  --hero-glow: rgba(168, 85, 247, 0.15);
-  --text-gradient: linear-gradient(90deg, #c084fc, #e879f9, #38bdf8);
-}
-
-/* 3. Nordic Slate (Light) - Crisp Scandinavian slate with cool royal indigo */
-[data-theme="nordic-light"] {
+/* 2. Light Mode - Crisp Scandinavian slate with high contrast */
+[data-theme="light"],
+[data-mode="light"],
+[data-theme="nordic-light"],
+[data-theme="emerald-light"] {
   --background: #f8fafc;
   --surface: #ffffff;
   --surface-raised: #f1f5f9;
@@ -67,8 +47,8 @@
   --foreground-subtle: #64748b;
   --border: #cbd5e1;
   --border-subtle: #e2e8f0;
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
   --accent-cyan: #0284c7;
   --accent-emerald: #059669;
   --accent-amber: #d97706;
@@ -78,32 +58,7 @@
   --hero-gradient: linear-gradient(135deg, #ffffff 0%, #f0f7ff 55%, #e0effe 100%);
   --hero-border: #bfdbfe;
   --hero-glow: rgba(59, 130, 246, 0.1);
-  --text-gradient: linear-gradient(90deg, #1d4ed8, #0284c7, #059669);
-}
-
-/* 4. Emerald Sage (Light) - Fresh botanical sage with forest green accents */
-[data-theme="emerald-light"] {
-  --background: #f2f8f4;
-  --surface: #ffffff;
-  --surface-raised: #e8f4ed;
-  --surface-elevated: #d2ebd9;
-  --foreground: #062817;
-  --foreground-muted: #14532d;
-  --foreground-subtle: #166534;
-  --border: #bce0cc;
-  --border-subtle: #d7ecdf;
-  --primary: #059669;
-  --primary-hover: #047857;
-  --accent-cyan: #0d9488;
-  --accent-emerald: #10b981;
-  --accent-amber: #d97706;
-  --theme-font: 'Plus Jakarta Sans', sans-serif;
-  --theme-card-bg: #ffffff;
-  --theme-input-bg: #f4f9f5;
-  --hero-gradient: linear-gradient(135deg, #ffffff 0%, #f0fdf4 55%, #dcfce7 100%);
-  --hero-border: #bbf7d0;
-  --hero-glow: rgba(16, 185, 129, 0.1);
-  --text-gradient: linear-gradient(90deg, #047857, #0d9488, #2563eb);
+  --text-gradient: linear-gradient(90deg, #4f46e5, #0284c7, #059669);
 }
 
 body {
@@ -290,18 +245,16 @@ html[data-mode="light"] .text-violet-300 {
   color: #6d28d9 !important;
 }
 
-/* 6. Solid Buttons & Avatar Badges: Guarantee Pure White Text & Icons */
+/* 6. Solid Buttons & Avatar Badges: Guarantee Pure White Text & Icons ONLY on solid backgrounds */
 html[data-mode="light"] button.bg-indigo-600,
 html[data-mode="light"] button.bg-emerald-600,
 html[data-mode="light"] button.bg-cyan-600,
 html[data-mode="light"] button.bg-blue-600,
 html[data-mode="light"] button.bg-rose-600,
 html[data-mode="light"] button.bg-amber-600,
-html[data-mode="light"] button[class*="bg-indigo-600"],
-html[data-mode="light"] button[class*="bg-emerald-600"],
-html[data-mode="light"] a[class*="bg-indigo-600"],
-html[data-mode="light"] a[class*="bg-emerald-600"],
-html[data-mode="light"] a[class*="bg-cyan-600"],
+html[data-mode="light"] a.bg-indigo-600:not([class*="/"]),
+html[data-mode="light"] a.bg-emerald-600:not([class*="/"]),
+html[data-mode="light"] a.bg-cyan-600:not([class*="/"]),
 html[data-mode="light"] .btn-primary,
 html[data-mode="light"] [class*="rounded-full"][class*="from-indigo-"],
 html[data-mode="light"] [class*="rounded-2xl"][class*="from-indigo-"],
@@ -315,11 +268,9 @@ html[data-mode="light"] button.bg-cyan-600 *,
 html[data-mode="light"] button.bg-blue-600 *,
 html[data-mode="light"] button.bg-rose-600 *,
 html[data-mode="light"] button.bg-amber-600 *,
-html[data-mode="light"] button[class*="bg-indigo-600"] *,
-html[data-mode="light"] button[class*="bg-emerald-600"] *,
-html[data-mode="light"] a[class*="bg-indigo-600"] *,
-html[data-mode="light"] a[class*="bg-emerald-600"] *,
-html[data-mode="light"] a[class*="bg-cyan-600"] *,
+html[data-mode="light"] a.bg-indigo-600:not([class*="/"]) *,
+html[data-mode="light"] a.bg-emerald-600:not([class*="/"]) *,
+html[data-mode="light"] a.bg-cyan-600:not([class*="/"]) *,
 html[data-mode="light"] [class*="rounded-full"][class*="from-indigo-"] *,
 html[data-mode="light"] [class*="rounded-2xl"][class*="from-indigo-"] *,
 html[data-mode="light"] [class*="rounded-xl"][class*="from-indigo-"] *,
@@ -528,27 +479,54 @@ html[data-mode="light"] header {
 }
 
 html[data-mode="light"] aside {
-  background-color: var(--surface) !important;
-  border-right-color: var(--border) !important;
+  background-color: #ffffff !important;
+  border-right-color: #e2e8f0 !important;
+}
+
+/* Sidebar navigation links, active states, text colors and badges in Light Mode */
+html[data-mode="light"] aside nav a,
+html[data-mode="light"] aside a.sidebar-link,
+html[data-mode="light"] .sidebar-link {
+  color: #334155 !important;
+}
+
+html[data-mode="light"] aside a.sidebar-link:hover,
+html[data-mode="light"] .sidebar-link:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+html[data-mode="light"] aside a.sidebar-link-active,
+html[data-mode="light"] a.sidebar-link-active,
+html[data-mode="light"] .sidebar-link-active {
+  background-color: #eef2ff !important;
+  border-color: #c7d2fe !important;
+  color: #1e1b4b !important;
+}
+
+html[data-mode="light"] aside a.sidebar-link-active *,
+html[data-mode="light"] a.sidebar-link-active *,
+html[data-mode="light"] .sidebar-link-active * {
+  color: #1e1b4b !important;
+}
+
+html[data-mode="light"] aside a.sidebar-link-active svg,
+html[data-mode="light"] .sidebar-link-active svg {
+  color: #4f46e5 !important;
+}
+
+html[data-mode="light"] aside a.sidebar-link-active .sidebar-badge,
+html[data-mode="light"] aside .sidebar-badge,
+html[data-mode="light"] .sidebar-badge {
+  background-color: #e0e7ff !important;
+  color: #3730a3 !important;
+  border-color: #c7d2fe !important;
 }
 
 /* 14. Dropdown Menus and Popovers in Light Mode */
 html[data-mode="light"] .shadow-xl,
 html[data-mode="light"] .shadow-2xl {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
-}
-
-/* ==========================================================================
-   DARK THEMES SPECIFIC ACCENT STYLING
-   ========================================================================== */
-html[data-theme="amethyst-dark"] aside {
-  background-color: #120b24 !important;
-  border-right-color: rgba(168, 85, 247, 0.22) !important;
-}
-
-html[data-theme="amethyst-dark"] header {
-  background-color: rgba(18, 11, 36, 0.92) !important;
-  border-bottom-color: rgba(168, 85, 247, 0.22) !important;
 }
 
 /* Custom subtle scrollbar */

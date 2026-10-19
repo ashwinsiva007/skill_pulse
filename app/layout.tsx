@@ -14,28 +14,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className="dark h-full antialiased" data-theme="obsidian-dark" data-mode="dark">
+    <html lang="en" suppressHydrationWarning className="dark h-full antialiased" data-theme="dark" data-mode="dark">
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `(function() {
               try {
-                var saved = localStorage.getItem('skillpulse_active_theme') || 'obsidian-dark';
-                if (saved === 'amber-light') saved = 'emerald-light';
-                if (saved === 'emerald-dark') saved = 'obsidian-dark';
-                var validThemes = ['nordic-light', 'emerald-light', 'obsidian-dark', 'amethyst-dark'];
-                if (validThemes.indexOf(saved) === -1) saved = 'obsidian-dark';
+                var saved = localStorage.getItem('skillpulse_active_theme');
+                var theme = 'dark';
+                if (saved === 'light' || (saved && saved.indexOf('light') !== -1)) {
+                  theme = 'light';
+                } else {
+                  theme = 'dark';
+                }
                 
-                var isDark = saved.indexOf('-dark') !== -1;
-                document.documentElement.setAttribute('data-theme', saved);
-                document.documentElement.setAttribute('data-mode', isDark ? 'dark' : 'light');
-                
-                var font = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-                if (saved === 'emerald-light') font = "'Plus Jakarta Sans', sans-serif";
-                if (saved === 'amethyst-dark') font = "'Space Grotesk', sans-serif";
-                document.documentElement.style.setProperty('--theme-font', font);
+                document.documentElement.setAttribute('data-theme', theme);
+                document.documentElement.setAttribute('data-mode', theme);
+                document.documentElement.style.setProperty('--theme-font', "'Inter', -apple-system, BlinkMacSystemFont, sans-serif");
 
-                if (isDark) {
+                if (theme === 'dark') {
                   document.documentElement.classList.add('dark');
                   document.documentElement.classList.remove('light');
                 } else {

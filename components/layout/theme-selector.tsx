@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useTheme } from "@/lib/theme/theme-context";
 import { ThemeId, ThemeConfig } from "@/types/theme";
-import { Palette, Check, Sun, Moon, Sparkles } from "lucide-react";
+import { Palette, Check, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const ThemeSelector: React.FC<{ compact?: boolean; className?: string }> = ({
@@ -27,12 +27,14 @@ export const ThemeSelector: React.FC<{ compact?: boolean; className?: string }> 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  const lightThemes = themes.filter((t) => t.mode === "light");
-  const darkThemes = themes.filter((t) => t.mode === "dark");
-
   const handleSelectTheme = (themeId: ThemeId) => {
     setTheme(themeId);
     setIsOpen(false);
+  };
+
+  const toggleTheme = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTheme(mode === "dark" ? "light" : "dark");
   };
 
   return (
@@ -41,7 +43,7 @@ export const ThemeSelector: React.FC<{ compact?: boolean; className?: string }> 
       <button
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Select theme appearance"
-        title={`Current Theme: ${themeConfig.name} (${themeConfig.fontName} typography)`}
+        title={`Current Theme: ${themeConfig.name}`}
         className={cn(
           "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border",
           mode === "dark"
@@ -61,9 +63,6 @@ export const ThemeSelector: React.FC<{ compact?: boolean; className?: string }> 
         {!compact && (
           <div className="flex items-center gap-1.5 text-left">
             <span className="font-semibold truncate max-w-[110px]">{themeConfig.name}</span>
-            <span className="text-[10px] opacity-75 font-mono hidden xl:inline">
-              ({themeConfig.fontName})
-            </span>
           </div>
         )}
       </button>
@@ -72,7 +71,7 @@ export const ThemeSelector: React.FC<{ compact?: boolean; className?: string }> 
       {isOpen && (
         <div
           className={cn(
-            "absolute right-0 mt-2 w-80 rounded-2xl p-3 shadow-2xl z-50 border space-y-3 animate-in fade-in zoom-in-95 duration-150 backdrop-blur-md",
+            "absolute right-0 mt-2 w-72 rounded-2xl p-3 shadow-2xl z-50 border space-y-2.5 animate-in fade-in zoom-in-95 duration-150 backdrop-blur-md",
             mode === "dark"
               ? "bg-[#0f172a]/95 border-slate-700 text-slate-100 shadow-black/60"
               : "bg-white/98 border-slate-200 text-slate-800 shadow-slate-300/60"
@@ -83,54 +82,35 @@ export const ThemeSelector: React.FC<{ compact?: boolean; className?: string }> 
             <div className="flex items-center gap-1.5">
               <Palette className="w-4 h-4 text-indigo-400" />
               <span className="text-xs font-bold uppercase tracking-wider">
-                Theme & Typography (4 Themes)
+                Theme Appearance
               </span>
             </div>
             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 font-semibold border border-indigo-500/20">
-              2 Light · 2 Dark
+              1 Light · 1 Dark
             </span>
           </div>
 
-          {/* Section: 2 Light Themes */}
+          {/* 2 Theme Options */}
           <div className="space-y-1.5">
-            <div className="flex items-center gap-1.5 px-1 text-[11px] font-bold text-amber-500">
-              <Sun className="w-3 h-3" />
-              <span>Light Modes (2 Themes)</span>
-            </div>
-            <div className="space-y-1">
-              {lightThemes.map((t) => (
-                <ThemeOptionItem
-                  key={t.id}
-                  config={t}
-                  isActive={theme === t.id}
-                  onClick={() => handleSelectTheme(t.id)}
-                />
-              ))}
-            </div>
+            {themes.map((t) => (
+              <ThemeOptionItem
+                key={t.id}
+                config={t}
+                isActive={theme === t.id}
+                onClick={() => handleSelectTheme(t.id)}
+              />
+            ))}
           </div>
 
-          {/* Section: 2 Dark Themes */}
-          <div className="space-y-1.5 pt-2 border-t border-inherit/20">
-            <div className="flex items-center gap-1.5 px-1 text-[11px] font-bold text-indigo-400">
-              <Moon className="w-3 h-3" />
-              <span>Dark Modes (2 Themes)</span>
-            </div>
-            <div className="space-y-1">
-              {darkThemes.map((t) => (
-                <ThemeOptionItem
-                  key={t.id}
-                  config={t}
-                  isActive={theme === t.id}
-                  onClick={() => handleSelectTheme(t.id)}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Footer note */}
-          <div className="pt-2 border-t border-inherit/20 px-1 text-[10px] opacity-70 flex items-center justify-between">
-            <span>✨ Unique font & colors per theme</span>
-            <span className="font-mono">High Contrast</span>
+          {/* Quick Toggle Button */}
+          <div className="pt-2 border-t border-inherit/20 px-1 flex items-center justify-between">
+            <button
+              onClick={toggleTheme}
+              className="text-[11px] font-medium text-indigo-500 hover:text-indigo-400 transition-colors flex items-center gap-1"
+            >
+              Toggle to {mode === "dark" ? "Light Mode" : "Dark Mode"}
+            </button>
+            <span className="text-[10px] opacity-70 font-mono">High Contrast</span>
           </div>
         </div>
       )}
@@ -149,7 +129,7 @@ const ThemeOptionItem: React.FC<ThemeOptionItemProps> = ({ config, isActive, onC
     <button
       onClick={onClick}
       className={cn(
-        "w-full flex items-center justify-between p-2 rounded-xl text-left transition-all border text-xs group",
+        "w-full flex items-center justify-between p-2.5 rounded-xl text-left transition-all border text-xs group",
         isActive
           ? "bg-indigo-500/15 border-indigo-500/40 text-current shadow-xs"
           : "border-transparent hover:bg-slate-500/10 hover:border-slate-500/20"
@@ -178,17 +158,13 @@ const ThemeOptionItem: React.FC<ThemeOptionItemProps> = ({ config, isActive, onC
         <div className="overflow-hidden leading-tight">
           <div className="flex items-center gap-1.5">
             <span className="font-semibold truncate">{config.name}</span>
-            <span
-              className="text-[9px] px-1 py-0.2 rounded font-mono font-medium border"
-              style={{
-                borderColor: config.preview.accent + "50",
-                color: config.preview.accent,
-              }}
-            >
-              {config.fontName}
-            </span>
+            {config.mode === "light" ? (
+              <Sun className="w-3 h-3 text-amber-500" />
+            ) : (
+              <Moon className="w-3 h-3 text-indigo-400" />
+            )}
           </div>
-          <p className="text-[10px] opacity-70 truncate max-w-[170px] mt-0.5">
+          <p className="text-[10px] opacity-70 truncate max-w-[160px] mt-0.5">
             {config.description}
           </p>
         </div>

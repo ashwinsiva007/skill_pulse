@@ -12,7 +12,7 @@ interface ThemeContextValue {
 }
 
 const STORAGE_KEY = "skillpulse_active_theme";
-const DEFAULT_THEME: ThemeId = "obsidian-dark";
+const DEFAULT_THEME: ThemeId = "dark";
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
@@ -24,16 +24,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY) as string | null;
-      if (saved && THEMES_LIST.some((t) => t.id === saved)) {
-        setActiveThemeState(saved as ThemeId);
-        applyThemeToDOM(saved as ThemeId);
+      let target: ThemeId = "dark";
+      if (saved === "light" || (saved && saved.includes("light"))) {
+        target = "light";
       } else {
-        const migrated: ThemeId =
-          saved === "amber-light" ? "emerald-light" :
-          saved === "emerald-dark" ? "obsidian-dark" : DEFAULT_THEME;
-        setActiveThemeState(migrated);
-        applyThemeToDOM(migrated);
+        target = "dark";
       }
+      setActiveThemeState(target);
+      applyThemeToDOM(target);
     } catch {
       applyThemeToDOM(DEFAULT_THEME);
     }
@@ -41,7 +39,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const applyThemeToDOM = (themeId: ThemeId) => {
-    const config = THEMES_LIST.find((t) => t.id === themeId) || THEMES_LIST[2];
+    const config = THEMES_LIST.find((t) => t.id === themeId) || THEMES_LIST[1];
     const root = document.documentElement;
 
     root.setAttribute("data-theme", config.id);
@@ -67,7 +65,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const currentConfig = THEMES_LIST.find((t) => t.id === theme) || THEMES_LIST[2];
+  const currentConfig = THEMES_LIST.find((t) => t.id === theme) || THEMES_LIST[1];
 
   return (
     <ThemeContext.Provider
