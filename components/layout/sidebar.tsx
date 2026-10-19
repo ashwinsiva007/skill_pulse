@@ -201,7 +201,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Navigation List */}
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          <div className={cn("px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400", isCollapsed && "text-center")}>
+          <div className={cn("sidebar-heading px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400", isCollapsed && "text-center")}>
             {isCollapsed ? "•••" : isMasterAdmin ? "Master Admin Console" : "Platform Navigation"}
           </div>
 
@@ -223,19 +223,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   "sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all group relative border",
                   isActive
                     ? "sidebar-link-active bg-indigo-50 border-indigo-200 text-indigo-950 shadow-xs dark:bg-indigo-600/15 dark:border-indigo-500/30 dark:text-indigo-300"
-                    : "border-transparent text-slate-700 hover:text-slate-950 hover:bg-slate-100/90 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/60"
+                    : "border-transparent text-slate-800 hover:text-slate-950 hover:bg-slate-100/90 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/60"
                 )}
               >
                 <Icon
                   className={cn(
                     "w-4 h-4 shrink-0 transition-colors",
-                    isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-500 group-hover:text-slate-800 dark:text-slate-400 dark:group-hover:text-slate-300"
+                    isActive
+                      ? "text-indigo-600 dark:text-indigo-400"
+                      : "text-slate-600 group-hover:text-slate-950 dark:text-slate-400 dark:group-hover:text-slate-300"
                   )}
                 />
 
                 {!isCollapsed && (
                   <div className="flex items-center justify-between w-full truncate">
-                    <span className={cn("truncate font-semibold", isActive ? "text-indigo-950 dark:text-white" : "text-slate-800 dark:text-slate-300")}>
+                    <span className={cn(
+                      "sidebar-label truncate font-semibold",
+                      isActive
+                        ? "text-indigo-950 dark:text-white"
+                        : "text-slate-800 group-hover:text-slate-950 dark:text-slate-300 dark:group-hover:text-white"
+                    )}>
                       {item.label}
                     </span>
                     {item.badge && (
@@ -243,7 +250,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         "sidebar-badge text-[10px] font-medium px-1.5 py-0.5 rounded-full border transition-colors",
                         isActive
                           ? "bg-indigo-100/90 text-indigo-900 border-indigo-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700/50"
-                          : "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700/50"
+                          : "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700/50"
                       )}>
                         {item.badge}
                       </span>
