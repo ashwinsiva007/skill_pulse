@@ -146,9 +146,9 @@ export const StepPersonal: React.FC<StepPersonalProps> = ({
         <div>
           <label className="block text-xs font-medium text-slate-300 mb-1">LinkedIn Profile URL</label>
           <input
-            type="url"
+            type="text"
             name="linkedInUrl"
-            placeholder="https://linkedin.com/in/username"
+            placeholder="linkedin.com/in/username or https://..."
             value={data.linkedInUrl || ""}
             onChange={handleChange}
             className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-indigo-500 focus:outline-none"
@@ -159,9 +159,9 @@ export const StepPersonal: React.FC<StepPersonalProps> = ({
         <div>
           <label className="block text-xs font-medium text-slate-300 mb-1">GitHub or Portfolio URL</label>
           <input
-            type="url"
+            type="text"
             name="githubUrl"
-            placeholder="https://github.com/username"
+            placeholder="github.com/username or https://..."
             value={data.githubUrl || ""}
             onChange={handleChange}
             className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-indigo-500 focus:outline-none"

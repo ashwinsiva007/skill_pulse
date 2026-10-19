@@ -45,6 +45,8 @@ import {
   FileCheck,
   ExternalLink,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Info,
   ShieldCheck,
   AlertTriangle,
@@ -84,12 +86,19 @@ export const OpportunitiesView: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<string>("All India");
   const [onlyMatchingSkills, setOnlyMatchingSkills] = useState(false);
   const [sortBy, setSortBy] = useState<"match" | "newest" | "title">("match");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
 
   // Modals state
   const [selectedDetailOpp, setSelectedDetailOpp] = useState<Opportunity | null>(null);
   const [selectedTrackOpp, setSelectedTrackOpp] = useState<Opportunity | null>(null);
   const [feedbackToast, setFeedbackToast] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sourceModeTab, searchQuery, selectedType, selectedWorkMode, selectedLocation, onlyMatchingSkills, sortBy]);
 
   // Fetch opportunities from server-side ingestion endpoint
   const fetchLiveOpportunities = useCallback(async (forceRefresh = false) => {
@@ -268,6 +277,13 @@ export const OpportunitiesView: React.FC = () => {
     onlyMatchingSkills,
     sortBy,
   ]);
+
+  // Sliced paginated view (12 opportunities per page)
+  const totalPages = Math.ceil(filteredOpportunities.length / ITEMS_PER_PAGE) || 1;
+  const paginatedOpportunities = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredOpportunities.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredOpportunities, currentPage]);
 
   // Handle Save / Bookmark
   const handleToggleSave = async (id: string) => {
@@ -704,19 +720,123 @@ export const OpportunitiesView: React.FC = () => {
                 }}
               />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {filteredOpportunities.map((opp) => (
-                  <OpportunityCard
-                    key={opp.id}
-                    opportunity={opp}
-                    matchResult={opp.matchResult}
-                    isSaved={savedIds.has(opp.id)}
-                    onToggleSave={handleToggleSave}
-                    onViewDetails={setSelectedDetailOpp}
-                    onTrackApplication={setSelectedTrackOpp}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {paginatedOpportunities.map((opp) => (
+                    <OpportunityCard
+                      key={opp.id}
+                      opportunity={opp}
+                      matchResult={opp.matchResult}
+                      isSaved={savedIds.has(opp.id)}
+                      onToggleSave={handleToggleSave}
+                      onViewDetails={setSelectedDetailOpp}
+                      onTrackApplication={setSelectedTrackOpp}
+                    />
+                  ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-5 rounded-2xl bg-surface border border-border shadow-xs">
+                    <p className="text-xs font-medium text-text-muted">
+                      Showing{" "}
+                      <span className="font-semibold text-text-primary">
+                        {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+                      </span>{" "}
+                      to{" "}
+                      <span className="font-semibold text-text-primary">
+                        {Math.min(currentPage * ITEMS_PER_PAGE, filteredOpportunities.length)}
+                      </span>{" "}
+                      of{" "}
+                      <span className="font-semibold text-text-primary">
+                        {filteredOpportunities.length}
+                      </span>{" "}
+                      opportunities
+                    </p>
+
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage === 1}
+                        onClick={() => {
+                          setCurrentPage((p) => Math.max(1, p - 1));
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                        className="h-8 px-2.5 text-xs rounded-lg cursor-pointer"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5 mr-1" />
+                        Previous
+                      </Button>
+
+                      <div className="flex items-center gap-1 px-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1)
+                          .filter((page) => {
+                            return (
+                              page === 1 ||
+                              page === totalPages ||
+                              Math.abs(page - currentPage) <= 1
+                            );
+                          })
+                          .reduce<(number | string)[]>((acc, page, idx, arr) => {
+                            if (
+                              idx > 0 &&
+                              typeof arr[idx - 1] === "number" &&
+                              (page as number) - (arr[idx - 1] as number) > 1
+                            ) {
+                              acc.push(`ellipsis-${page}`);
+                            }
+                            acc.push(page);
+                            return acc;
+                          }, [])
+                          .map((item) => {
+                            if (typeof item === "string") {
+                              return (
+                                <span
+                                  key={item}
+                                  className="px-1.5 text-xs text-text-muted"
+                                >
+                                  ...
+                                </span>
+                              );
+                            }
+                            const isCurrent = item === currentPage;
+                            return (
+                              <button
+                                key={item}
+                                onClick={() => {
+                                  setCurrentPage(item);
+                                  window.scrollTo({ top: 0, behavior: "smooth" });
+                                }}
+                                className={`w-8 h-8 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                                  isCurrent
+                                    ? "bg-brand text-brand-foreground shadow-xs font-semibold"
+                                    : "text-text-secondary hover:bg-surface-elevated hover:text-text-primary"
+                                }`}
+                              >
+                                {item}
+                              </button>
+                            );
+                          })}
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage >= totalPages}
+                        onClick={() => {
+                          setCurrentPage((p) => Math.min(totalPages, p + 1));
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                        className="h-8 px-2.5 text-xs rounded-lg cursor-pointer"
+                      >
+                        Next
+                        <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}

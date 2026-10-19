@@ -118,6 +118,13 @@ export const OnboardingWizard: React.FC = () => {
         });
         setStepErrors(errorMap);
         return false;
+      } else {
+        setProfileData((prev) => ({
+          ...prev,
+          linkedInUrl: res.data.linkedInUrl,
+          githubUrl: res.data.githubUrl,
+          portfolioUrl: res.data.portfolioUrl,
+        }));
       }
     }
     if (currentStep === 2) {

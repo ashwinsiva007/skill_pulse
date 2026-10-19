@@ -233,21 +233,42 @@ export class LocalSkillRepository implements ISkillRepository {
 
   async addSkill(skillInput: Omit<Skill, "id">): Promise<Skill> {
     const list = await this.getSkills();
-    const newSkill: Skill = {
-      ...skillInput,
-      id: `skill-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-    };
-    const updated = [newSkill, ...list];
-    storageAdapter.setItem(STORAGE_KEYS.SKILLS, updated);
+    const cleanName = skillInput.name.trim();
+    const existingIndex = list.findIndex(
+      (s) => s.name.trim().toLowerCase() === cleanName.toLowerCase()
+    );
+
+    let resultSkill: Skill;
+    let updatedList: Skill[];
+
+    if (existingIndex !== -1) {
+      // Upsert: update existing skill attributes without creating duplicates
+      resultSkill = {
+        ...list[existingIndex],
+        ...skillInput,
+        name: cleanName,
+      };
+      updatedList = [...list];
+      updatedList[existingIndex] = resultSkill;
+    } else {
+      resultSkill = {
+        ...skillInput,
+        name: cleanName,
+        id: `skill-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      };
+      updatedList = [resultSkill, ...list];
+    }
+
+    storageAdapter.setItem(STORAGE_KEYS.SKILLS, updatedList);
 
     // Sync profile completion
     const currentProfile = storageAdapter.getItem<CandidateProfile>(STORAGE_KEYS.PROFILE, DEMO_PROFILE);
     if (currentProfile) {
-      currentProfile.profileCompletionPercentage = calculateProfileCompletion(currentProfile, updated).percentage;
+      currentProfile.profileCompletionPercentage = calculateProfileCompletion(currentProfile, updatedList).percentage;
       storageAdapter.setItem(STORAGE_KEYS.PROFILE, currentProfile);
     }
 
-    return newSkill;
+    return resultSkill;
   }
 
   async updateSkill(id: string, updates: Partial<Skill>): Promise<Skill> {

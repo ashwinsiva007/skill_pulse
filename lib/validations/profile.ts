@@ -1,5 +1,34 @@
 import { z } from "zod";
 
+/**
+ * Normalizes user-entered URLs by auto-prepending https:// if protocol is omitted.
+ */
+export function normalizeUrl(rawUrl?: string): string {
+  if (!rawUrl) return "";
+  const trimmed = rawUrl.trim();
+  if (!trimmed) return "";
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
+export const flexibleUrlSchema = z
+  .string()
+  .transform((val) => normalizeUrl(val))
+  .refine(
+    (val) => {
+      if (!val) return true;
+      try {
+        const u = new URL(val);
+        return Boolean(u.hostname && u.hostname.includes("."));
+      } catch {
+        return false;
+      }
+    },
+    { message: "Please provide a valid web address (e.g. linkedin.com/in/username or github.com/username)" }
+  )
+  .optional()
+  .or(z.literal(""));
+
 export const personalDetailsSchema = z.object({
   name: z.string().min(2, "Full name must be at least 2 characters"),
   headline: z.string().min(3, "Professional headline is required"),
@@ -9,9 +38,9 @@ export const personalDetailsSchema = z.object({
   state: z.string().optional(),
   country: z.string().optional(),
   location: z.string().optional(),
-  linkedInUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
-  githubUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
-  portfolioUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
+  linkedInUrl: flexibleUrlSchema,
+  githubUrl: flexibleUrlSchema,
+  portfolioUrl: flexibleUrlSchema,
   bio: z.string().min(10, "Please provide a short biography (at least 10 characters)"),
   careerLevel: z.enum([
     "Student",
@@ -74,8 +103,8 @@ export const projectFormSchema = z.object({
   status: z.enum(["In Progress", "Completed", "Prototype"]),
   startDate: z.string().optional(),
   completionDate: z.string().optional(),
-  githubUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
-  demoUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
+  githubUrl: flexibleUrlSchema,
+  demoUrl: flexibleUrlSchema,
   outcomes: z.string().optional(),
 });
 
@@ -96,5 +125,5 @@ export const certificationFormSchema = z.object({
   name: z.string().min(2, "Certification name is required"),
   issuer: z.string().min(2, "Issuing organization is required"),
   issueDate: z.string().min(1, "Issue date is required"),
-  credentialUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
+  credentialUrl: flexibleUrlSchema,
 });

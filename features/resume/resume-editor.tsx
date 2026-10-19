@@ -15,6 +15,10 @@ import { Badge } from "@/components/ui/badge";
 import { BulletHelperModal } from "./modals/bullet-helper-modal";
 import { JobDescriptionModal } from "./modals/job-description-modal";
 import {
+  calculateAtsKeywordScore,
+  calculateResumeCompleteness,
+} from "@/lib/resume/content-generator";
+import {
   User,
   FileText,
   Cpu,
@@ -63,9 +67,15 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
 
   const updateContent = (partialContent: Partial<ResumeContent>) => {
     const updatedContent = { ...content, ...partialContent };
+    const dynamicAts = calculateAtsKeywordScore(updatedContent, draft.targetRole);
+    const dynamicCompleteness = calculateResumeCompleteness(updatedContent);
+    const visibleCount = Object.values(updatedContent.sectionConfig.visible).filter(Boolean).length;
     onChange({
       ...draft,
       content: updatedContent,
+      atsScore: dynamicAts,
+      completionPercentage: dynamicCompleteness,
+      sectionsCount: visibleCount,
       lastModified: new Date().toISOString(),
     });
   };

@@ -18,6 +18,7 @@ import {
   Award,
   MoreVertical,
   RotateCcw,
+  GripVertical,
 } from "lucide-react";
 
 interface PipelineColumn {
@@ -74,6 +75,9 @@ export const TrackerView: React.FC = () => {
   const [newNextStep, setNewNextStep] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
+  const [draggedAppId, setDraggedAppId] = useState<string | null>(null);
+  const [activeDropColId, setActiveDropColId] = useState<string | null>(null);
+
   const loadApplications = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -98,6 +102,14 @@ export const TrackerView: React.FC = () => {
       tag: "Tracker",
     });
     loadApplications();
+  };
+
+  const handleDropToColumn = async (appId: string, targetColumn: PipelineColumn) => {
+    const app = applications.find((a) => a.id === appId);
+    if (!app) return;
+    if (targetColumn.stages.includes(app.stage)) return;
+    const targetStage = targetColumn.stages[0];
+    await handleStageChange(appId, targetStage);
   };
 
   const handleUpdateApplication = async (id: string, updates: Partial<JobApplication>) => {
@@ -258,31 +270,79 @@ export const TrackerView: React.FC = () => {
                 </div>
 
                 {/* Column Card Container */}
-                <div className="space-y-3 min-h-[420px] p-2 rounded-xl bg-slate-950/40 border border-slate-900/90">
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                    if (activeDropColId !== column.id) {
+                      setActiveDropColId(column.id);
+                    }
+                  }}
+                  onDragLeave={(e) => {
+                    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+                    if (activeDropColId === column.id) {
+                      setActiveDropColId(null);
+                    }
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const appId = e.dataTransfer.getData("text/plain") || draggedAppId;
+                    setActiveDropColId(null);
+                    setDraggedAppId(null);
+                    if (appId) {
+                      handleDropToColumn(appId, column);
+                    }
+                  }}
+                  className={`space-y-3 min-h-[420px] p-2 rounded-xl transition-all ${
+                    activeDropColId === column.id
+                      ? "bg-indigo-950/30 border-2 border-dashed border-indigo-500 shadow-md ring-2 ring-indigo-500/20"
+                      : "bg-slate-950/40 border border-slate-900/90"
+                  }`}
+                >
                   {columnApps.length === 0 ? (
-                    <div className="h-32 flex flex-col items-center justify-center text-slate-600 text-xs text-center p-3">
-                      <span>No entries in this stage</span>
+                    <div className="h-32 flex flex-col items-center justify-center text-slate-600 text-xs text-center p-3 rounded-lg border border-dashed border-slate-800/80">
+                      <span className="font-medium text-slate-400">
+                        {activeDropColId === column.id ? "Drop card here" : "No entries in this stage"}
+                      </span>
+                      <span className="text-[10px] text-slate-500 mt-1">
+                        Drag application cards here
+                      </span>
                     </div>
                   ) : (
                     columnApps.map((app) => (
                       <Card
                         key={app.id}
-                        className="p-3.5 bg-slate-900/90 border-slate-800/90 hover:border-slate-700 transition-all shadow-sm space-y-2.5"
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData("text/plain", app.id);
+                          e.dataTransfer.effectAllowed = "move";
+                          setDraggedAppId(app.id);
+                        }}
+                        onDragEnd={() => {
+                          setDraggedAppId(null);
+                          setActiveDropColId(null);
+                        }}
+                        className={`p-3.5 bg-slate-900/90 border-slate-800/90 hover:border-slate-700 transition-all shadow-sm space-y-2.5 cursor-grab active:cursor-grabbing ${
+                          draggedAppId === app.id ? "opacity-40 scale-[0.98] border-indigo-500" : ""
+                        }`}
                       >
                         <div className="flex items-start justify-between gap-1">
-                          <div className="space-y-0.5 flex-1 pr-1">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block truncate">
-                              {app.company}
-                            </span>
-                            <h4 className="text-xs font-bold text-white leading-tight">
-                              {app.role}
-                            </h4>
+                          <div className="flex items-center gap-1.5 flex-1 pr-1 min-w-0">
+                            <GripVertical className="w-3.5 h-3.5 text-slate-600 hover:text-slate-400 shrink-0 cursor-grab" />
+                            <div className="space-y-0.5 min-w-0 flex-1">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block truncate">
+                                {app.company}
+                              </span>
+                              <h4 className="text-xs font-bold text-white leading-tight truncate">
+                                {app.role}
+                              </h4>
+                            </div>
                           </div>
 
                           <button
                             type="button"
                             onClick={() => setEditingApplication(app)}
-                            className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800"
+                            className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 shrink-0"
                             title="Edit application details"
                           >
                             <MoreVertical className="w-3.5 h-3.5" />

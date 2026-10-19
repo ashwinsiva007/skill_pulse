@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Menu,
@@ -15,12 +15,14 @@ import {
   LogOut,
   ShieldCheck,
   Briefcase,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ResetConfirmModal } from "./reset-confirm-modal";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { useAuth } from "@/lib/firebase/auth-context";
 import { ThemeSelector } from "./theme-selector";
+import { CommandPaletteModal } from "./command-palette-modal";
 
 export interface TopBarProps {
   onOpenMobileSidebar: () => void;
@@ -36,6 +38,19 @@ export const TopBar: React.FC<TopBarProps> = ({
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authDefaultTab, setAuthDefaultTab] = useState<"signin" | "signup" | "firebase">("signin");
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+
+  // Global Cmd+K / Ctrl+K keyboard shortcut listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const isMasterAdmin = isAdmin || user?.email === "admin@gmail.com";
   const displayName = isMasterAdmin ? "Master Administrator" : (profile?.name?.trim() || user?.displayName || (user ? "Cloud User" : "My Workspace"));
@@ -89,8 +104,35 @@ export const TopBar: React.FC<TopBarProps> = ({
           </div>
         </div>
 
+        {/* Center: Command Palette Global Search Input Trigger */}
+        <div className="flex-1 max-w-md mx-4 hidden md:block">
+          <button
+            type="button"
+            onClick={() => setIsPaletteOpen(true)}
+            aria-label="Open command palette search"
+            className="w-full flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-xs text-slate-400 hover:text-slate-200 transition-all cursor-pointer shadow-xs group"
+          >
+            <div className="flex items-center gap-2 truncate">
+              <Search className="w-3.5 h-3.5 text-slate-500 group-hover:text-indigo-400 transition-colors shrink-0" />
+              <span className="truncate">Search pages, skills, jobs...</span>
+            </div>
+            <kbd className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono font-medium text-slate-400 bg-slate-800 rounded border border-slate-700/80 shadow-xs">
+              ⌘K
+            </kbd>
+          </button>
+        </div>
+
         {/* Right: Actions, Database Sync Indicator, User menu */}
-        <div className="flex items-center gap-2.5 sm:gap-3 ml-auto">
+        <div className="flex items-center gap-2 sm:gap-2.5 ml-auto">
+          {/* Mobile Search Icon Button */}
+          <button
+            type="button"
+            onClick={() => setIsPaletteOpen(true)}
+            aria-label="Search navigation"
+            className="md:hidden p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+          >
+            <Search className="w-4 h-4" />
+          </button>
           {/* Quick Action Button: Live Job QA for Admin, Build Resume for Candidates */}
           {isMasterAdmin ? (
             <Link href="/opportunities" className="hidden sm:inline-flex">
@@ -275,6 +317,12 @@ export const TopBar: React.FC<TopBarProps> = ({
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         defaultTab={authDefaultTab}
+      />
+
+      {/* Global Command Palette Navigation Modal (Cmd+K / Ctrl+K) */}
+      <CommandPaletteModal
+        isOpen={isPaletteOpen}
+        onClose={() => setIsPaletteOpen(false)}
       />
     </>
   );
