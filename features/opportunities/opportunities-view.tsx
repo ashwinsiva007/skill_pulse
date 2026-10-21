@@ -112,6 +112,8 @@ export const OpportunitiesView: React.FC = () => {
       } else if (typeParam.toLowerCase() === "internship") {
         setSelectedType("Internship");
       }
+    } else {
+      setSelectedType("All");
     }
   }, [searchParams]);
 

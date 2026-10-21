@@ -424,6 +424,17 @@ export const AdminCandidateModal: React.FC<AdminCandidateModalProps> = ({
                       <span>GitHub: {p.githubUrl}</span>
                     </a>
                   )}
+                  {p.leetcodeUrl && (
+                    <a
+                      href={p.leetcodeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-amber-300 border border-slate-700 transition-colors"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      <span>LeetCode: {p.leetcodeUrl}</span>
+                    </a>
+                  )}
                   {p.portfolioUrl && (
                     <a
                       href={p.portfolioUrl}
@@ -435,11 +446,97 @@ export const AdminCandidateModal: React.FC<AdminCandidateModalProps> = ({
                       <span>Portfolio: {p.portfolioUrl}</span>
                     </a>
                   )}
-                  {!p.linkedInUrl && !p.githubUrl && !p.portfolioUrl && (
+                  {!p.linkedInUrl && !p.githubUrl && !p.leetcodeUrl && !p.portfolioUrl && (
                     <span className="text-xs text-slate-500 italic">No web links recorded.</span>
                   )}
                 </div>
               </div>
+
+              {/* Developer Intelligence & Coding Footprint (GitHub & LeetCode) */}
+              {p.codingProfilesData && (
+                <div className="space-y-2">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                    Automated Developer Intelligence & Activity
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {p.codingProfilesData.github && (
+                      <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-xs text-white flex items-center gap-1.5">
+                            <FolderGit2 className="w-3.5 h-3.5 text-slate-300" />
+                            GitHub Analytics (@{p.codingProfilesData.github.username})
+                          </span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 font-medium">
+                            {p.codingProfilesData.github.codingFrequency}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                          <div className="p-2 rounded-lg bg-slate-900/60 border border-slate-800/80">
+                            <div className="text-white font-bold">{p.codingProfilesData.github.publicRepos}</div>
+                            <div className="text-[10px] text-slate-400">Public Repos</div>
+                          </div>
+                          <div className="p-2 rounded-lg bg-slate-900/60 border border-slate-800/80">
+                            <div className="text-amber-300 font-bold">{p.codingProfilesData.github.totalStars}</div>
+                            <div className="text-[10px] text-slate-400">Stars Earned</div>
+                          </div>
+                          <div className="p-2 rounded-lg bg-slate-900/60 border border-slate-800/80">
+                            <div className="text-indigo-300 font-bold">{p.codingProfilesData.github.followers}</div>
+                            <div className="text-[10px] text-slate-400">Followers</div>
+                          </div>
+                        </div>
+                        {p.codingProfilesData.github.topLanguages && p.codingProfilesData.github.topLanguages.length > 0 && (
+                          <div className="flex items-center gap-1 flex-wrap pt-1">
+                            <span className="text-[10px] text-slate-400">Stack:</span>
+                            {p.codingProfilesData.github.topLanguages.map((lang) => (
+                              <span key={lang.language} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
+                                {lang.language}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {p.codingProfilesData.leetcode && (
+                      <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-xs text-white flex items-center gap-1.5">
+                            <Code2 className="w-3.5 h-3.5 text-amber-400" />
+                            LeetCode Analytics (@{p.codingProfilesData.leetcode.username})
+                          </span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 font-medium">
+                            {p.codingProfilesData.leetcode.ranking ? `Rank #${p.codingProfilesData.leetcode.ranking.toLocaleString()}` : "Active Solver"}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-4 gap-1.5 text-center text-xs">
+                          <div className="p-2 rounded-lg bg-slate-900/60 border border-slate-800/80">
+                            <div className="text-white font-bold">{p.codingProfilesData.leetcode.totalSolved}</div>
+                            <div className="text-[9px] text-slate-400">Total</div>
+                          </div>
+                          <div className="p-2 rounded-lg bg-slate-900/60 border border-slate-800/80">
+                            <div className="text-emerald-400 font-bold">{p.codingProfilesData.leetcode.easySolved}</div>
+                            <div className="text-[9px] text-slate-400">Easy</div>
+                          </div>
+                          <div className="p-2 rounded-lg bg-slate-900/60 border border-slate-800/80">
+                            <div className="text-amber-400 font-bold">{p.codingProfilesData.leetcode.mediumSolved}</div>
+                            <div className="text-[9px] text-slate-400">Medium</div>
+                          </div>
+                          <div className="p-2 rounded-lg bg-slate-900/60 border border-slate-800/80">
+                            <div className="text-rose-400 font-bold">{p.codingProfilesData.leetcode.hardSolved}</div>
+                            <div className="text-[9px] text-slate-400">Hard</div>
+                          </div>
+                        </div>
+                        {p.codingProfilesData.leetcode.acceptanceRate && (
+                          <div className="text-[10px] text-slate-400 text-right">
+                            Acceptance Rate: <span className="text-slate-200 font-semibold">{p.codingProfilesData.leetcode.acceptanceRate}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

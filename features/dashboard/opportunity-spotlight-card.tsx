@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Opportunity } from "@/types/opportunity";
+import { stripHtml } from "@/lib/utils";
 import { Briefcase, ArrowRight, Bookmark, MapPin, DollarSign } from "lucide-react";
 
 export interface OpportunitySpotlightCardProps {
@@ -59,7 +60,7 @@ export const OpportunitySpotlightCard: React.FC<OpportunitySpotlightCardProps> =
           </div>
 
           <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
-            {topOpportunity.description}
+            {stripHtml(topOpportunity.description)}
           </p>
 
           <div className="pt-1">

@@ -53,8 +53,10 @@ export const QuickProfileSetupModal: React.FC<QuickProfileSetupModalProps> = ({
   // Step 1: Social Media & Online Presence
   const [githubUrl, setGithubUrl] = useState(initialProfile?.githubUrl || "");
   const [linkedInUrl, setLinkedInUrl] = useState(initialProfile?.linkedInUrl || "");
+  const [leetcodeUrl, setLeetCodeUrl] = useState(initialProfile?.leetcodeUrl || "");
   const [portfolioUrl, setPortfolioUrl] = useState(initialProfile?.portfolioUrl || "");
   const [location, setLocation] = useState(initialProfile?.location || "");
+  const [linkedInError, setLinkedInError] = useState("");
 
   // Step 2: Education
   const [institution, setInstitution] = useState(
@@ -98,19 +100,31 @@ export const QuickProfileSetupModal: React.FC<QuickProfileSetupModalProps> = ({
     setCustomSkillInput("");
   };
 
+  const handleProceedFromStep1 = () => {
+    if (!linkedInUrl.trim()) {
+      setLinkedInError("LinkedIn profile URL is mandatory for candidate verification.");
+      return;
+    }
+    setLinkedInError("");
+    setStep(2);
+  };
+
   const handleFinish = async () => {
     setLoading(true);
     try {
       // 1. Build social links array
       const links = [];
-      if (githubUrl.trim()) {
-        links.push({ id: `link-${Date.now()}-1`, label: "GitHub", url: githubUrl.trim(), type: "github" as const });
-      }
       if (linkedInUrl.trim()) {
-        links.push({ id: `link-${Date.now()}-2`, label: "LinkedIn", url: linkedInUrl.trim(), type: "linkedin" as const });
+        links.push({ id: `link-${Date.now()}-1`, label: "LinkedIn", url: linkedInUrl.trim(), type: "linkedin" as const });
+      }
+      if (githubUrl.trim()) {
+        links.push({ id: `link-${Date.now()}-2`, label: "GitHub", url: githubUrl.trim(), type: "github" as const });
+      }
+      if (leetcodeUrl.trim()) {
+        links.push({ id: `link-${Date.now()}-3`, label: "LeetCode", url: leetcodeUrl.trim(), type: "other" as const });
       }
       if (portfolioUrl.trim()) {
-        links.push({ id: `link-${Date.now()}-3`, label: "Portfolio", url: portfolioUrl.trim(), type: "portfolio" as const });
+        links.push({ id: `link-${Date.now()}-4`, label: "Portfolio", url: portfolioUrl.trim(), type: "portfolio" as const });
       }
 
       // 2. Build education array
@@ -128,11 +142,35 @@ export const QuickProfileSetupModal: React.FC<QuickProfileSetupModalProps> = ({
         });
       }
 
-      // 3. Update candidate profile in repository
+      // 3. Extract coding profile intelligence
+      let codingProfilesData = initialProfile?.codingProfilesData;
+      if (githubUrl.trim() || leetcodeUrl.trim() || linkedInUrl.trim()) {
+        try {
+          const res = await fetch("/api/profile/extract-coding-data", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              githubUrl: githubUrl.trim(),
+              leetcodeUrl: leetcodeUrl.trim(),
+              linkedInUrl: linkedInUrl.trim(),
+            }),
+          });
+          if (res.ok) {
+            const json = await res.json();
+            if (json.data) codingProfilesData = json.data;
+          }
+        } catch (e) {
+          console.warn("Profile intelligence extraction warning:", e);
+        }
+      }
+
+      // 4. Update candidate profile in repository
       await profileRepo.updateProfile({
         githubUrl: githubUrl.trim() || undefined,
         linkedInUrl: linkedInUrl.trim() || undefined,
+        leetcodeUrl: leetcodeUrl.trim() || undefined,
         portfolioUrl: portfolioUrl.trim() || undefined,
+        codingProfilesData,
         location: location.trim() || undefined,
         links,
         education,
@@ -203,13 +241,48 @@ export const QuickProfileSetupModal: React.FC<QuickProfileSetupModalProps> = ({
         {/* STEP 1: SOCIAL LINKS & ONLINE PRESENCE */}
         {step === 1 && (
           <div className="space-y-3.5 animate-in fade-in">
-            <div className="p-3 rounded-xl bg-indigo-950/20 border border-indigo-900/40 text-xs text-indigo-300">
-              Where can hiring managers and algorithms discover your work?
+            <div className="p-3 rounded-xl bg-indigo-950/30 border border-indigo-500/30 text-xs space-y-1">
+              <div className="font-semibold text-indigo-300 flex items-center gap-1.5">
+                <span className="flex h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
+                Profile Completion & Developer Footprint
+              </div>
+              <p className="text-slate-300 text-[11px] leading-relaxed">
+                <strong className="text-rose-400">LinkedIn Profile URL is mandatory</strong> for candidate verification. Entering your <strong className="text-indigo-300">GitHub</strong> and <strong className="text-amber-300">LeetCode</strong> accounts is <span className="underline decoration-indigo-400 font-medium">recommended to complete your profile</span> and enables automated extraction of your coding work frequency and DSA metrics.
+              </p>
             </div>
 
+            {/* LinkedIn URL - MANDATORY */}
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
-                GitHub Profile URL
+              <label className="block text-xs font-medium text-slate-300 mb-1 flex items-center justify-between">
+                <span>
+                  LinkedIn Profile URL <span className="text-rose-400 font-bold">* (Mandatory)</span>
+                </span>
+                <span className="text-[10px] text-slate-400">Compulsory for verified profile</span>
+              </label>
+              <div className="relative">
+                <input
+                  type="url"
+                  placeholder="https://linkedin.com/in/your-username"
+                  value={linkedInUrl}
+                  onChange={(e) => {
+                    setLinkedInUrl(e.target.value);
+                    if (e.target.value.trim()) setLinkedInError("");
+                  }}
+                  className={`w-full px-3 py-2 rounded-lg bg-slate-950 border text-xs text-white placeholder-slate-500 focus:outline-none transition-colors ${
+                    linkedInError ? "border-rose-500 focus:border-rose-500" : "border-slate-700 focus:border-indigo-500"
+                  }`}
+                />
+              </div>
+              {linkedInError && (
+                <p className="text-[11px] text-rose-400 mt-1">{linkedInError}</p>
+              )}
+            </div>
+
+            {/* GitHub URL - RECOMMENDED */}
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1 flex items-center justify-between">
+                <span>GitHub Profile URL</span>
+                <span className="text-[10px] text-indigo-400 font-medium">Recommended • Coding Frequency</span>
               </label>
               <div className="relative">
                 <input
@@ -220,21 +293,25 @@ export const QuickProfileSetupModal: React.FC<QuickProfileSetupModalProps> = ({
                   className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                 />
               </div>
+              <p className="text-[10px] text-slate-500 mt-0.5">Recommended to analyze frequency of coding work & repositories.</p>
             </div>
 
+            {/* LeetCode URL - RECOMMENDED */}
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
-                LinkedIn Profile URL
+              <label className="block text-xs font-medium text-slate-300 mb-1 flex items-center justify-between">
+                <span>LeetCode Profile URL</span>
+                <span className="text-[10px] text-amber-400 font-medium">Recommended • DSA Stats</span>
               </label>
               <div className="relative">
                 <input
                   type="url"
-                  placeholder="https://linkedin.com/in/your-username"
-                  value={linkedInUrl}
-                  onChange={(e) => setLinkedInUrl(e.target.value)}
+                  placeholder="https://leetcode.com/u/your-username"
+                  value={leetcodeUrl}
+                  onChange={(e) => setLeetCodeUrl(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                 />
               </div>
+              <p className="text-[10px] text-slate-500 mt-0.5">Recommended to sync problem-solving stats and contest metrics.</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -272,10 +349,10 @@ export const QuickProfileSetupModal: React.FC<QuickProfileSetupModalProps> = ({
             </div>
 
             <div className="pt-3 flex items-center justify-between border-t border-slate-800">
-              <Button variant="ghost" size="sm" onClick={() => setStep(2)} className="text-xs text-slate-400">
-                Skip Links →
-              </Button>
-              <Button variant="primary" size="sm" onClick={() => setStep(2)} className="text-xs">
+              <span className="text-[11px] text-slate-500">
+                * LinkedIn URL required to continue
+              </span>
+              <Button variant="primary" size="sm" onClick={handleProceedFromStep1} className="text-xs">
                 Next: Education
                 <ArrowRight className="w-3.5 h-3.5 ml-1" />
               </Button>

@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { Opportunity } from "@/types/opportunity";
 import { OpportunityMatchResult } from "@/lib/opportunities/matching-engine";
+import { getSafeUnstopRegistrationUrl } from "@/lib/opportunities/hackathons-catalog";
+import { stripHtml } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -76,7 +78,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
   const isCurated = opportunity.sourceMode === "CURATED_CATALOG";
   const isHackathon = opportunity.type === "Hackathon";
 
-  const directDestinationUrl = opportunity.unstopDirectUrl || opportunity.applicationUrl || opportunity.sourceUrl || "https://unstop.com/hackathons";
+  const directDestinationUrl = getSafeUnstopRegistrationUrl(opportunity);
 
   return (
     <Card className={`p-5 transition-all duration-150 space-y-4 bg-slate-900/80 hover:border-slate-700/80 ${
@@ -186,7 +188,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
 
       {/* Description */}
       <p className="text-xs text-slate-300 leading-relaxed line-clamp-2">
-        {opportunity.description}
+        {stripHtml(opportunity.description)}
       </p>
 
       {/* Transparent Match Reason */}

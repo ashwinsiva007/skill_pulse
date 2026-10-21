@@ -56,7 +56,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     label: "Hackathon Hub",
-    href: "/opportunities?type=Hackathon",
+    href: "/hackathons",
     icon: Trophy,
     badge: "Unstop Live",
   },
@@ -216,6 +216,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             const isActive =
               item.href === "/"
                 ? pathname === "/" || pathname === "/dashboard"
+                : item.href === "/opportunities"
+                ? pathname === "/opportunities"
                 : pathname.startsWith(item.href);
 
             const Icon = item.icon;

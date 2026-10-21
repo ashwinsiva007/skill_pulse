@@ -29,6 +29,23 @@ export const flexibleUrlSchema = z
   .optional()
   .or(z.literal(""));
 
+export const mandatoryLinkedInUrlSchema = z
+  .string()
+  .min(3, "LinkedIn profile URL is required (mandatory for profile completion)")
+  .transform((val) => normalizeUrl(val))
+  .refine(
+    (val) => {
+      if (!val) return false;
+      try {
+        const u = new URL(val);
+        return Boolean(u.hostname && u.hostname.includes("."));
+      } catch {
+        return false;
+      }
+    },
+    { message: "Please provide a valid LinkedIn URL (e.g. linkedin.com/in/username or https://...)" }
+  );
+
 export const personalDetailsSchema = z.object({
   name: z.string().min(2, "Full name must be at least 2 characters"),
   headline: z.string().min(3, "Professional headline is required"),
@@ -38,8 +55,9 @@ export const personalDetailsSchema = z.object({
   state: z.string().optional(),
   country: z.string().optional(),
   location: z.string().optional(),
-  linkedInUrl: flexibleUrlSchema,
+  linkedInUrl: mandatoryLinkedInUrlSchema,
   githubUrl: flexibleUrlSchema,
+  leetcodeUrl: flexibleUrlSchema,
   portfolioUrl: flexibleUrlSchema,
   bio: z.string().min(10, "Please provide a short biography (at least 10 characters)"),
   careerLevel: z.enum([

@@ -106,6 +106,7 @@ export const OnboardingWizard: React.FC = () => {
         location: profileData.location || "",
         linkedInUrl: profileData.linkedInUrl || "",
         githubUrl: profileData.githubUrl || "",
+        leetcodeUrl: profileData.leetcodeUrl || "",
         portfolioUrl: profileData.portfolioUrl || "",
         bio: profileData.bio || "",
         careerLevel: profileData.careerLevel || "Student",
@@ -123,6 +124,7 @@ export const OnboardingWizard: React.FC = () => {
           ...prev,
           linkedInUrl: res.data.linkedInUrl,
           githubUrl: res.data.githubUrl,
+          leetcodeUrl: res.data.leetcodeUrl,
           portfolioUrl: res.data.portfolioUrl,
         }));
       }
@@ -182,7 +184,34 @@ export const OnboardingWizard: React.FC = () => {
   const handleFinalSubmit = async () => {
     setIsSaving(true);
     try {
-      await profileRepo.updateProfile(profileData);
+      let codingProfilesData = profileData.codingProfilesData;
+      if (profileData.githubUrl || profileData.leetcodeUrl || profileData.linkedInUrl) {
+        try {
+          const res = await fetch("/api/profile/extract-coding-data", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              githubUrl: profileData.githubUrl,
+              leetcodeUrl: profileData.leetcodeUrl,
+              linkedInUrl: profileData.linkedInUrl,
+            }),
+          });
+          if (res.ok) {
+            const json = await res.json();
+            if (json.data) {
+              codingProfilesData = json.data;
+            }
+          }
+        } catch (e) {
+          console.warn("Extraction warning:", e);
+        }
+      }
+
+      await profileRepo.updateProfile({
+        ...profileData,
+        codingProfilesData,
+      });
+
       for (const s of skillsList) {
         await skillRepo.addSkill({
           name: s.name,

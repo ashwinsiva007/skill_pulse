@@ -27,6 +27,56 @@ export interface ProfileLink {
   type: "github" | "linkedin" | "portfolio" | "other";
 }
 
+export interface GitHubExtractedData {
+  username: string;
+  name?: string;
+  avatarUrl?: string;
+  bio?: string;
+  publicRepos: number;
+  followers: number;
+  following: number;
+  totalStars: number;
+  codingFrequency: "High (Active Weekly)" | "Moderate" | "Occasional" | "Inactive";
+  recentCommitsCount?: number;
+  topLanguages: Array<{ language: string; count: number; percentage: number }>;
+  topRepositories: Array<{
+    name: string;
+    description: string;
+    stars: number;
+    forks: number;
+    language: string;
+    url: string;
+  }>;
+  lastActiveDate?: string;
+  profileUrl: string;
+}
+
+export interface LeetCodeExtractedData {
+  username: string;
+  totalSolved: number;
+  easySolved: number;
+  mediumSolved: number;
+  hardSolved: number;
+  ranking?: number;
+  acceptanceRate?: number;
+  contributionPoints?: number;
+  profileUrl: string;
+}
+
+export interface LinkedInExtractedData {
+  username: string;
+  profileUrl: string;
+  isVerified: boolean;
+  vanityName?: string;
+}
+
+export interface CodingProfilesData {
+  github?: GitHubExtractedData;
+  leetcode?: LeetCodeExtractedData;
+  linkedIn?: LinkedInExtractedData;
+  lastExtractedAt?: string;
+}
+
 export interface CandidateProfile {
   id: string;
   name: string;
@@ -39,7 +89,9 @@ export interface CandidateProfile {
   location: string;
   linkedInUrl?: string;
   githubUrl?: string;
+  leetcodeUrl?: string;
   portfolioUrl?: string;
+  codingProfilesData?: CodingProfilesData;
   bio: string;
   currentRole: string;
   targetRole: string;
@@ -65,3 +117,4 @@ export interface CandidateProfile {
 
   updatedAt: string;
 }
+

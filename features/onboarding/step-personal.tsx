@@ -142,30 +142,82 @@ export const StepPersonal: React.FC<StepPersonalProps> = ({
           />
         </div>
 
-        {/* LinkedIn */}
-        <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1">LinkedIn Profile URL</label>
+        {/* Recommendation Notice */}
+        <div className="md:col-span-2 p-3.5 rounded-xl bg-gradient-to-r from-indigo-950/40 via-slate-900 to-indigo-950/40 border border-indigo-500/30 text-xs space-y-1">
+          <div className="flex items-center gap-2 text-indigo-300 font-semibold">
+            <span className="flex h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
+            Profile Completion & Developer Footprint Insights
+          </div>
+          <p className="text-slate-300 text-[11px] leading-relaxed">
+            <strong className="text-rose-300">LinkedIn Profile URL is mandatory</strong> to verify candidate identity. Entering your <strong className="text-indigo-300">GitHub account</strong> and <strong className="text-amber-300">LeetCode profile</strong> is <span className="underline decoration-indigo-400/60 font-medium">recommended to complete your profile</span> and enables automated extraction of your coding frequency, repositories, and problem-solving metrics.
+          </p>
+        </div>
+
+        {/* LinkedIn - MANDATORY */}
+        <div className="md:col-span-2">
+          <label className="block text-xs font-medium text-slate-300 mb-1 flex items-center justify-between">
+            <span>
+              LinkedIn Profile URL <span className="text-rose-400 font-bold">* (Mandatory)</span>
+            </span>
+            <span className="text-[10px] text-slate-500">Compulsory for verified candidate status</span>
+          </label>
           <input
             type="text"
             name="linkedInUrl"
-            placeholder="linkedin.com/in/username or https://..."
+            placeholder="e.g. linkedin.com/in/yourname or https://www.linkedin.com/in/yourname"
             value={data.linkedInUrl || ""}
             onChange={handleChange}
-            className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-indigo-500 focus:outline-none"
+            className={`w-full px-3 py-2 rounded-lg bg-slate-950 border text-xs text-white focus:outline-none transition-colors ${
+              errors.linkedInUrl ? "border-rose-500 focus:border-rose-500" : "border-slate-800 focus:border-indigo-500"
+            }`}
           />
+          {errors.linkedInUrl && <p className="text-[11px] text-rose-400 mt-1">{errors.linkedInUrl}</p>}
         </div>
 
-        {/* GitHub / Portfolio */}
+        {/* GitHub Account URL - RECOMMENDED */}
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1">GitHub or Portfolio URL</label>
+          <label className="block text-xs font-medium text-slate-300 mb-1 flex items-center justify-between">
+            <span>GitHub Account URL</span>
+            <span className="text-[10px] text-indigo-400 font-medium">Recommended • Coding Frequency</span>
+          </label>
           <input
             type="text"
             name="githubUrl"
-            placeholder="github.com/username or https://..."
+            placeholder="e.g. github.com/username or https://github.com/..."
             value={data.githubUrl || ""}
             onChange={handleChange}
-            className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white focus:border-indigo-500 focus:outline-none"
+            className={`w-full px-3 py-2 rounded-lg bg-slate-950 border text-xs text-white focus:outline-none transition-colors ${
+              errors.githubUrl ? "border-rose-500 focus:border-rose-500" : "border-slate-800 focus:border-indigo-500"
+            }`}
           />
+          {errors.githubUrl ? (
+            <p className="text-[11px] text-rose-400 mt-1">{errors.githubUrl}</p>
+          ) : (
+            <p className="text-[10px] text-slate-500 mt-0.5">Recommended to analyze frequency of coding work & repositories.</p>
+          )}
+        </div>
+
+        {/* LeetCode Profile URL - RECOMMENDED */}
+        <div>
+          <label className="block text-xs font-medium text-slate-300 mb-1 flex items-center justify-between">
+            <span>LeetCode Profile URL</span>
+            <span className="text-[10px] text-amber-400 font-medium">Recommended • DSA Stats</span>
+          </label>
+          <input
+            type="text"
+            name="leetcodeUrl"
+            placeholder="e.g. leetcode.com/u/username or https://leetcode.com/..."
+            value={data.leetcodeUrl || ""}
+            onChange={handleChange}
+            className={`w-full px-3 py-2 rounded-lg bg-slate-950 border text-xs text-white focus:outline-none transition-colors ${
+              errors.leetcodeUrl ? "border-rose-500 focus:border-rose-500" : "border-slate-800 focus:border-indigo-500"
+            }`}
+          />
+          {errors.leetcodeUrl ? (
+            <p className="text-[11px] text-rose-400 mt-1">{errors.leetcodeUrl}</p>
+          ) : (
+            <p className="text-[10px] text-slate-500 mt-0.5">Recommended to analyze problem solving & algorithmic proficiency.</p>
+          )}
         </div>
 
         {/* Short Biography */}

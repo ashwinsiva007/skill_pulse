@@ -1,221 +1,188 @@
-# PathPilot (`skill_pulse`) — AI Career & Skill Navigator
+# 🚀 SkillPulse — AI Career & Skill Navigator
 
-> **Stage 5 — Complete Demo-Ready MVP with Opportunity Discovery & Application Tracker**  
-> A modular, dark-first career platform built with Next.js (App Router), TypeScript in strict mode, and Tailwind CSS. Tailored specifically for students, fresh graduates, and early-career jobseekers.
+[![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+[![Firebase](https://img.shields.io/badge/Firebase-v12-FFCA28?style=for-the-badge&logo=firebase)](https://firebase.google.com/)
+[![Tests Passing](https://img.shields.io/badge/Tests-19%2F19%20Passing-emerald?style=for-the-badge&logo=jest)](https://github.com/)
+[![License](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)](LICENSE)
+
+> **SkillPulse** is an intelligent, dark-first career enablement platform designed specifically for university students, fresh graduates, and early-career developers. It bridges the gap between candidate portfolios and real-world employer requirements through transparent skill matching, live hackathon ingestion, automated coding footprint extraction, and an ATS-grade resume builder.
 
 ---
 
-## ⚡ Quick Start (Zero Setup Required)
+## 🌟 Highlights & Recent Enhancements
 
-**PathPilot** is engineered for **instant, frictionless local execution**. Anyone on the development team or reviewing recruiters can clone the repository, run the application immediately, and test with the pre-populated demo workspace or explore from scratch.
+### 🏆 1. Dedicated Hackathon Hub & Unstop Live Ingestion (`/hackathons`)
+* **Independent Navigation Route:** Dedicated `/hackathons` route accessible directly from the left sidebar without interfering with the job feed.
+* **50+ Live Unstop Competitions:** Directly queries Unstop's public search API for live campus challenges, nationwide hackathons, and corporate innovation sprints.
+* **Resilient Direct Registration:** Integrated `getSafeUnstopRegistrationUrl` to map competition slugs to real Unstop event pages, completely resolving previous `unstop.com/page-not-found` (404) routing errors.
+* **Specialized Filters:** Filter by participation mode (*Remote*, *On-site*, *Hybrid*), student eligibility (*1st-3rd year*, *all students*, *open to all*), Indian regions (*South India*, *Tamil Nadu*, *Pan-India*), and prize tiers.
 
-### Prerequisites
-- Node.js `v18+` or `v20+` (Tested on Node `v24`)
-- npm / yarn / pnpm
+### 🧹 2. Cleaned Live Job Descriptions (`/opportunities`)
+* **HTML Stripping & Decoding Engine:** Overhauled HTML parsing in `lib/utils.ts` (`stripHtml`) and `base-provider.ts` (`cleanHtml`). Decodes encoded HTML entities (`&lt;h2&gt;`, `&amp;`) before stripping tags.
+* **Pristine Job Cards & Modal Typography:** Eliminates unsightly raw HTML strings from Greenhouse (e.g. Stripe, Postman) and Lever listings, rendering clean, formatted descriptions.
+* **Transparent 100-Point Match Rubric:** Evaluates role alignment (30 pts), required skills (35 pts), preferred skills (15 pts), work mode (10 pts), and seniority (10 pts).
 
-### Installation & Run
+### 🔗 3. Smart Profile Setup & Mandatory Social Links
+* **Mandatory LinkedIn Profile (`*`):** Required field across Onboarding, Quick Setup modal, and Profile Management to guarantee verified candidate identities.
+* **Recommended Coding Links:** Clear prompts and guidance to add GitHub and LeetCode profile URLs with format validation.
+* **Completion Meter:** Dynamic profile completion algorithm factoring in personal bio, education, skills, projects, and verified web profiles.
 
-```bash
-# 1. Install dependencies
-npm install
+### 🤖 4. Automated Developer Intelligence & Coding Footprint Extraction
+* **Server-Side Extraction Endpoint (`/api/profile/extract-coding-data`):** Automatically triggers upon profile save or manual refresh.
+* **GitHub Activity Analytics:**
+  * Public repositories count & total repository stars earned
+  * Followers count & top programming languages breakdown
+  * Coding and commit activity frequency assessment
+* **LeetCode Problem-Solving Analytics:**
+  * Total solved count partitioned into *Easy*, *Medium*, and *Hard* tiers
+  * Global leaderboard ranking and submission acceptance percentage
+* **Admin Candidate Inspector:** Master Admin modal allows recruiters to review live developer footprints and verified profiles in real-time.
 
-# 2. Run unit test suites (19 unit test cases across Skill Analyzer & Opportunity Matcher)
-npm test
+---
 
-# 3. Check code formatting and TypeScript linting
-npm run lint
+## 🏗️ Architecture & Data Flow
 
-# 4. Build optimized production bundle
-npm run build
+```mermaid
+graph TD
+    User([Candidate / Jobseeker]) -->|1. Setup Profile| Profile[Profile & Social Links]
+    Profile -->|2. Extract| ExtractionAPI["/api/profile/extract-coding-data"]
+    
+    subgraph External APIs
+        ExtractionAPI -->|GitHub REST| GitHubAPI[GitHub Public API]
+        ExtractionAPI -->|GraphQL / Scrape| LeetCodeAPI[LeetCode Engine]
+        IngestionService -->|Live Search| UnstopAPI[Unstop Hackathons API]
+        IngestionService -->|Job Feeds| JobAPIs[Greenhouse / Lever / Remotive]
+    end
 
-# 5. Launch development server
-npm run dev
+    GitHubAPI -->|Stars, Repos, Activity| ExtractionAPI
+    LeetCodeAPI -->|Solved Stats, Rank| ExtractionAPI
+    ExtractionAPI -->|Persist Footprint| ProfileRepo[Profile Repository]
+
+    subgraph Core Features
+        ProfileRepo --> Matcher[100-Pt Transparent Match Engine]
+        UnstopAPI --> HackathonsHub["/hackathons (Hackathon Hub)"]
+        JobAPIs --> LiveJobs["/opportunities (Live Opportunities)"]
+        Matcher --> LiveJobs
+        Matcher --> HackathonsHub
+        Matcher --> SkillsView["/skills (Explainable Skill Analyzer)"]
+        SkillsView --> RoadmapView["/roadmap (Adaptive 5-Phase Roadmap)"]
+        LiveJobs --> Tracker["/tracker (Kanban Application Pipeline)"]
+        HackathonsHub --> Tracker
+        ProfileRepo --> ResumeBuilder["/resume (ATS Resume Builder)"]
+    end
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to immediately access **PathPilot**.
-
 ---
 
-## 🔒 Architecture Philosophy: Zero Cloud Lock-In & Educational Transparency
-
-**PathPilot intentionally avoids mandatory cloud accounts, paid third-party APIs, and black-box AI claims.**
-
-This build deliberately **does NOT implement**:
-- ❌ Signup or login screens, passwords, or authentication middleware
-- ❌ Supabase Auth or third-party OAuth lock-in
-- ❌ Mandatory cloud database credentials, environment keys, or paid AI API secrets
-- ❌ Black-box "AI hiring probability" or "job readiness guarantee" claims
-- ❌ Indiscriminate web scraping or nonfunctional external links disguised as real
-
-### Why This Decision Was Made
-1. **Explainability & Transparency:** Candidates deserve to know *exactly* why their alignment score is 82% versus 45%. Every score is derived from an audited, unit-testable mathematical rubric comparing profile skills and portfolio evidence against transparent listing requirements.
-2. **Pedagogical Honesty:** A match score measures alignment with stated listing attributes; it does **not** represent a probability of selection, interview invitation, or employment offer.
-3. **Pluggable Opportunity Provider Architecture:** The discovery module is built behind the `IOpportunityProvider` interface (`lib/opportunities/opportunity-provider.ts`), decoupling listing ingestion from the UI. Future production feeds (e.g., Greenhouse API, Ashby API, Handshake, University Career Centers) can be plugged in without refactoring the UI.
-4. **Decoupled Repository Pattern:** All mutations and queries pass through typed interfaces (`IProfileRepository`, `ISkillRepository`, `IResumeRepository`, `IRoadmapRepository`, `IOpportunityRepository`, `IApplicationRepository`). Data persists cleanly in browser `localStorage`.
-5. **Instant Local Evaluation:** Reviewers and recruiters can evaluate all features without setting up backend infrastructure.
-
----
-
-## 📂 Project Structure
+## 📂 Core Project Layout
 
 ```
 skill_pulse/
-├── app/                              # Next.js App Router Pages
-│   ├── (dashboard)/page.tsx          # Root redirect / landing
-│   ├── dashboard/page.tsx            # Unified Metrics & Pipeline Dashboard
-│   ├── onboarding/page.tsx           # 7-Step Guided Profile Wizard
-│   ├── profile/page.tsx              # Candidate Profile Management
-│   ├── resume/page.tsx               # ATS Resume Builder & PDF Exporter
-│   ├── skills/page.tsx               # 8-Track Explainable Skill Analyzer
-│   ├── roadmap/page.tsx              # Adaptive 5-Phase Career Progression Roadmap
-│   ├── opportunities/page.tsx        # Opportunity Discovery & Match Explorer
-│   ├── saved-opportunities/page.tsx  # Pinned Opportunities Management
-│   ├── tracker/page.tsx              # 5-Column Kanban Application Tracker
-│   └── settings/page.tsx             # Local Storage Diagnostics & Global Reset
-├── components/                       # Shared Reusable UI Components
-│   ├── layout/                       # AppLayout, Sidebar, Navbar
-│   └── ui/                           # Button, Card, Badge, Modal, Progress, EmptyState
-├── features/                         # Modular Domain Feature Packages
-│   ├── dashboard/                    # MetricsOverview, CareerReadinessCard, RoadmapCard
-│   ├── profile/                      # Profile forms, skills/education/projects editors
-│   ├── resume/                       # Guided questions, split-pane editor, PDF export
-│   ├── skills/                       # Skill gap diagnostics, role comparison table
-│   ├── roadmap/                      # 5-phase interactive milestones & checklists
-│   ├── opportunities/                # OpportunityCard, OpportunityDetailModal, TrackModal
-│   └── tracker/                      # Kanban columns, EditApplicationModal
-├── lib/                              # Core Business Logic & Infrastructure
-│   ├── career-catalogue/             # 8 Configured Career Role Profiles
-│   ├── opportunities/                # IOpportunityProvider, DemoCatalogue, Matcher
-│   ├── skill-analyzer/               # Transparent skill scoring formula & token matcher
-│   ├── roadmap/                      # Personalized roadmap generator from skill gaps
-│   ├── resume/                       # Resume templates, STAR bullet assistant
-│   ├── repositories/                 # Local repositories (localStorage implementation)
-│   ├── storage/                      # StorageAdapter interface & LocalStorage implementation
-│   └── demo/                         # Seed dataset & DemoManager reset service
-├── scripts/                          # Automated Unit Test Suites
-│   ├── test-matching-engine.ts       # 10 Test suites for Skill Analyzer
-│   └── test-opportunity-matcher.ts   # 9 Test suites for Opportunity Matcher
-└── types/                            # Strict TypeScript Domain Interfaces
+├── app/                                    # Next.js App Router
+│   ├── (dashboard)/page.tsx                # Root redirect
+│   ├── dashboard/page.tsx                  # Metrics & Pipeline Overview
+│   ├── hackathons/page.tsx                 # 🏆 Dedicated Unstop Hackathons Hub
+│   ├── opportunities/page.tsx              # 💼 Live Job & Internship Explorer
+│   ├── saved-opportunities/page.tsx        # 📌 Saved Bookmarks
+│   ├── tracker/page.tsx                    # 📊 5-Column Kanban Pipeline
+│   ├── profile/page.tsx                    # 👤 Candidate Profile & Developer Footprint
+│   ├── onboarding/page.tsx                 # 📝 7-Step Guided Profile Setup
+│   ├── skills/page.tsx                     # 🎯 8-Track Skill Gap Diagnostics
+│   ├── roadmap/page.tsx                    # 🗺️ Adaptive 5-Phase Milestone Roadmap
+│   ├── resume/page.tsx                     # 📄 ATS Resume Builder & PDF Exporter
+│   ├── admin/candidates/page.tsx           # 🛡️ Master Admin Candidate Inspector
+│   └── api/                                # Serverless API Routes
+│       ├── opportunities/route.ts          # Unified Opportunity Ingestion API
+│       ├── opportunities/live/route.ts     # Live Ingestion Stream Endpoint
+│       └── profile/extract-coding-data/    # 🤖 GitHub & LeetCode Intelligence Extractor
+├── components/                             # Shared Components
+│   ├── admin/admin-candidate-modal.tsx     # Admin Candidate & Intelligence Inspector
+│   ├── layout/sidebar.tsx                  # Platform Navigation & Active Route Handler
+│   ├── profile/quick-profile-setup-modal   # Fast-track profile completion modal
+│   └── ui/                                 # Accessible UI Component Primitives
+├── features/                               # Domain Feature Modules
+│   ├── hackathons/hackathons-hub-view.tsx  # Unstop Live Hackathons Interface
+│   ├── opportunities/                      # Opportunity Cards, Filters, and Detail Modals
+│   ├── dashboard/                          # Readiness Radar, KPI Cards, Spotlights
+│   └── onboarding/                         # Guided Onboarding Steps & Social URL Inputs
+├── lib/                                    # Business Logic & Infrastructure
+│   ├── opportunities/
+│   │   ├── hackathons-catalog.ts           # Safe Unstop URL resolution & catalog
+│   │   ├── ingestion-service.ts            # Multi-provider aggregator engine
+│   │   ├── matching-engine.ts              # Mathematical scoring rubric (0-100)
+│   │   └── providers/                      # Greenhouse, Lever, Remotive, Unstop
+│   ├── repositories/                       # Decoupled LocalStorage / Firebase Repos
+│   └── utils.ts                            # Entity decoding & HTML sanitization
+├── types/                                  # Strict Domain Interfaces & Enums
+└── scripts/                                # Automated Unit Test Suites
 ```
 
 ---
 
-## 🚀 Complete Feature Overview (Stages 1–5 Integrated)
+## ⚡ Quick Start
 
-### 1. Unified Dashboard (`/dashboard` & `/`)
-- **6-Metric Real-Time KPI Grid:** Displays profile completion percentage, total recorded skills, ATS resume drafts saved, target role alignment score, career roadmap progress percentage, pinned opportunities, and active applications.
-- **Career Readiness Radar:** Compares candidate capabilities against target role expectations with live core skill coverage, supporting skill coverage, and portfolio evidence bonuses.
-- **Adaptive Roadmap Snapshot:** Direct milestone progress tracking with quick links to active phase action items.
-- **Application Pipeline Status Summary:** Summary breakdown of active applications across *Submitted*, *Interview Loop*, *Offers Received*, and *Bookmarks*.
-- **Curated Spotlight & Recent Activity Stream:** Highlights top-matching opportunities and persistent user activity timestamps.
+### 1. Prerequisites
+- **Node.js** `v18.x` or `v20.x`+
+- **npm** or **pnpm** / **yarn**
 
-### 2. Opportunity Discovery (`/opportunities`)
-- **Starter Demo Catalogue:** 10 curated listings across Jobs, Internships, Hackathons, Research Fellowships, and Career Programs.
-- **Pluggable Architecture:** Implements `IOpportunityProvider` (`lib/opportunities/opportunity-provider.ts`).
-- **Comprehensive Filtering & Sorting:**
-  - Real-time text search by title or organization.
-  - Filter pills by Opportunity Type (*Job*, *Internship*, *Hackathon*, *Research*, *Career Program*).
-  - Filter dropdowns by Domain (*Data & Analytics*, *AI & Machine Learning*, *Software Engineering*, *Web & Frontend*, *Systems & Backend*).
-  - Filter by Work Mode (*Remote*, *Hybrid*, *On-site*).
-  - Sort by *Best Match* or *Title A–Z*.
-- **Explainable Match Scoring Engine:**
-  - Evaluates candidate profile, recorded skills, portfolio project tags, career level, and workplace preferences.
-  - Transparent 100-point rubric: Role Alignment (30 pts), Required Skills (35 pts), Preferred Skills (15 pts), Work Mode (10 pts), Experience Level (10 pts).
-  - "Why this matches you" expandable drawer highlighting exact alignment reasons.
-  - Separate tagging for matched required skills vs. missing required skills vs. preferred bonus skills.
-- **Opportunity Detail Modal:** Inspects full job description, eligibility rules, compensation ranges, source metadata, and transparent point audits.
-- **Direct 1-Click Pipeline Action:** Track any opportunity into the Kanban application pipeline with custom notes and target milestone dates.
-- **Explicit Demo Data Labeling:** All sample listings are prominently badged with `DEMO DATA` markers to ensure transparent expectations. External application links are simulated with clear demo toasts.
-
-### 3. Saved Opportunities & Application Tracker (`/saved-opportunities` & `/tracker`)
-- **Saved Opportunities View (`/saved-opportunities`):** Manage bookmarked roles with immediate action to launch application tracking.
-- **5-Column Visual Kanban Tracker (`/tracker`):**
-  - **Pipeline Stages:** *Bookmarked & Interested*, *Applied (Submitted)*, *Interview Loop* (Screening & Technical), *Offers Received*, and *Closed / Archived*.
-  - **Manual Stage Transitions:** Drag or select dropdown to transition applications through recruiting stages.
-  - **Application Notes & Next Steps:** Record interview notes, recruiter contacts, coding challenge deadlines, and salary negotiation terms.
-  - **Add Custom Applications:** Log external job applications not originating from the internal catalogue.
-  - **Edit & Archive:** Update details or safely archive completed pipelines.
-
-### 4. Explainable Skill Analyzer (`/skills`)
-- **8-Track Catalogue:** Data Analyst, Data Scientist, Machine Learning Engineer, BI Analyst, Software Developer, Frontend Developer, Backend Developer, and AI Engineer.
-- **Explainable Mathematical Scoring:** Weighted formula accounting for core competencies (3x), supporting competencies (1x), proficiency depth, and portfolio project evidence.
-- **Skill Gap Diagnostics:** Filterable by *Not Yet Recorded*, *Partially Developed*, and *Matched* with recommended learning activities and recruiter portfolio tips.
-- **Multi-Role Alignment Matrix:** Compare candidate fit across all 8 career tracks simultaneously.
-
-### 5. Adaptive 5-Phase Career Roadmap (`/roadmap`)
-- **Personalized Generation:** Dynamically structured based on target role and detected missing competencies:
-  - *Phase 1: Foundational Mastery*
-  - *Phase 2: Deliberate Practice*
-  - *Phase 3: Capstone Engineering*
-  - *Phase 4: Presentation & Artifacts*
-  - *Phase 5: Career Transition & Interviewing*
-- **Interactive Checklists & Personal Study Notes:** Toggle checklist items to update progress and save persistent study reflections.
-
-### 6. ATS Resume Builder (`/resume`)
-- **Guided Career Target Setup:** Tailors resume drafts specifically for Data Analyst, Data Scientist, AI/ML, or Software Developer roles.
-- **STAR Bullet Assistant:** Formulates high-impact resume bullet points using the Situation-Task-Action-Result framework.
-- **A4 PDF Export:** Generates clean, ATS-friendly single-page resumes.
-
-### 7. Global Demo Reset (`/settings`)
-- **Predictable Initial State:** One-click reset restores the canonical starter profile, skills, resumes, roadmap, opportunities, and applications.
-- **Storage Diagnostics:** Inspect localStorage byte consumption and export/import full JSON state backups.
-
----
-
-## 🧪 Automated Testing & Validation
-
-PathPilot includes comprehensive automated test suites covering matching algorithms, boundary cases, and catalogue integrity.
+### 2. Installation
 
 ```bash
+# Clone repository
+git clone https://github.com/ashwinsiva007/skill_pulse.git
+cd skill_pulse
+
+# Install dependencies
+npm install
+```
+
+### 3. Run Development Server
+
+```bash
+npm run dev
+```
+
+Visit [http://localhost:3000](http://localhost:3000) to access the platform.
+
+### 4. Running Automated Tests
+
+```bash
+# Execute unit test suites (Skill Analyzer + Opportunity Matcher)
 npm test
 ```
 
-### Test Suite Results Summary:
-- **Skill Analyzer Test Suite (`scripts/test-matching-engine.ts`):** 10 test suites passed.
-  - ✓ Token matching & synonym resolution (e.g., PostgreSQL matches SQL, Next.js matches React)
-  - ✓ Numerical proficiency conversions (0 to 4 scale)
-  - ✓ Zero recorded skills empty state safety
-  - ✓ Partial skill scoring & partially developed flags
-  - ✓ Weighted formula calculation across mixed proficiencies
-  - ✓ Project evidence bonus verification (relevant vs. irrelevant projects)
-  - ✓ Catalogue integrity across all 8 configured roles
-  - ✓ Adaptive 5-phase roadmap generation
-  - ✓ Zero-denominator edge-case protection
-  - ✓ Duplicate skill highest-proficiency selection
-- **Opportunity Matcher Test Suite (`scripts/test-opportunity-matcher.ts`):** 9 test suites passed.
-  - ✓ Role & domain alignment scoring (30 pts exact, 25 pts domain)
-  - ✓ Required vs. preferred skills separation and missing detection
-  - ✓ Portfolio project technologies contributing to skill overlap
-  - ✓ Work mode preference scoring (Remote, Hybrid, On-site, Flexible)
-  - ✓ Null / empty candidate profile safety
-  - ✓ Match score clamping strictly within [0, 100] with educational disclaimer
-  - ✓ Starter demo catalogue integrity across all 10 listings
-  - ✓ Representation of diverse opportunity types (Job, Internship, Hackathon, Research, Career Program)
-  - ✓ Application tracking pipeline stages validation (9 stages)
+### 5. Typecheck & Build
 
-### Production Build & Linting:
-- **ESLint (`npm run lint`):** 0 errors, 0 warnings.
-- **Next.js Production Build (`npm run build`):** Compiled and prerendered 14 static routes cleanly.
+```bash
+# Validate strict TypeScript types
+npx tsc --noEmit
+
+# Compile production bundle
+npm run build
+```
 
 ---
 
-## ⚠️ Demo Data Limitations & Transparency Disclaimers
+## 🧪 Testing & Quality Assurance
 
-1. **Simulated Opportunity Data:** All listings in the catalogue are explicitly flagged with `isDemo: true`, `verificationStatus: "demo_simulated"`, and `listingStatus: "demo_only"`. They represent illustrative scenarios to demonstrate discovery and tracking workflows.
-2. **External Application Actions:** PathPilot does not claim external links are active or currently accepting applications. Clicking "Apply (External Demo)" launches an illustrative notification modal without redirecting to broken or unvetted third-party pages.
-3. **Alignment Scores vs. Hiring Probability:** A match score is an educational heuristic measuring profile alignment with listing tags. It does **not** indicate candidate selection probability or guarantee employment.
-4. **Local Browser Persistence:** All data is stored in the browser's `localStorage` via the decoupled `StorageAdapter`. Clearing browser cache or switching private browsing profiles will restore the default initial state unless backed up via `/settings`.
+SkillPulse is backed by 19 unit test suites validating core algorithms:
+- **Skill Analyzer Engine (10 Tests):**
+  - Token matching & synonym resolution (e.g. Postgres → SQL, React → Next.js)
+  - Numerical proficiency scaling (0 to 4 scale)
+  - Edge cases (zero recorded skills, zero denominator protection)
+  - Portfolio project evidence weighting
+  - Adaptive roadmap milestone generation
+- **Opportunity Matcher Engine (9 Tests):**
+  - Role & domain alignment scoring (30 pts exact, 25 pts domain)
+  - Partitioning required vs. preferred competencies
+  - Work mode alignment (Remote, Hybrid, On-site)
+  - Clamping match scores cleanly between `[0, 100]` with educational disclaimers
+  - Catalogue integrity across all starter opportunities
 
 ---
 
-## 🔮 Recommended Future Stages
+## 🛡️ License
 
-1. **Authentication & Multi-Tenant Cloud Storage:** Implement Supabase Auth or NextAuth with PostgreSQL backing, seamlessly swapping the `LocalStorageAdapter` with a `RemoteStorageAdapter`.
-2. **Live Feed Integrations:** Connect genuine job board APIs (Greenhouse, Ashby, Lever, LinkedIn ATS feeds) through the established `IOpportunityProvider` interface.
-3. **Resume PDF Parsing:** Add client-side PDF/DOCX import using Web Workers to extract existing resume content into the profile editor without external OCR APIs.
-4. **Automated Status Webhooks:** Track interview invitations and email updates via authenticated webhook bridges.
-
----
-
-## 📄 License
-MIT License. Built for **PathPilot (`skill_pulse`) — AI Career & Skill Navigator**.
+This project is licensed under the [MIT License](LICENSE).

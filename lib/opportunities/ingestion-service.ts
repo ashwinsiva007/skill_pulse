@@ -6,6 +6,7 @@ import {
 import { GreenhouseProviderAdapter } from "./providers/greenhouse-provider";
 import { LeverProviderAdapter } from "./providers/lever-provider";
 import { AdzunaProviderAdapter } from "./providers/adzuna-provider";
+import { UnstopHackathonsProviderAdapter } from "./providers/unstop-hackathons-provider";
 import { CatalogProviderAdapter } from "./providers/catalog-provider";
 import { generateExternalSearchShortcuts, ExternalSearchOptions } from "./providers/external-search-provider";
 import { IJobProviderAdapter, ProviderQueryOptions } from "./providers/base-provider";
@@ -37,6 +38,7 @@ class JobIngestionEngine {
       new GreenhouseProviderAdapter(),
       new LeverProviderAdapter(),
       new AdzunaProviderAdapter(),
+      new UnstopHackathonsProviderAdapter(),
     ];
   }
 

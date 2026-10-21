@@ -74,20 +74,26 @@ export function calculateProfileCompletion(
     tip: "Specify your city, state, or preferred home location.",
   });
 
-  const hasLinks = Boolean(
-    profile.githubUrl ||
-    profile.linkedInUrl ||
-    profile.portfolioUrl ||
-    (profile.links && profile.links.length > 0)
-  );
+  const hasLinkedIn = Boolean(profile.linkedInUrl && profile.linkedInUrl.trim().length > 3);
   items.push({
-    id: "personal-links",
+    id: "personal-linkedin",
     category: "Personal Details",
-    name: "LinkedIn or GitHub / Portfolio URL",
-    points: hasLinks ? 2 : 0,
+    name: "LinkedIn Profile (Mandatory)",
+    points: hasLinkedIn ? 2 : 0,
     maxPoints: 2,
-    isMet: hasLinks,
-    tip: "Link your GitHub, LinkedIn, or portfolio for recruiter proof.",
+    isMet: hasLinkedIn,
+    tip: "Add your LinkedIn profile URL (mandatory for complete candidate profile).",
+  });
+
+  const hasCodingProfiles = Boolean(profile.githubUrl || profile.leetcodeUrl);
+  items.push({
+    id: "personal-coding-profiles",
+    category: "Personal Details",
+    name: "GitHub / LeetCode (Recommended)",
+    points: hasCodingProfiles ? 2 : 0,
+    maxPoints: 2,
+    isMet: hasCodingProfiles,
+    tip: "Add your GitHub and LeetCode profiles to analyze your coding activity and problem solving.",
   });
 
   // 2. Education (15 points total)

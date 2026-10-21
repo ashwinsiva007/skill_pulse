@@ -4,9 +4,11 @@ import React from "react";
 import Link from "next/link";
 import { Opportunity } from "@/types/opportunity";
 import { OpportunityMatchResult } from "@/lib/opportunities/matching-engine";
+import { getSafeUnstopRegistrationUrl } from "@/lib/opportunities/hackathons-catalog";
 import { Modal } from "@/components/ui/modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { stripHtml } from "@/lib/utils";
 import {
   MapPin,
   DollarSign,
@@ -56,7 +58,7 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
   const isLive = opportunity.sourceMode === "LIVE";
   const isCurated = opportunity.sourceMode === "CURATED_CATALOG";
   const isHackathon = opportunity.type === "Hackathon";
-  const directDestinationUrl = opportunity.unstopDirectUrl || opportunity.applicationUrl || opportunity.sourceUrl || "https://unstop.com/hackathons";
+  const directDestinationUrl = getSafeUnstopRegistrationUrl(opportunity);
 
   return (
     <Modal
@@ -329,7 +331,7 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
             About the Role / Opportunity
           </h4>
           <p className="text-slate-300 leading-relaxed text-xs p-3.5 rounded-xl bg-slate-950/60 border border-slate-800">
-            {opportunity.description}
+            {stripHtml(opportunity.description)}
           </p>
         </div>
 

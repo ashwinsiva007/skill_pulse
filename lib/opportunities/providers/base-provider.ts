@@ -75,18 +75,41 @@ export const INDIA_TECH_HUBS = [
  */
 export function cleanHtml(rawHtml: string): string {
   if (!rawHtml) return "";
-  return rawHtml
+  let text = rawHtml;
+  // Step 1: Decode entities that might be hiding HTML tags (e.g., &lt;h2&gt;)
+  text = text
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&amp;/gi, "&");
+
+  // Step 2: Strip style and script elements
+  text = text
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
-    .replace(/<[^>]+>/g, " ")
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "");
+
+  // Step 3: Strip all HTML tags
+  text = text.replace(/<[^>]+>/g, " ");
+
+  // Step 4: Decode any remaining common HTML entities
+  text = text
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
     .replace(/&quot;/gi, '"')
     .replace(/&#39;/gi, "'")
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">")
-    .replace(/\s+/g, " ")
-    .trim();
+    .replace(/&#x27;/gi, "'")
+    .replace(/&rsquo;/gi, "'")
+    .replace(/&lsquo;/gi, "'")
+    .replace(/&ldquo;/gi, '"')
+    .replace(/&rdquo;/gi, '"')
+    .replace(/&ndash;/gi, "-")
+    .replace(/&mdash;/gi, "-")
+    .replace(/&hellip;/gi, "...")
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec))
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+
+  return text.replace(/\s+/g, " ").trim();
 }
 
 /**

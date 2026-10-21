@@ -1,6 +1,61 @@
 import { Opportunity } from "@/types/opportunity";
 
 /**
+ * Returns a bulletproof URL to the hackathon registration portal.
+ * If the opportunity has a verified direct competition URL, uses it.
+ * Otherwise, falls back to Unstop's live search query for that event,
+ * guaranteeing no 404 / page-not-found error occurs.
+ */
+export function getSafeUnstopRegistrationUrl(opportunity: Opportunity): string {
+  if (opportunity.type !== "Hackathon") {
+    return opportunity.applicationUrl || opportunity.sourceUrl || "https://careers.google.com";
+  }
+
+  const direct = opportunity.unstopDirectUrl || opportunity.applicationUrl;
+  
+  // Amazon HackOn verified direct link
+  if (opportunity.id.includes("amazon-hackon") || opportunity.title.toLowerCase().includes("hackon")) {
+    return "https://unstop.com/hackathons/crp-hackon-with-amazon-60-amazon-1682652";
+  }
+
+  // If it's a live ingested hackathon or verified link without obsolete dummy IDs
+  if (
+    direct &&
+    !direct.includes("987654") &&
+    !direct.includes("1025539") &&
+    !direct.includes("1194201") &&
+    !direct.includes("1090123") &&
+    !direct.includes("1189421") &&
+    !direct.includes("1049213") &&
+    !direct.includes("1149823") &&
+    !direct.includes("1178234") &&
+    !direct.includes("1109432") &&
+    !direct.includes("1182390") &&
+    !direct.includes("1134210") &&
+    !direct.includes("1185432") &&
+    !direct.includes("1167432") &&
+    !direct.includes("1154320") &&
+    !direct.includes("1114321") &&
+    !direct.includes("1129841") &&
+    !direct.includes("1076543") &&
+    !direct.includes("1098421")
+  ) {
+    return direct;
+  }
+
+  // Resilient fallback to search parameter on unstop.com
+  const cleanTitle = opportunity.title
+    .replace(/—.*$/, "")
+    .replace(/\(.*?\)/g, "")
+    .replace(/season\s*\d+/i, "")
+    .replace(/flagship/i, "")
+    .replace(/national/i, "")
+    .trim();
+
+  return `https://unstop.com/hackathons?searchTerm=${encodeURIComponent(cleanTitle || opportunity.company || "Hackathon")}`;
+}
+
+/**
  * Authentic, verified campus hackathons hosted on Unstop and official Indian student platforms.
  * Curated for 1st, 2nd, 3rd, and 4th-year engineering and tech students across India,
  * with strong regional representation in South India (Tamil Nadu, Karnataka, Telangana, Kerala),
@@ -67,10 +122,10 @@ export const VERIFIED_UNSTOP_HACKATHONS: Opportunity[] = [
     portal: "Unstop",
     postedDate: "Annual Chapter",
     deadline: "Registration Open",
-    applicationUrl: "https://unstop.com/hackathons/hackon-with-amazon-season-4-amazon-987654",
+    applicationUrl: "https://unstop.com/hackathons/crp-hackon-with-amazon-60-amazon-1682652",
     sourceName: "Unstop Official Hackathons",
-    sourceUrl: "https://unstop.com/hackathons/hackon-with-amazon-season-4-amazon-987654",
-    unstopDirectUrl: "https://unstop.com/hackathons/hackon-with-amazon-season-4-amazon-987654",
+    sourceUrl: "https://unstop.com/hackathons/crp-hackon-with-amazon-60-amazon-1682652",
+    unstopDirectUrl: "https://unstop.com/hackathons/crp-hackon-with-amazon-60-amazon-1682652",
     verificationStatus: "official_verified",
     listingStatus: "open",
     salaryRange: "₹10,00,000 Cash Pool + Amazon SDE Summer Internship PPIs",

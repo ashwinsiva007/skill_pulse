@@ -33,3 +33,43 @@ export function formatRelativeTime(dateString: string): string {
     return dateString;
   }
 }
+
+export function stripHtml(text?: string): string {
+  if (!text) return "";
+  let clean = text;
+  // Decode HTML entities that may wrap tags
+  clean = clean
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&amp;/gi, "&");
+
+  // Strip script and style blocks
+  clean = clean
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "");
+
+  // Strip HTML tags
+  clean = clean.replace(/<[^>]+>/g, " ");
+
+  // Decode secondary entities
+  clean = clean
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&#x27;/gi, "'")
+    .replace(/&rsquo;/gi, "'")
+    .replace(/&lsquo;/gi, "'")
+    .replace(/&ldquo;/gi, '"')
+    .replace(/&rdquo;/gi, '"')
+    .replace(/&ndash;/gi, "-")
+    .replace(/&mdash;/gi, "-")
+    .replace(/&hellip;/gi, "...")
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec))
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+
+  return clean.replace(/\s+/g, " ").trim();
+}
+

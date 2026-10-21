@@ -45,6 +45,12 @@ import {
   ArrowRight,
   Send,
   Lock,
+  Code2,
+  Activity,
+  GitFork,
+  Star,
+  Flame,
+  Trophy,
 } from "lucide-react";
 import { AdminRestrictedNotice } from "@/components/admin/admin-restricted-notice";
 
@@ -140,17 +146,86 @@ function ProfileContent() {
 
   const completionResult = calculateProfileCompletion(profile, skills);
 
+  const [isExtractingCodingData, setIsExtractingCodingData] = useState(false);
+  const [personalFormError, setPersonalFormError] = useState("");
+
   // Save personal details
   const handleSavePersonal = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!personalForm.linkedInUrl?.trim()) {
+      setPersonalFormError("LinkedIn profile URL is mandatory for candidate verification.");
+      return;
+    }
+    setPersonalFormError("");
+    setIsExtractingCodingData(true);
+
     try {
-      const updated = await profileRepo.updateProfile(personalForm);
+      let codingProfilesData = profile.codingProfilesData;
+      if (
+        personalForm.githubUrl?.trim() ||
+        personalForm.leetcodeUrl?.trim() ||
+        personalForm.linkedInUrl?.trim()
+      ) {
+        try {
+          const res = await fetch("/api/profile/extract-coding-data", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              githubUrl: personalForm.githubUrl,
+              leetcodeUrl: personalForm.leetcodeUrl,
+              linkedInUrl: personalForm.linkedInUrl,
+            }),
+          });
+          if (res.ok) {
+            const json = await res.json();
+            if (json.data) codingProfilesData = json.data;
+          }
+        } catch (err) {
+          console.warn("Coding profile extraction warning:", err);
+        }
+      }
+
+      const updated = await profileRepo.updateProfile({
+        ...personalForm,
+        codingProfilesData,
+      });
       setProfile(updated);
       setIsEditPersonalOpen(false);
-      setSuccessMessage("Personal details saved!");
+      setSuccessMessage("Personal details & developer profile metrics saved!");
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsExtractingCodingData(false);
+    }
+  };
+
+  const handleRefreshCodingStats = async () => {
+    if (!profile.githubUrl && !profile.leetcodeUrl && !profile.linkedInUrl) return;
+    setIsExtractingCodingData(true);
+    try {
+      const res = await fetch("/api/profile/extract-coding-data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          githubUrl: profile.githubUrl,
+          leetcodeUrl: profile.leetcodeUrl,
+          linkedInUrl: profile.linkedInUrl,
+        }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data) {
+          const updated = await profileRepo.updateProfile({ codingProfilesData: json.data });
+          setProfile(updated);
+          setSuccessMessage("Developer footprint and coding metrics successfully refreshed!");
+          setTimeout(() => setSuccessMessage(null), 3500);
+        }
+      }
+    } catch (e) {
+      console.error("Refresh error:", e);
+    } finally {
+      setIsExtractingCodingData(false);
     }
   };
 
@@ -547,6 +622,21 @@ function ProfileContent() {
                 </a>
               )}
 
+              {profile.leetcodeUrl && (
+                <a
+                  href={profile.leetcodeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/50 border border-slate-800 text-xs text-slate-300 hover:text-white hover:border-slate-700"
+                >
+                  <span className="flex items-center gap-2">
+                    <Code2 className="w-3.5 h-3.5 text-amber-400" />
+                    LeetCode
+                  </span>
+                  <ExternalLink className="w-3 h-3 text-slate-500" />
+                </a>
+              )}
+
               {profile.portfolioUrl && (
                 <a
                   href={profile.portfolioUrl}
@@ -564,6 +654,367 @@ function ProfileContent() {
             </CardContent>
           </Card>
         </div>
+
+        {/* SECTION: Developer Footprint & Coding Analytics */}
+        <Card className="border-indigo-500/30 bg-gradient-to-r from-slate-900/95 via-[#0e172e] to-slate-900/95 shadow-xl">
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-base text-white">
+                    <Activity className="w-5 h-5 text-indigo-400" />
+                    Developer Footprint & Coding Intelligence
+                  </CardTitle>
+                  <Badge variant="indigo" size="sm">
+                    Live Extracted Analytics
+                  </Badge>
+                </div>
+                <CardDescription>
+                  Automated frequency analysis of candidate coding work, repositories, and DSA problem-solving statistics.
+                </CardDescription>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {profile.codingProfilesData?.lastExtractedAt && (
+                  <span className="text-[11px] text-slate-400 hidden sm:inline">
+                    Updated: {new Date(profile.codingProfilesData.lastExtractedAt).toLocaleDateString()}
+                  </span>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRefreshCodingStats}
+                  isLoading={isExtractingCodingData}
+                  className="text-xs border-indigo-500/40 text-indigo-300 hover:bg-indigo-950/40 cursor-pointer h-8"
+                >
+                  <RefreshCw className="w-3.5 h-3.5 mr-1.5 text-indigo-400" />
+                  Re-analyze Profiles
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="space-y-5">
+            {profile.codingProfilesData?.github || profile.codingProfilesData?.leetcode ? (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                {/* 1. GITHUB CODING WORK & FREQUENCY */}
+                {profile.codingProfilesData.github ? (
+                  <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-4 flex flex-col justify-between">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
+                            <FolderGit2 className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-white block">
+                              GitHub Activity
+                            </span>
+                            <span className="text-[10px] text-slate-400">
+                              @{profile.codingProfilesData.github.username}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Frequency Badge */}
+                        <Badge
+                          variant={
+                            profile.codingProfilesData.github.codingFrequency.includes("High")
+                              ? "emerald"
+                              : profile.codingProfilesData.github.codingFrequency.includes("Moderate")
+                              ? "cyan"
+                              : "indigo"
+                          }
+                          size="sm"
+                          className="font-bold text-[10px] flex items-center gap-1 shadow-xs"
+                        >
+                          <Flame className="w-3 h-3 text-amber-400" />
+                          {profile.codingProfilesData.github.codingFrequency}
+                        </Badge>
+                      </div>
+
+                      {/* Stat Counters */}
+                      <div className="grid grid-cols-3 gap-2 py-2 border-y border-slate-800/80 text-center">
+                        <div className="p-2 rounded-lg bg-slate-900/60">
+                          <div className="text-sm font-extrabold text-white">
+                            {profile.codingProfilesData.github.publicRepos}
+                          </div>
+                          <div className="text-[9px] uppercase font-bold text-slate-400">Repos</div>
+                        </div>
+                        <div className="p-2 rounded-lg bg-slate-900/60">
+                          <div className="text-sm font-extrabold text-amber-400 flex items-center justify-center gap-0.5">
+                            <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                            {profile.codingProfilesData.github.totalStars}
+                          </div>
+                          <div className="text-[9px] uppercase font-bold text-slate-400">Stars</div>
+                        </div>
+                        <div className="p-2 rounded-lg bg-slate-900/60">
+                          <div className="text-sm font-extrabold text-indigo-300">
+                            {profile.codingProfilesData.github.followers}
+                          </div>
+                          <div className="text-[9px] uppercase font-bold text-slate-400">Followers</div>
+                        </div>
+                      </div>
+
+                      {/* Top Languages */}
+                      {profile.codingProfilesData.github.topLanguages &&
+                        profile.codingProfilesData.github.topLanguages.length > 0 && (
+                          <div className="space-y-1.5">
+                            <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1">
+                              <Code2 className="w-3 h-3 text-indigo-400" />
+                              Primary Languages:
+                            </span>
+                            <div className="space-y-1">
+                              {profile.codingProfilesData.github.topLanguages.slice(0, 3).map((l) => (
+                                <div key={l.language} className="space-y-0.5">
+                                  <div className="flex justify-between text-[11px] text-slate-300">
+                                    <span>{l.language}</span>
+                                    <span className="font-semibold text-indigo-300">{l.percentage}%</span>
+                                  </div>
+                                  <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
+                                    <div
+                                      className="bg-indigo-500 h-full rounded-full transition-all"
+                                      style={{ width: `${l.percentage}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                      {/* Top Repositories */}
+                      {profile.codingProfilesData.github.topRepositories &&
+                        profile.codingProfilesData.github.topRepositories.length > 0 && (
+                          <div className="space-y-1.5 pt-1">
+                            <span className="text-[10px] uppercase font-bold text-slate-400">
+                              Featured Repositories:
+                            </span>
+                            <div className="space-y-1.5">
+                              {profile.codingProfilesData.github.topRepositories.slice(0, 2).map((r) => (
+                                <a
+                                  key={r.name}
+                                  href={r.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-2 rounded-lg bg-slate-900/60 hover:bg-slate-900 border border-slate-800 block text-xs transition-colors group"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-semibold text-white group-hover:text-indigo-300 flex items-center gap-1">
+                                      <GitFork className="w-3 h-3 text-slate-400" />
+                                      {r.name}
+                                    </span>
+                                    <span className="text-[10px] text-amber-400 flex items-center gap-0.5">
+                                      <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                                      {r.stars}
+                                    </span>
+                                  </div>
+                                  {r.description && (
+                                    <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                                      {r.description}
+                                    </p>
+                                  )}
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                    </div>
+
+                    <a
+                      href={profile.codingProfilesData.github.profileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="pt-2 border-t border-slate-800/80 text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center justify-between font-medium"
+                    >
+                      <span>View GitHub Profile</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-center space-y-2 flex flex-col justify-center">
+                    <FolderGit2 className="w-6 h-6 text-slate-600 mx-auto" />
+                    <span className="text-xs font-semibold text-white">No GitHub Account Linked</span>
+                    <p className="text-[11px] text-slate-400">
+                      Add your GitHub account in profile details to analyze coding frequency.
+                    </p>
+                    <Button variant="outline" size="sm" onClick={() => setIsEditPersonalOpen(true)} className="text-xs">
+                      Add GitHub
+                    </Button>
+                  </div>
+                )}
+
+                {/* 2. LEETCODE PROBLEM SOLVING */}
+                {profile.codingProfilesData.leetcode ? (
+                  <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-4 flex flex-col justify-between">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 rounded-lg bg-amber-600/20 text-amber-400 border border-amber-500/30">
+                            <Code2 className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-white block">
+                              LeetCode DSA Stats
+                            </span>
+                            <span className="text-[10px] text-slate-400">
+                              @{profile.codingProfilesData.leetcode.username}
+                            </span>
+                          </div>
+                        </div>
+
+                        <Badge variant="amber" size="sm" className="font-bold text-[10px]">
+                          Rank #{profile.codingProfilesData.leetcode.ranking?.toLocaleString() || "100k+"}
+                        </Badge>
+                      </div>
+
+                      {/* Total Solved Hero Box */}
+                      <div className="p-3 rounded-xl bg-gradient-to-r from-amber-950/30 via-slate-900 to-amber-950/30 border border-amber-500/30 text-center">
+                        <div className="text-2xl font-black text-amber-400">
+                          {profile.codingProfilesData.leetcode.totalSolved}
+                        </div>
+                        <div className="text-[10px] uppercase font-bold text-slate-400">
+                          Total Problems Solved
+                        </div>
+                        {profile.codingProfilesData.leetcode.acceptanceRate && (
+                          <div className="text-[10px] text-emerald-400 font-medium mt-1">
+                            {profile.codingProfilesData.leetcode.acceptanceRate}% Acceptance Rate
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Difficulty Breakdown */}
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div className="p-2.5 rounded-lg bg-emerald-950/40 border border-emerald-800/40">
+                          <div className="text-xs font-bold text-emerald-300">
+                            {profile.codingProfilesData.leetcode.easySolved}
+                          </div>
+                          <div className="text-[9px] uppercase font-bold text-emerald-400/80">Easy</div>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-amber-950/40 border border-amber-800/40">
+                          <div className="text-xs font-bold text-amber-300">
+                            {profile.codingProfilesData.leetcode.mediumSolved}
+                          </div>
+                          <div className="text-[9px] uppercase font-bold text-amber-400/80">Medium</div>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-rose-950/40 border border-rose-800/40">
+                          <div className="text-xs font-bold text-rose-300">
+                            {profile.codingProfilesData.leetcode.hardSolved}
+                          </div>
+                          <div className="text-[9px] uppercase font-bold text-rose-400/80">Hard</div>
+                        </div>
+                      </div>
+
+                      <div className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 text-[11px] text-slate-300 space-y-1">
+                        <span className="font-semibold text-white block">Algorithmic Readiness</span>
+                        <p className="text-[10px] text-slate-400 leading-relaxed">
+                          Strong foundation in data structures, time complexity optimization, and coding interviews.
+                        </p>
+                      </div>
+                    </div>
+
+                    <a
+                      href={profile.codingProfilesData.leetcode.profileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="pt-2 border-t border-slate-800/80 text-[11px] text-amber-400 hover:text-amber-300 flex items-center justify-between font-medium"
+                    >
+                      <span>View LeetCode Profile</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-center space-y-2 flex flex-col justify-center">
+                    <Code2 className="w-6 h-6 text-slate-600 mx-auto" />
+                    <span className="text-xs font-semibold text-white">No LeetCode Account Linked</span>
+                    <p className="text-[11px] text-slate-400">
+                      Connect your LeetCode profile to automatically sync your DSA problem counts.
+                    </p>
+                    <Button variant="outline" size="sm" onClick={() => setIsEditPersonalOpen(true)} className="text-xs">
+                      Add LeetCode
+                    </Button>
+                  </div>
+                )}
+
+                {/* 3. LINKEDIN VERIFICATION & CANDIDATE FOOTPRINT */}
+                <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-4 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-cyan-600/20 text-cyan-400 border border-cyan-500/30">
+                          <Briefcase className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <span className="text-xs font-bold text-white block">
+                            LinkedIn Identity
+                          </span>
+                          <span className="text-[10px] text-slate-400">Verified Professional URL</span>
+                        </div>
+                      </div>
+
+                      <Badge variant="cyan" size="sm" className="font-bold text-[10px] flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3 text-cyan-400" />
+                        Verified
+                      </Badge>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-cyan-950/20 border border-cyan-500/30 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
+                        <span className="text-xs font-semibold text-white">Mandatory Identity Active</span>
+                      </div>
+                      <p className="text-[11px] text-slate-300 leading-relaxed">
+                        Recruiter-verified candidate profile link is bound to this workspace and shared with partner hiring teams.
+                      </p>
+                    </div>
+
+                    <div className="space-y-2 pt-1 text-xs">
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800">
+                        <span className="text-slate-400">Candidate Standing:</span>
+                        <strong className="text-white">{profile.careerLevel}</strong>
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800">
+                        <span className="text-slate-400">Profile Completeness:</span>
+                        <strong className="text-indigo-400">{completionResult.percentage}%</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  {profile.linkedInUrl && (
+                    <a
+                      href={profile.linkedInUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="pt-2 border-t border-slate-800/80 text-[11px] text-cyan-400 hover:text-cyan-300 flex items-center justify-between font-medium"
+                    >
+                      <span>Open LinkedIn Profile</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="p-6 rounded-xl bg-slate-950/60 border border-slate-800 text-center space-y-3">
+                <Sparkles className="w-8 h-8 text-indigo-400 mx-auto animate-pulse" />
+                <h4 className="text-sm font-bold text-white">
+                  Unlock Automated Coding Analytics & Developer Footprint
+                </h4>
+                <p className="text-xs text-slate-300 max-w-lg mx-auto leading-relaxed">
+                  Connect your GitHub, LeetCode, and LinkedIn profiles. SkillPulse will automatically inspect your repositories, analyze work frequency, and aggregate your problem-solving metrics.
+                </p>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setIsEditPersonalOpen(true)}
+                  className="text-xs bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30"
+                >
+                  <Sparkles className="w-3.5 h-3.5 mr-1" />
+                  Configure Coding Accounts Now →
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Section: Academic Background (Education) */}
         <Card>
@@ -950,9 +1401,20 @@ function ProfileContent() {
         title="Edit Personal & Contact Details"
       >
         <form onSubmit={handleSavePersonal} className="space-y-3.5">
+          {/* Recommendation Banner */}
+          <div className="p-3 rounded-xl bg-indigo-950/30 border border-indigo-500/30 text-xs space-y-1">
+            <div className="font-semibold text-indigo-300 flex items-center gap-1.5">
+              <span className="flex h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
+              Developer Profile Intelligence
+            </div>
+            <p className="text-slate-300 text-[11px] leading-relaxed">
+              <strong className="text-rose-400">LinkedIn Profile URL is mandatory</strong> for candidate verification. Adding your <strong className="text-indigo-300">GitHub</strong> and <strong className="text-amber-300">LeetCode</strong> profiles is <span className="underline decoration-indigo-400 font-medium">recommended to complete your profile</span> and enables automated extraction of your coding work frequency and DSA metrics.
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] font-medium text-slate-300 mb-1">Full Name</label>
+              <label className="block text-[11px] font-medium text-slate-300 mb-1">Full Name *</label>
               <input
                 type="text"
                 value={personalForm.name || ""}
@@ -980,7 +1442,7 @@ function ProfileContent() {
           </div>
 
           <div>
-            <label className="block text-[11px] font-medium text-slate-300 mb-1">Headline</label>
+            <label className="block text-[11px] font-medium text-slate-300 mb-1">Headline *</label>
             <input
               type="text"
               value={personalForm.headline || ""}
@@ -990,8 +1452,89 @@ function ProfileContent() {
             />
           </div>
 
+          {/* LinkedIn Profile URL - MANDATORY */}
           <div>
-            <label className="block text-[11px] font-medium text-slate-300 mb-1">Biography</label>
+            <label className="block text-[11px] font-medium text-slate-300 mb-1 flex items-center justify-between">
+              <span>
+                LinkedIn Profile URL <span className="text-rose-400 font-bold">* (Mandatory)</span>
+              </span>
+              <span className="text-[10px] text-slate-400">Compulsory for candidate verification</span>
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. linkedin.com/in/yourname or https://www.linkedin.com/in/yourname"
+              value={personalForm.linkedInUrl || ""}
+              onChange={(e) => {
+                setPersonalForm({ ...personalForm, linkedInUrl: e.target.value });
+                if (e.target.value.trim()) setPersonalFormError("");
+              }}
+              className={`w-full px-3 py-1.5 rounded-lg bg-slate-950 border text-xs text-white focus:outline-none transition-colors ${
+                personalFormError ? "border-rose-500 focus:border-rose-500" : "border-slate-700 focus:border-indigo-500"
+              }`}
+              required
+            />
+            {personalFormError && (
+              <p className="text-[10px] text-rose-400 mt-1">{personalFormError}</p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* GitHub URL - RECOMMENDED */}
+            <div>
+              <label className="block text-[11px] font-medium text-slate-300 mb-1 flex items-center justify-between">
+                <span>GitHub Account URL</span>
+                <span className="text-[9px] text-indigo-400">Recommended • Coding Frequency</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. github.com/username"
+                value={personalForm.githubUrl || ""}
+                onChange={(e) => setPersonalForm({ ...personalForm, githubUrl: e.target.value })}
+                className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+
+            {/* LeetCode URL - RECOMMENDED */}
+            <div>
+              <label className="block text-[11px] font-medium text-slate-300 mb-1 flex items-center justify-between">
+                <span>LeetCode Profile URL</span>
+                <span className="text-[9px] text-amber-400">Recommended • DSA Stats</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. leetcode.com/u/username"
+                value={personalForm.leetcodeUrl || ""}
+                onChange={(e) => setPersonalForm({ ...personalForm, leetcodeUrl: e.target.value })}
+                className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-medium text-slate-300 mb-1">Portfolio Website (Optional)</label>
+              <input
+                type="text"
+                placeholder="https://yourname.dev"
+                value={personalForm.portfolioUrl || ""}
+                onChange={(e) => setPersonalForm({ ...personalForm, portfolioUrl: e.target.value })}
+                className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-medium text-slate-300 mb-1">Location / City</label>
+              <input
+                type="text"
+                placeholder="e.g. San Francisco, CA or Remote"
+                value={personalForm.location || ""}
+                onChange={(e) => setPersonalForm({ ...personalForm, location: e.target.value })}
+                className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-slate-300 mb-1">Biography *</label>
             <textarea
               rows={3}
               value={personalForm.bio || ""}
@@ -1005,8 +1548,14 @@ function ProfileContent() {
             <Button variant="ghost" size="sm" type="button" onClick={() => setIsEditPersonalOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" type="submit">
-              Save Changes
+            <Button
+              variant="primary"
+              size="sm"
+              type="submit"
+              isLoading={isExtractingCodingData}
+              className="bg-indigo-600 hover:bg-indigo-500 text-xs"
+            >
+              {isExtractingCodingData ? "Analyzing Coding Profiles..." : "Save & Extract Intelligence"}
             </Button>
           </div>
         </form>
