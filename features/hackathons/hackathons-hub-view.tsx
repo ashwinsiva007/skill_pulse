@@ -78,7 +78,9 @@ export const HackathonsHubView: React.FC = () => {
       if (forceRefresh) setIsRefreshing(true);
       else setIsLoading(true);
 
-      const endpoint = forceRefresh ? "/api/opportunities/live?refresh=true" : "/api/opportunities/live";
+      const endpoint = forceRefresh
+        ? "/api/opportunities?type=Hackathon&forceRefresh=true"
+        : "/api/opportunities?type=Hackathon";
       const res = await fetch(endpoint, {
         headers: { Accept: "application/json" },
         cache: "no-store",
