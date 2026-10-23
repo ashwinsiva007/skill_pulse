@@ -28,12 +28,14 @@ import {
   ChevronRight,
   ShieldCheck,
   FolderGit2,
+  Trash2,
 } from "lucide-react";
 
 interface AdminCandidateModalProps {
   user: AdminUserRecord | null;
   isOpen: boolean;
   onClose: () => void;
+  onCandidateDeleted?: (uid: string) => void;
 }
 
 type TabKey =
@@ -49,6 +51,7 @@ export const AdminCandidateModal: React.FC<AdminCandidateModalProps> = ({
   user,
   isOpen,
   onClose,
+  onCandidateDeleted,
 }) => {
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
   const [subcollections, setSubcollections] = useState<UserSubcollections>({
@@ -58,6 +61,27 @@ export const AdminCandidateModal: React.FC<AdminCandidateModalProps> = ({
   });
   const [isLoadingSubcollections, setIsLoadingSubcollections] = useState(false);
   const [copiedNotification, setCopiedNotification] = useState<string | null>(null);
+  const [isDeletingCandidate, setIsDeletingCandidate] = useState(false);
+
+  const handleDeleteCandidate = async () => {
+    if (!user) return;
+    const confirmMessage = `Are you sure you want to permanently delete candidate "${user.name}" (${user.email}) from Google Cloud Firestore?\n\nThis will completely erase their candidate profile, resumes, skills, and applications. This action cannot be undone.`;
+    if (!window.confirm(confirmMessage)) return;
+
+    try {
+      setIsDeletingCandidate(true);
+      await adminUserService.deleteCandidateUser(user.uid);
+      if (onCandidateDeleted) {
+        onCandidateDeleted(user.uid);
+      }
+      onClose();
+    } catch (err: any) {
+      console.error("Failed to delete candidate:", err);
+      alert("Failed to delete candidate from Firestore: " + (err.message || String(err)));
+    } finally {
+      setIsDeletingCandidate(false);
+    }
+  };
 
   // Load candidate's live Firestore subcollections when opened
   useEffect(() => {
@@ -165,6 +189,18 @@ export const AdminCandidateModal: React.FC<AdminCandidateModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2 self-end md:self-auto">
+            {user.syncedMode === "Cloud Firestore" && (
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleDeleteCandidate}
+                isLoading={isDeletingCandidate}
+                className="text-xs bg-rose-950/80 hover:bg-rose-900 border border-rose-800 text-rose-300"
+              >
+                <Trash2 className="w-3.5 h-3.5 mr-1 text-rose-400" />
+                Delete Profile
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"

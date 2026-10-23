@@ -10,11 +10,15 @@ import {
   updateProfile as fbUpdateProfile,
   browserLocalPersistence,
   setPersistence,
+  deleteUser as fbDeleteUser,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
 } from "firebase/auth";
 import { getFirebaseAuth, isFirebaseConfigured, getFirebaseConfig } from "./config";
 import { firestoreService } from "./firestore-service";
 import { CandidateProfile } from "@/types/profile";
 import { DEMO_PROFILE, createBlankCandidateProfile, createAdminCandidateProfile } from "@/lib/demo/seed-data";
+import { DemoManager } from "@/lib/demo/demo-manager";
 import { storageAdapter } from "@/lib/storage/storage-adapter";
 import { STORAGE_KEYS } from "@/lib/storage/keys";
 
@@ -30,6 +34,7 @@ export interface AuthContextType {
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   resetProfileToCleanSlate: () => Promise<void>;
+  deleteAccount: (emailConfirmation: string, passwordIfRequired?: string) => Promise<void>;
   clearError: () => void;
 }
 
@@ -303,6 +308,82 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     storageAdapter.setItem(STORAGE_KEYS.PROFILE, DEMO_PROFILE);
   };
 
+  const deleteAccount = async (
+    emailConfirmation: string,
+    passwordIfRequired?: string
+  ): Promise<void> => {
+    setError(null);
+    setLoading(true);
+
+    try {
+      const currentTargetEmail = (user?.email || profile?.email || "").trim().toLowerCase();
+      const enteredEmail = emailConfirmation.trim().toLowerCase();
+
+      if (!currentTargetEmail) {
+        if (enteredEmail !== "delete") {
+          throw new Error('Please type "DELETE" to confirm resetting your local candidate profile.');
+        }
+      } else if (enteredEmail !== currentTargetEmail) {
+        throw new Error(
+          `Verification mismatch: You typed "${emailConfirmation}", but this account's email is "${currentTargetEmail}".`
+        );
+      }
+
+      // 0. If Master Administrator simulated session
+      if (isAdmin || user?.email === "admin@gmail.com") {
+        storageAdapter.removeItem("skill_pulse_master_admin_session");
+        DemoManager.forceResetToDemo();
+        setUser(null);
+        setProfile(DEMO_PROFILE);
+        return;
+      }
+
+      // 1. Delete all Firestore records while user is still authenticated (security rules require request.auth != null)
+      if (user?.uid) {
+        try {
+          await firestoreService.deleteEntireUserAccount(user.uid);
+        } catch (fsErr) {
+          console.warn("[deleteAccount] Could not erase remote Firestore docs:", fsErr);
+        }
+      }
+
+      // 2. Delete user from Firebase Authentication
+      const auth = getFirebaseAuth();
+      if (auth && auth.currentUser) {
+        try {
+          await fbDeleteUser(auth.currentUser);
+        } catch (authErr: any) {
+          if (authErr?.code === "auth/requires-recent-login") {
+            if (passwordIfRequired) {
+              const credential = EmailAuthProvider.credential(currentTargetEmail, passwordIfRequired);
+              await reauthenticateWithCredential(auth.currentUser, credential);
+              await fbDeleteUser(auth.currentUser);
+            } else {
+              const reqErr = new Error("Recent authentication required. Please enter your password to confirm deletion.");
+              (reqErr as any).code = "auth/requires-recent-login";
+              throw reqErr;
+            }
+          } else {
+            console.warn("[deleteAccount] Firebase Auth deleteUser warning:", authErr);
+          }
+        }
+      }
+
+      // 3. Purge device local cache and restart profile to fresh initial seed persona
+      DemoManager.forceResetToDemo();
+
+      // 4. Reset in-memory session
+      setUser(null);
+      setProfile(DEMO_PROFILE);
+    } catch (err: any) {
+      const msg = err.message || "Failed to delete account";
+      setError(msg);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const clearError = () => setError(null);
 
   const isAdmin = Boolean(user?.email === "admin@gmail.com");
@@ -321,6 +402,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         signOut,
         refreshProfile,
         resetProfileToCleanSlate,
+        deleteAccount,
         clearError,
       }}
     >

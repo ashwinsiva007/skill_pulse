@@ -195,4 +195,12 @@ export const adminUserService = {
       return { resumes: [], skills: [], applications: [] };
     }
   },
+
+  /**
+   * Permanently delete candidate from Cloud Firestore (admin operation)
+   */
+  async deleteCandidateUser(uid: string): Promise<boolean> {
+    return firestoreService.deleteEntireUserAccount(uid);
+  },
 };
+

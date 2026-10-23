@@ -339,4 +339,56 @@ export const firestoreService = {
     await setDoc(actRef, sanitizeForFirestore(item), { merge: true });
     return item;
   },
+
+  // ==========================================
+  // 8. COMPLETE ACCOUNT DELETION (PURGE)
+  // ==========================================
+  async deleteEntireUserAccount(uid: string): Promise<boolean> {
+    const db = getFirebaseDb();
+    if (!db) return false;
+
+    try {
+      const subcollections = [
+        "resumes",
+        "skills",
+        "applications",
+        "saved_opportunities",
+        "activities",
+      ];
+
+      // 1. Delete all documents in known user subcollections
+      for (const sub of subcollections) {
+        try {
+          const colRef = collection(db, "users", uid, sub);
+          const snap = await getDocs(colRef);
+          const deletePromises = snap.docs.map((d) => deleteDoc(d.ref));
+          await Promise.all(deletePromises);
+        } catch (subErr) {
+          console.warn(`[Firestore deleteEntireUserAccount] Warning deleting subcollection ${sub}:`, subErr);
+        }
+      }
+
+      // 2. Delete roadmap current document if exists
+      try {
+        const roadmapDoc = doc(db, "users", uid, "roadmap", "current");
+        await deleteDoc(roadmapDoc);
+      } catch (rErr) {
+        console.warn("[Firestore deleteEntireUserAccount] Roadmap doc warning:", rErr);
+      }
+
+      // 3. Delete root user document in /users/{uid}
+      try {
+        const userRef = doc(db, "users", uid);
+        await deleteDoc(userRef);
+      } catch (uErr) {
+        console.warn("[Firestore deleteEntireUserAccount] Root user doc warning:", uErr);
+      }
+
+      return true;
+    } catch (err) {
+      console.error("[Firestore deleteEntireUserAccount fatal error]:", err);
+      throw err;
+    }
+  },
 };
+

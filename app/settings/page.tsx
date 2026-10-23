@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ResetConfirmModal } from "@/components/layout/reset-confirm-modal";
+import { DeleteAccountModal } from "@/components/layout/delete-account-modal";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { useAuth } from "@/lib/firebase/auth-context";
 import { getFirebaseConfig } from "@/lib/firebase/config";
@@ -28,6 +29,8 @@ import {
   Moon,
   Check,
   User,
+  UserX,
+  AlertTriangle,
 } from "lucide-react";
 import { useTheme } from "@/lib/theme/theme-context";
 
@@ -36,6 +39,7 @@ export default function SettingsPage() {
   const { theme, setTheme, themes } = useTheme();
   const isMasterAdmin = isAdmin || user?.email === "admin@gmail.com";
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<"signin" | "signup" | "firebase">("signin");
   const [summary, setSummary] = useState(DemoManager.getStorageSummary());
@@ -532,6 +536,16 @@ export default function SettingsPage() {
               <Button
                 variant="danger"
                 size="sm"
+                onClick={() => setIsDeleteAccountModalOpen(true)}
+                className="text-xs bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-800/80"
+              >
+                <UserX className="w-3.5 h-3.5 mr-1 text-rose-400" />
+                Delete Account
+              </Button>
+
+              <Button
+                variant="danger"
+                size="sm"
                 onClick={handlePurge}
                 className="text-xs ml-auto"
               >
@@ -547,12 +561,58 @@ export default function SettingsPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Danger Zone: Permanent Account Deletion Card */}
+        <Card className="border-rose-900/40 bg-gradient-to-r from-rose-950/25 via-slate-900/90 to-slate-900">
+          <CardHeader>
+            <div className="flex items-start justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-rose-400">
+                  <AlertTriangle className="w-4 h-4 text-rose-400" />
+                  Danger Zone: Permanent Account Deletion
+                </CardTitle>
+                <CardDescription>
+                  Irreversibly erase your cloud credentials, Firestore database records, and reset your workspace
+                </CardDescription>
+              </div>
+              <Badge variant="rose" size="sm">
+                Irreversible
+              </Badge>
+            </div>
+          </CardHeader>
+
+          <CardContent>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-950/80 border border-rose-900/40">
+              <div className="space-y-1">
+                <span className="text-sm font-bold text-white block">Delete Your Account Completely</span>
+                <p className="text-xs text-slate-400 leading-relaxed max-w-xl">
+                  Double verification required. Once confirmed with your account email, all your resumes, saved opportunities, skills, and application trackers will be completely purged from Google Cloud Firestore and Firebase Authentication. Your profile will be restarted with a clean default persona.
+                </p>
+              </div>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => setIsDeleteAccountModalOpen(true)}
+                className="text-xs font-bold shrink-0 bg-rose-600 hover:bg-rose-500 text-white shadow-md shadow-rose-950"
+              >
+                <UserX className="w-3.5 h-3.5 mr-1" />
+                Delete Account
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <ResetConfirmModal
         isOpen={isResetModalOpen}
         onClose={() => setIsResetModalOpen(false)}
         onResetComplete={refreshSummary}
+      />
+
+      <DeleteAccountModal
+        isOpen={isDeleteAccountModalOpen}
+        onClose={() => setIsDeleteAccountModalOpen(false)}
+        onDeleteComplete={refreshSummary}
       />
 
       {/* Admin Unlock Modal */}

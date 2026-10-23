@@ -652,6 +652,9 @@ export const AdminDashboardView: React.FC = () => {
           setIsModalOpen(false);
           setInspectedCandidate(null);
         }}
+        onCandidateDeleted={() => {
+          loadUsers();
+        }}
       />
     </AppLayout>
   );
