@@ -64,12 +64,29 @@ export class UnstopHackathonsProviderAdapter implements IJobProviderAdapter {
         for (const item of rawList) {
           if (!item.title) continue;
 
+          // Check registration status: Avoid closed/expired hackathons! ONLY show ongoing & registration open!
+          const regStatus = String(item.regnRequirements?.reg_status || "").toUpperCase();
+          const remainDays = String(item.regnRequirements?.remain_days || "").toLowerCase();
+          const itemStatus = String(item.status || "").toUpperCase();
+          const isClosed =
+            regStatus === "FINISHED" ||
+            regStatus === "EXPIRED" ||
+            regStatus === "CLOSED" ||
+            remainDays.includes("ended") ||
+            remainDays.includes("expired") ||
+            itemStatus === "EXPIRED" ||
+            (item.end_date && new Date(item.end_date).getTime() < Date.now());
+
+          if (isClosed) {
+            continue; // Skip all closed/expired hackathons
+          }
+
           // Parse direct authentic URL
           const seoUrl = item.seo_url?.startsWith("http")
             ? item.seo_url
             : item.seo_url
             ? `https://unstop.com/${item.seo_url.replace(/^\/+/, "")}`
-            : item.short_url || `https://unstop.com/hackathons?searchTerm=${encodeURIComponent(item.title)}`;
+            : item.short_url || item.public_url || `https://unstop.com/hackathons/${item.id}`;
 
           // Extract location & work mode
           const city = item.address_with_country_logo?.city || "";

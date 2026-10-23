@@ -47,6 +47,7 @@ export interface ResumeProjectEntry {
   role?: string;
   problem?: string; // Problem addressed
   technologies: string[];
+  rawTechnologies?: string; // Raw input string allowing seamless typing with commas & spaces
   outcomes?: string; // Measured impact or outcomes
   bullets: string[]; // Action + Problem + Tech + Impact bullet points
   link?: string;

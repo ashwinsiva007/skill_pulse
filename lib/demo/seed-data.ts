@@ -764,3 +764,145 @@ export function createAdminCandidateProfile(): CandidateProfile {
     updatedAt: new Date().toISOString(),
   };
 }
+
+export function createNiranjanCandidateProfile(): CandidateProfile {
+  return {
+    id: "demo-user-niranjan",
+    name: "Niranjan",
+    email: "niranjan@gmail.com",
+    headline: "Frontend Engineer & Full-Stack Developer | Next.js, React, TypeScript",
+    currentRole: "Frontend Engineer Intern",
+    targetRole: "Frontend Engineer",
+    careerLevel: "Student",
+    yearsOfExperience: 1,
+    city: "Bengaluru",
+    state: "Karnataka",
+    country: "India",
+    location: "Bengaluru, Karnataka, India",
+    phone: "+91 98450 12345",
+    linkedInUrl: "https://linkedin.com/in/niranjan-tech",
+    githubUrl: "https://github.com/niranjan-dev",
+    portfolioUrl: "https://niranjan-portfolio.dev",
+    bio: "Pre-final year engineering student passionate about building highly interactive, accessible web applications and developer tools with Next.js, React, and TypeScript.",
+    avatarUrl: "",
+    profileCompletionPercentage: 92,
+    careerReadinessScore: 88,
+    targetIndustry: "Web Technologies & AI Developer Tools",
+    availability: "Immediate for internships / Summer 2026 for full-time",
+    links: [
+      { id: "nir-l1", type: "github", label: "GitHub", url: "https://github.com/niranjan-dev" },
+      { id: "nir-l2", type: "linkedin", label: "LinkedIn", url: "https://linkedin.com/in/niranjan-tech" },
+      { id: "nir-l3", type: "portfolio", label: "Portfolio", url: "https://niranjan-portfolio.dev" },
+    ],
+    education: [
+      {
+        id: "nir-edu-1",
+        institution: "National Institute of Technology",
+        degree: "Bachelor of Technology",
+        specialization: "Computer Science & Engineering",
+        yearOrSemester: "Final Year (Semester 8)",
+        startYear: 2022,
+        expectedGraduationYear: 2026,
+        gpa: "8.8 / 10.0",
+        location: "Bengaluru, India",
+      },
+    ],
+    projects: [
+      {
+        id: "nir-proj-1",
+        title: "Distributed Task Scheduler & Dashboard",
+        problem: "Managing high-volume async background tasks with deterministic queues and low overhead.",
+        description: "Full-stack real-time job orchestration engine with WebSocket streaming, priority queueing, and metrics visualisation.",
+        personalContribution: "Built responsive Next.js frontend with Tailwind CSS and designed backend workers with Python.",
+        technologies: ["Python", "React", "Next.js", "Redis", "TypeScript"],
+        status: "Completed",
+        startDate: "2025",
+        githubUrl: "https://github.com/niranjan-dev/task-scheduler",
+        outcomes: "Handles 10k+ concurrent events with sub-50ms message processing latency.",
+      },
+      {
+        id: "nir-proj-2",
+        title: "SkillPulse AI Career Platform",
+        problem: "College students lack tailored roadmap guidance and real-time verified hackathon feeds.",
+        description: "Interactive career copilot providing ATS resume creation, live Unstop hackathon ingestion, and personalized skill gap analysis.",
+        personalContribution: "Implemented client-side ATS score evaluator, glassmorphic UI, and persistent device authentication.",
+        technologies: ["Next.js", "TypeScript", "Tailwind CSS", "Firebase", "Zustand"],
+        status: "Completed",
+        startDate: "2026",
+        githubUrl: "https://github.com/niranjan-dev/skillpulse",
+        outcomes: "Accelerates student application pipeline and delivers real-time match scores.",
+      },
+    ],
+    experience: [
+      {
+        id: "nir-exp-1",
+        company: "Apex Tech Labs",
+        role: "Frontend Engineer Intern",
+        type: "Internship",
+        location: "Bengaluru (Hybrid)",
+        startDate: "August 2025",
+        endDate: "Present",
+        isCurrent: true,
+        responsibilities: "Architected component library with React and TypeScript. Improved Lighthouse performance score by 35% through code splitting and asset memoization.",
+      },
+    ],
+    certifications: [
+      {
+        id: "nir-cert-1",
+        name: "Meta Certified Front-End Developer",
+        issuer: "Meta / Coursera",
+        issueDate: "2025",
+      },
+      {
+        id: "nir-cert-2",
+        name: "AWS Certified Cloud Practitioner",
+        issuer: "Amazon Web Services",
+        issueDate: "2025",
+      },
+    ],
+    courses: [
+      {
+        id: "nir-crs-1",
+        title: "Advanced React & Next.js Architecture",
+        platform: "Frontend Masters",
+        completionDate: "2025",
+      },
+    ],
+    hackathons: [
+      {
+        id: "nir-hack-1",
+        eventName: "Smart India Hackathon (SIH)",
+        projectTitle: "DocuVerify — Decentralized Student Credential Verification",
+        result: "Regional Finalist",
+        year: "2025",
+      },
+    ],
+    awards: [
+      {
+        id: "nir-awd-1",
+        title: "Top Performer — Web Development Track",
+        organization: "College Tech Fest",
+        date: "2025",
+      },
+    ],
+    leadership: [
+      {
+        id: "nir-ldr-1",
+        role: "Lead Developer",
+        organization: "Google Developer Student Club (GDSC)",
+        duration: "2024 - Present",
+      },
+    ],
+    preferences: {
+      targetJobRoles: ["Frontend Engineer", "Full-Stack Developer", "Software Engineer"],
+      preferredDomains: ["Developer Tools", "AI/ML Systems", "Web Applications"],
+      preferredLocations: ["Bengaluru", "Chennai", "Remote"],
+      workplacePreference: "Flexible",
+      opportunityTypes: ["Full-time Jobs", "Internships", "Hackathons"],
+      technologiesOfInterest: ["React", "Next.js", "TypeScript", "Python", "Tailwind CSS"],
+      availability: "Immediate",
+    },
+    updatedAt: new Date().toISOString(),
+  };
+}
+

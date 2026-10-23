@@ -17,7 +17,12 @@ import {
 import { getFirebaseAuth, isFirebaseConfigured, getFirebaseConfig } from "./config";
 import { firestoreService } from "./firestore-service";
 import { CandidateProfile } from "@/types/profile";
-import { DEMO_PROFILE, createBlankCandidateProfile, createAdminCandidateProfile } from "@/lib/demo/seed-data";
+import {
+  DEMO_PROFILE,
+  createBlankCandidateProfile,
+  createAdminCandidateProfile,
+  createNiranjanCandidateProfile,
+} from "@/lib/demo/seed-data";
 import { DemoManager } from "@/lib/demo/demo-manager";
 import { storageAdapter } from "@/lib/storage/storage-adapter";
 import { STORAGE_KEYS } from "@/lib/storage/keys";
@@ -66,6 +71,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       let p = storageAdapter.getItem<CandidateProfile | null>(STORAGE_KEYS.PROFILE, null);
       if (!p || p.email !== "admin@gmail.com") {
         p = createAdminCandidateProfile();
+        storageAdapter.setItem(STORAGE_KEYS.PROFILE, p);
+      }
+      setProfile(p);
+      setLoading(false);
+      return;
+    }
+
+    // 0b. Check for active Demo User (Niranjan) session
+    const demoCandidateSession = storageAdapter.getItem<{ email: string; uid: string; name: string } | null>(
+      "skill_pulse_demo_candidate_session",
+      null
+    );
+    if (demoCandidateSession && demoCandidateSession.email === "niranjan@gmail.com") {
+      const demoFbUser = {
+        uid: "demo-user-niranjan",
+        email: "niranjan@gmail.com",
+        displayName: "Niranjan",
+        emailVerified: true,
+      } as unknown as FirebaseUser;
+      setUser(demoFbUser);
+
+      let p = storageAdapter.getItem<CandidateProfile | null>(STORAGE_KEYS.PROFILE, null);
+      if (!p || p.email !== "niranjan@gmail.com") {
+        p = createNiranjanCandidateProfile();
         storageAdapter.setItem(STORAGE_KEYS.PROFILE, p);
       }
       setProfile(p);
@@ -174,6 +203,40 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     }
 
+    // 1b. Permanent Demo User (Niranjan) Authentication Check for rapid review/judges
+    if (trimmedEmail === "niranjan@gmail.com") {
+      if (pass === "qwerty786") {
+        const demoFbUser = {
+          uid: "demo-user-niranjan",
+          email: "niranjan@gmail.com",
+          displayName: "Niranjan",
+          emailVerified: true,
+        } as unknown as FirebaseUser;
+        setUser(demoFbUser);
+
+        let niranjanProf = storageAdapter.getItem<CandidateProfile | null>(STORAGE_KEYS.PROFILE, null);
+        if (!niranjanProf || niranjanProf.email !== "niranjan@gmail.com") {
+          niranjanProf = createNiranjanCandidateProfile();
+          storageAdapter.setItem(STORAGE_KEYS.PROFILE, niranjanProf);
+        }
+        setProfile(niranjanProf);
+
+        storageAdapter.setItem("skill_pulse_demo_candidate_session", {
+          email: "niranjan@gmail.com",
+          uid: "demo-user-niranjan",
+          name: "Niranjan",
+          loginTime: new Date().toISOString(),
+        });
+        setLoading(false);
+        return;
+      } else {
+        setLoading(false);
+        const err = "Invalid password for demo user. Please use 'qwerty786'.";
+        setError(err);
+        throw new Error(err);
+      }
+    }
+
     const auth = getFirebaseAuth();
     if (!auth) {
       setLoading(false);
@@ -217,6 +280,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (trimmedEmail === "admin@gmail.com") {
       if (pass === "admin@123") {
         return signIn("admin@gmail.com", "admin@123");
+      }
+    }
+    if (trimmedEmail === "niranjan@gmail.com") {
+      if (pass === "qwerty786") {
+        return signIn("niranjan@gmail.com", "qwerty786");
       }
     }
 
@@ -295,6 +363,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const signOut = async () => {
     setError(null);
     storageAdapter.removeItem("skill_pulse_master_admin_session");
+    storageAdapter.removeItem("skill_pulse_demo_candidate_session");
     const auth = getFirebaseAuth();
     if (auth) {
       try {

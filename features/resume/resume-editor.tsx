@@ -65,6 +65,16 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
 
   const content = draft.content;
 
+  const [rawTechSkills, setRawTechSkills] = useState(content.skills.technical.join(", "));
+  const [rawToolsSkills, setRawToolsSkills] = useState(content.skills.tools.join(", "));
+  const [rawSoftSkills, setRawSoftSkills] = useState(content.skills.soft.join(", "));
+
+  React.useEffect(() => {
+    setRawTechSkills(content.skills.technical.join(", "));
+    setRawToolsSkills(content.skills.tools.join(", "));
+    setRawSoftSkills(content.skills.soft.join(", "));
+  }, [draft.id]);
+
   const updateContent = (partialContent: Partial<ResumeContent>) => {
     const updatedContent = { ...content, ...partialContent };
     const dynamicAts = calculateAtsKeywordScore(updatedContent, draft.targetRole);
@@ -352,15 +362,17 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                 </label>
                 <input
                   type="text"
-                  value={content.skills.technical.join(", ")}
-                  onChange={(e) =>
+                  value={rawTechSkills}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setRawTechSkills(val);
                     updateContent({
                       skills: {
                         ...content.skills,
-                        technical: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
+                        technical: val.split(",").map((s) => s.trim()).filter(Boolean),
                       },
-                    })
-                  }
+                    });
+                  }}
                   placeholder="e.g. Python, TypeScript, SQL, Next.js, FastAPI"
                   className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
                 />
@@ -372,15 +384,17 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                 </label>
                 <input
                   type="text"
-                  value={content.skills.tools.join(", ")}
-                  onChange={(e) =>
+                  value={rawToolsSkills}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setRawToolsSkills(val);
                     updateContent({
                       skills: {
                         ...content.skills,
-                        tools: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
+                        tools: val.split(",").map((s) => s.trim()).filter(Boolean),
                       },
-                    })
-                  }
+                    });
+                  }}
                   placeholder="e.g. Docker, AWS, Git, GitHub Actions, Pinecone"
                   className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
                 />
@@ -392,15 +406,17 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                 </label>
                 <input
                   type="text"
-                  value={content.skills.soft.join(", ")}
-                  onChange={(e) =>
+                  value={rawSoftSkills}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setRawSoftSkills(val);
                     updateContent({
                       skills: {
                         ...content.skills,
-                        soft: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
+                        soft: val.split(",").map((s) => s.trim()).filter(Boolean),
                       },
-                    })
-                  }
+                    });
+                  }}
                   placeholder="e.g. Technical Documentation, Agile / Scrum, Problem Solving"
                   className="w-full px-3 py-2 text-xs rounded-lg bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
                 />
@@ -682,11 +698,12 @@ export const ResumeEditor: React.FC<ResumeEditorProps> = ({
                         </label>
                         <input
                           type="text"
-                          value={proj.technologies.join(", ")}
+                          value={proj.rawTechnologies !== undefined ? proj.rawTechnologies : proj.technologies.join(", ")}
                           onChange={(e) => {
-                            const techs = e.target.value.split(",").map((s) => s.trim()).filter(Boolean);
+                            const val = e.target.value;
+                            const techs = val.split(",").map((s) => s.trim()).filter(Boolean);
                             const updated = content.projects.map((p) =>
-                              p.id === proj.id ? { ...p, technologies: techs } : p
+                              p.id === proj.id ? { ...p, rawTechnologies: val, technologies: techs } : p
                             );
                             updateContent({ projects: updated });
                           }}

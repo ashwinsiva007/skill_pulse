@@ -87,13 +87,24 @@ export const HackathonsHubView: React.FC = () => {
       if (res.ok) {
         const json = await res.json();
         const allOpps: Opportunity[] = json.opportunities || [];
-        const hackathonsOnly = allOpps.filter((o) => o.type === "Hackathon");
+        const hackathonsOnly = allOpps.filter(
+          (o) =>
+            o.type === "Hackathon" &&
+            o.listingStatus !== "closed" &&
+            !o.deadline?.toLowerCase().includes("ended") &&
+            !o.deadline?.toLowerCase().includes("expired")
+        );
         
-        // Merge with catalog hackathons to guarantee full 50+ catalogue
+        // Merge with catalog hackathons to guarantee full verified catalogue
         const seenIds = new Set(hackathonsOnly.map((h) => h.id));
         const merged = [...hackathonsOnly];
         for (const cat of VERIFIED_UNSTOP_HACKATHONS) {
-          if (!seenIds.has(cat.id)) {
+          if (
+            !seenIds.has(cat.id) &&
+            cat.listingStatus !== "closed" &&
+            !cat.deadline?.toLowerCase().includes("ended") &&
+            !cat.deadline?.toLowerCase().includes("expired")
+          ) {
             merged.push(cat);
             seenIds.add(cat.id);
           }
@@ -231,6 +242,15 @@ export const HackathonsHubView: React.FC = () => {
   // Multi-Filter Logic
   const filteredHackathons = useMemo(() => {
     return evaluatedHackathons.filter((opp) => {
+      // Exclude closed or expired hackathons — only show ongoing with registration open
+      if (
+        opp.listingStatus === "closed" ||
+        opp.deadline?.toLowerCase().includes("ended") ||
+        opp.deadline?.toLowerCase().includes("expired")
+      ) {
+        return false;
+      }
+
       // Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();

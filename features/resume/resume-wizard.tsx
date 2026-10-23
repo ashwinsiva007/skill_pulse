@@ -144,6 +144,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
           id: p.id || `proj-${idx}`,
           title: p.title,
           technologies: p.technologies || [],
+          rawTechnologies: (p.technologies || []).join(", "),
           link: p.githubUrl || p.demoUrl || "",
           bullets: [p.description || "", p.outcomes || ""].filter(Boolean),
         }))
@@ -152,6 +153,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
             id: `proj-${Date.now()}-1`,
             title: "",
             technologies: [],
+            rawTechnologies: "",
             link: "",
             bullets: [""],
           },
@@ -193,7 +195,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
     setSummary(autoContent.summary);
     setEducationList(autoContent.education);
     setExperienceList(autoContent.experience);
-    setProjectList(autoContent.projects);
+    setProjectList(autoContent.projects.map((p) => ({ ...p, rawTechnologies: p.technologies?.join(", ") || "" })));
     setTechSkillsInput(autoContent.skills.technical.join(", "));
     setToolsInput(autoContent.skills.tools.join(", "));
     setSoftSkillsInput(autoContent.skills.soft.join(", "));
@@ -248,6 +250,7 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
         id: `proj-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
         title: "",
         technologies: [],
+        rawTechnologies: "",
         link: "",
         bullets: [""],
       },
@@ -912,10 +915,12 @@ export const ResumeWizard: React.FC<ResumeWizardProps> = ({
                       <label className="text-[11px] font-semibold text-slate-400">Technologies (comma separated)</label>
                       <input
                         type="text"
-                        value={proj.technologies.join(", ")}
+                        value={proj.rawTechnologies !== undefined ? proj.rawTechnologies : proj.technologies.join(", ")}
                         onChange={(e) => {
+                          const val = e.target.value;
                           const updated = [...projectList];
-                          updated[idx].technologies = e.target.value.split(",").map((t) => t.trim()).filter(Boolean);
+                          updated[idx].rawTechnologies = val;
+                          updated[idx].technologies = val.split(",").map((t) => t.trim()).filter(Boolean);
                           setProjectList(updated);
                         }}
                         placeholder="e.g. React, Next.js, PostgreSQL, Docker"

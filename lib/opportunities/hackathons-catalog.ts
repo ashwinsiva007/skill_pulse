@@ -11,48 +11,12 @@ export function getSafeUnstopRegistrationUrl(opportunity: Opportunity): string {
     return opportunity.applicationUrl || opportunity.sourceUrl || "https://careers.google.com";
   }
 
-  const direct = opportunity.unstopDirectUrl || opportunity.applicationUrl;
-  
-  // Amazon HackOn verified direct link
-  if (opportunity.id.includes("amazon-hackon") || opportunity.title.toLowerCase().includes("hackon")) {
-    return "https://unstop.com/hackathons/crp-hackon-with-amazon-60-amazon-1682652";
-  }
-
-  // If it's a live ingested hackathon or verified link without obsolete dummy IDs
-  if (
-    direct &&
-    !direct.includes("987654") &&
-    !direct.includes("1025539") &&
-    !direct.includes("1194201") &&
-    !direct.includes("1090123") &&
-    !direct.includes("1189421") &&
-    !direct.includes("1049213") &&
-    !direct.includes("1149823") &&
-    !direct.includes("1178234") &&
-    !direct.includes("1109432") &&
-    !direct.includes("1182390") &&
-    !direct.includes("1134210") &&
-    !direct.includes("1185432") &&
-    !direct.includes("1167432") &&
-    !direct.includes("1154320") &&
-    !direct.includes("1114321") &&
-    !direct.includes("1129841") &&
-    !direct.includes("1076543") &&
-    !direct.includes("1098421")
-  ) {
+  const direct = opportunity.unstopDirectUrl || opportunity.applicationUrl || opportunity.sourceUrl;
+  if (direct && direct.startsWith("http")) {
     return direct;
   }
 
-  // Resilient fallback to search parameter on unstop.com
-  const cleanTitle = opportunity.title
-    .replace(/—.*$/, "")
-    .replace(/\(.*?\)/g, "")
-    .replace(/season\s*\d+/i, "")
-    .replace(/flagship/i, "")
-    .replace(/national/i, "")
-    .trim();
-
-  return `https://unstop.com/hackathons?searchTerm=${encodeURIComponent(cleanTitle || opportunity.company || "Hackathon")}`;
+  return "https://unstop.com/hackathons";
 }
 
 /**
